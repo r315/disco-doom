@@ -28,6 +28,7 @@
 #ifndef __BYTEBOOL__
 #define __BYTEBOOL__
 typedef unsigned char byte;
+typedef signed char sbyte;
 /* Fixed to use builtin bool type with C++. */
 #ifdef __cplusplus
 	typedef bool boolean;
