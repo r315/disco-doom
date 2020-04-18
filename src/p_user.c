@@ -55,14 +55,9 @@ boolean		onground;
 // P_Thrust
 // Moves the given origin along a given angle.
 //
-void
-P_Thrust
-( player_t*	player,
-  angle_t	angle,
-  fixed_t	move ) 
+void P_Thrust ( player_t*	player, angle_t	angle, fixed_t	move )
 {
     angle >>= ANGLETOFINESHIFT;
-    
     player->mo->momx += FixedMul(move,finecosine[angle]); 
     player->mo->momy += FixedMul(move,finesine[angle]);
 }
@@ -157,8 +152,9 @@ void P_MovePlayer (player_t* player)
     //  if not onground.
     onground = (player->mo->z <= player->mo->floorz);
 	
-    if (cmd->forwardmove && onground)
-	P_Thrust (player, player->mo->angle, cmd->forwardmove*2048);
+	if (cmd->forwardmove && onground) {
+		P_Thrust(player, player->mo->angle, cmd->forwardmove * 2048);
+	}
     
     if (cmd->sidemove && onground)
 	P_Thrust (player, player->mo->angle-ANG90, cmd->sidemove*2048);
