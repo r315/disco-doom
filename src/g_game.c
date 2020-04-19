@@ -412,9 +412,6 @@ void G_BuildTiccmd(ticcmd_t *cmd)
         sendsave = false;
         cmd->buttons = BT_SPECIAL | BTS_SAVEGAME | (savegameslot << BTS_SAVESHIFT);
     }
-	if (forward != 0 || side != 0) {
-		printf("forward %d, side %d\n", forward, side);
-	}
 }
 
 //

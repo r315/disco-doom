@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include "input.h"
 
 /************************************
 LIS302D Pinout (Top View)
@@ -71,6 +72,8 @@ void lis302_Init(void *param);
 uint16_t lis302_ReadID(void);
 uint16_t lis302_read(uint8_t *dst, uint16_t size);
 uint16_t lis302_write(uint8_t *src, uint16_t size);
+
+extern input_drv_t input_drv_lis302;
 
 #ifdef __cplusplus
 }

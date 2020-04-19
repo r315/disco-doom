@@ -14,20 +14,6 @@
 #define BTN2_MASK           (1 << 6)
 #define BTN3_MASK           (1 << 7)
 
-extern input_drv_t input_drv;
-extern i2cbus_t ext_i2cbus;
-
-
-
-typedef struct {
-	uint32_t scanned;
-	uint32_t last;
-	uint32_t counter;
-	uint32_t events;
-    uint32_t htime;
-}BUTTON_Controller;
-
-
 typedef struct{
     uint8_t key;
     uint8_t state;

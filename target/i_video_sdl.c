@@ -178,14 +178,14 @@ void I_GetEvent(SDL_Event *Event)
 		event.type = ev_keydown;
 		event.data1 = xlatekey(&Event->key.keysym);
 		D_PostEvent(&event);
-		printf("Key %d, Event: %s\n", event.data1, "key down");
+		//printf("Key %d, Event: %s\n", event.data1, "key down");
 		break;
 
 	case SDL_KEYUP:
 		event.type = ev_keyup;
 		event.data1 = xlatekey(&Event->key.keysym);
 		D_PostEvent(&event);
-		printf("Key %d, Event: %s\n", event.data1, "key up");
+		//printf("Key %d, Event: %s\n", event.data1, "key up");
 		break;
 
 	case SDL_MOUSEBUTTONDOWN:
@@ -235,7 +235,7 @@ void I_ShutdownGraphics(void)
 void I_StartTic(void)
 {
 	SDL_Event Event;
-	event_t event;
+	//event_t event;
 
 	while (SDL_PollEvent(&Event))
 		I_GetEvent(&Event);

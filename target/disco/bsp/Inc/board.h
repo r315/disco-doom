@@ -4,6 +4,8 @@
 
 #include "main.h"
 #include "input.h"
+#include "lis302.h"
+#include "pcf8574.h"
 
 typedef struct _i2cbus_t{
     uint32_t   (*read)(uint8_t Addr, uint8_t *Buffer, uint16_t Length);
@@ -12,12 +14,6 @@ typedef struct _i2cbus_t{
 
 //#define IO_EXPANDER
 #define ACCELEROMETER
-
-#ifdef ACCELEROMETER
-#include "lis302.h"
-#elif defined (IO_EXPANDER)
-#include "pcf8574.h"
-#endif
 
 enum Benvent{
     BTN_EMPTY = 0,
@@ -35,31 +31,11 @@ uint8_t TS_IO_Read(uint8_t Addr, uint8_t Reg);
 uint32_t INPUT_I2C_Read(uint8_t Addr, uint8_t *Buffer, uint16_t Length);
 uint32_t INPUT_I2C_Write(uint8_t Addr, uint8_t *Buffer, uint16_t Length);
 
-
-static i2cbus_t ext_i2cbus = {
-    .write = INPUT_I2C_Write,
-    .read = INPUT_I2C_Read
-};
-
-
+extern i2cbus_t ext_i2cbus;
 #ifdef ACCELEROMETER
-
-static input_drv_t input_drv = {
-    lis302_Init,
-    lis302_read,
-    lis302_write,
-    lis302_ReadID
-};
-
-
+#define input_drv input_drv_lis302
 #elif defined (IO_EXPANDER)
-
-static input_drv_t input_drv = {
-    pcf8574_Init,
-    pcf8574_Read,
-    pcf8574_Write,
-};
-
-#endif
+#define input_drv input_drv_pcf8574
+#endif /* ACCELEROMETER */
 
 #endif

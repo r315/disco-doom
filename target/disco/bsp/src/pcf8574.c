@@ -4,6 +4,12 @@
 
 static i2cbus_t *i2cbus;
 
+input_drv_t input_drv_pcf8574 = {
+    pcf8574_Init,
+    pcf8574_Read,
+    pcf8574_Write,
+};
+
 void pcf8574_Init(void *param){
     i2cbus = (i2cbus_t*)param;
     // I/Os should be high before being used as inputs.

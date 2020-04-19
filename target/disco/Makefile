@@ -99,7 +99,9 @@ $(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery.c \
 $(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_lcd.c \
 $(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_sdram.c \
 $(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_sd.c \
+$(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_audio.c \
 $(REPOSITORY_DIR)/Drivers/BSP/Components/otm8009a/otm8009a.c \
+$(REPOSITORY_DIR)/Drivers/BSP/Components/wm8994/wm8994.c \
 
 DOOM_SOURCES = \
 $(wildcard $(DOOM_SOURCES_PATH)/*.c) \
@@ -108,7 +110,7 @@ $(wildcard $(DOOM_SOURCES_PATH)/*.c) \
 ../i_net.c \
 ../i_video.c \
 
-C_SOURCES +=$(DOOM_SOURCES) $(BSP_C_SOURCES)
+C_SOURCES +=$(BSP_C_SOURCES) $(DOOM_SOURCES) 
 #######################################
 # binaries
 #######################################
@@ -165,6 +167,7 @@ C_INCLUDES =  \
 -I$(REPOSITORY_DIR)/Drivers/CMSIS/Device/ST/STM32F7xx/Include \
 -I$(REPOSITORY_DIR)/Drivers/CMSIS/Include \
 -I$(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery \
+-I$(REPOSITORY_DIR)/Drivers/BSP/Components/wm8994 \
 -I$(REPOSITORY_DIR)/Middlewares/Third_Party/FatFs/src \
 $(DOOM_INCS) \
 #-I$(REPOSITORY_DIR)/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS

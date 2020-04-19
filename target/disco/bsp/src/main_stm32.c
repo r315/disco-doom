@@ -8,6 +8,12 @@
 
 #include <errno.h>
 
+
+i2cbus_t ext_i2cbus = {
+    .write = INPUT_I2C_Write,
+    .read = INPUT_I2C_Read
+};
+
 const char *fs_errors [] = 
 {"FR_OK",
 "FR_DISK_ERR",			

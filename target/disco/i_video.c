@@ -96,13 +96,13 @@ void I_StartTic(void)
             switch(evt){
                 case BTN_PRESSED:
                     event.type = ev_keydown;
-                    printf("Key %d, Event: %s\n", event.data1, "key down");
+                    //printf("Key %d, Event: %s\n", event.data1, "key down");
                     D_PostEvent(&event);
                     break;
 
                 case BTN_RELEASED:
                     event.type = ev_keyup;
-                    printf("Key %d, Event: %s\n", event.data1, "key up");
+                    //printf("Key %d, Event: %s\n", event.data1, "key up");
                     D_PostEvent(&event);
                     break;
             }        

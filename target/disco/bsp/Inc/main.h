@@ -32,6 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include "stm32f769i_discovery_ts.h"
 #include "stm32f769i_discovery_lcd.h"
 //#include "fatfs.h"
@@ -53,7 +54,9 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
+static inline void Error_Handler(void){
+  printf("%s, %s\n",__FILE__, __FUNCTION__);
+}
 
 /* USER CODE BEGIN EFP */
 

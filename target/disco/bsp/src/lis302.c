@@ -3,6 +3,14 @@
 #include "board.h"
 
 static i2cbus_t *i2cbus;
+
+input_drv_t input_drv_lis302 = {
+    lis302_Init,
+    lis302_read,
+    lis302_write,
+    lis302_ReadID
+};
+
 /**
  * 
  */
