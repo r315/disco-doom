@@ -1,12 +1,44 @@
 
 #include <stdio.h>
+#include <stdint.h>
 #include "input.h"
 #include "board.h"
 
-#define PB_VALUE ' '
+#define BTN_MAX             8
+#define BTN_UP_MASK         (1 << 0)
+#define BTN_DOWN_MASK       (1 << 1)
+#define BTN_LEFT_MASK       (1 << 2)
+#define BTN_RIGHT_MASK      (1 << 3)
+#define BTN_MID_MASK        (1 << 4)
+#define BTN1_MASK           (1 << 5)
+#define BTN2_MASK           (1 << 6)
+#define BTN3_MASK           (1 << 7)
 
 extern input_drv_t input_drv;
 extern i2cbus_t ext_i2cbus;
+
+
+
+typedef struct {
+	uint32_t scanned;
+	uint32_t last;
+	uint32_t counter;
+	uint32_t events;
+    uint32_t htime;
+}BUTTON_Controller;
+
+
+typedef struct{
+    uint8_t key;
+    uint8_t state;
+    uint8_t laststate;
+    uint8_t state_changed;
+}btnstate_t;
+
+//up, down, left, righ, mid, btn1, btn2, btn3
+const uint8_t btn_values[BTN_MAX] = {'w', 's', 172, 174, 0, 'e', 0, ' '};
+static btnstate_t inbtn[BTN_MAX];
+static uint8_t btn_nevents;
 
 void INPUT_Init(void)
 {
@@ -17,6 +49,14 @@ void INPUT_Init(void)
     INPUT_I2C_Init();
 
     input_drv.init(&ext_i2cbus);
+
+    for (uint8_t i = 0; i < BTN_MAX; i++)
+    {
+        inbtn[i].key = btn_values[i];
+        inbtn[i].state = BTN_EMPTY;
+        inbtn[i].laststate = BTN_EMPTY;
+    }
+    
 
 #ifdef ACCELEROMETER
     uint16_t (*func)(void);
@@ -33,8 +73,24 @@ void INPUT_Init(void)
 
 uint32_t INPUT_Read(uint32_t *dst, uint32_t size)
 {
+#ifdef IO_EXPANDER    
+    uint8_t raw_data;
+    uint32_t read = 0;    
+   
+    input_drv.read((uint8_t*)&raw_data, 1);
+
+    if(raw_data != 255){
+        *dst = ~raw_data;
+        //printf("BTN: %x\n", *dst);
+        read = 1;
+    }else{
+        *dst = 0;
+    }
+
+    return read;    
+#else
     int8_t raw_data[6], x, y;
-    static uint8_t key = 'a';
+    uint8_t buttons = 0;
     uint32_t read = 0;
 
     //if(vc_getCharNonBlocking((char*)&key)){
@@ -43,150 +99,112 @@ uint32_t INPUT_Read(uint32_t *dst, uint32_t size)
 
     if (BSP_PB_GetState(BUTTON_WAKEUP) == GPIO_PIN_SET)
     {
-        key = PB_VALUE;
+        buttons |= BTN3_MASK;
         read = 1; 
     }
-    
-    input_drv.read((uint8_t*)raw_data, 1);
-    
-    if(raw_data[0] != -1){
-        uint8_t btn = ~(uint8_t)raw_data[0];
-        printf("IO %x\n", btn);
-        if(btn & 1){
-            key = 'w';
-            read = 1;
-        }else if(btn & 2){
-            key = 's';
-            read = 1;
-        }else if(btn & 4){
-            key = 'a';
-            read = 1;
-        }else if(btn & 8){
-            key = 'd';
-            read = 1;
-        }
-    }
 
-     *dst = key;
-return read;
-
-    if(input_drv.read((uint8_t*)raw_data, sizeof(raw_data)) == 0){
-        // No new data, return previous data and state
-        *dst = key;
-        return 1;
+    if(input_drv.read((uint8_t*)raw_data, sizeof(raw_data)) == 0){        
+        *dst = buttons;
+        return read;
     }
 
     y = raw_data[0];
     x = raw_data[2];
-
-    //printf("%d,%d\n",x,y);
     
     if(y > 10){
-        key = 'w';
+        buttons |= BTN_UP_MASK;
         read = 1;
     }else if(y < -10){
-        key = 's';
+        buttons |= BTN_DOWN_MASK;
         read = 1;
     }
 
-    // if(x > 10){
-    //     *dst = 'a';
-    //     read = 1;
-    // }else if(x < -10){
-    //     *dst = 'd';
-    //     read = 1;
-    // }
-     *dst = key;   
+    if(x > 10){
+        buttons |= BTN_RIGHT_MASK;
+        read = 1;
+    }else if(x < -10){
+        buttons |= BTN_LEFT_MASK;
+        read = 1;
+    }
+    *dst = buttons;   
     return read;
+#endif
 }
 
 /**
  * Button handling
  *
  */
-static BUTTON_Controller __button = {
-    .scanned = BUTTON_EMPTY,
-    .last = BUTTON_EMPTY,
-    .events = BUTTON_EMPTY,
-    .htime = 2000};
+
+uint8_t btnState(btnstate_t *btn, uint8_t pressed){
+
+    btn->laststate = btn->state;
+
+    switch(btn->state){
+
+        case BTN_EMPTY:            
+            if (pressed){                
+                btn->state = BTN_PRESSED;
+            }
+            break;
+
+        case BTN_PRESSED:
+            if (pressed){
+                btn->state = BTN_HOLD;
+            }else{
+                btn->state = BTN_RELEASED;
+            }
+            break;
+
+        case BTN_HOLD:
+            if (!pressed){
+                btn->state = BTN_RELEASED;
+            }
+            break;
+
+        case BTN_RELEASED:
+            if (pressed){
+                btn->state = BTN_PRESSED;
+            }else{
+                btn->state = BTN_EMPTY;
+            }
+            break;
+        }
+
+    btn->state_changed = btn->laststate != btn->state;
+   /*  if(btn->state_changed){
+        char *msg = "";
+        switch(btn->state){
+            case BTN_PRESSED: msg = "pressed"; break;
+            case BTN_HOLD: msg = "hold"; break;
+            case BTN_RELEASED: msg = "released"; break;            
+        }
+        printf("%d, %s\n", btn->key, msg);
+    } */
+    return btn->state_changed;
+}
 
 int BUTTON_Read(void)
 {
     uint32_t scanned;
-
-    if (INPUT_Read(&scanned, 1) == 0)
+    btn_nevents = 0;
+    
+    INPUT_Read(&scanned, 1);
+    
+    for (uint8_t i = 0; i < BTN_MAX; i++, scanned >>= 1)
     {
-        scanned = BUTTON_EMPTY;  // no button, or button released
+        btn_nevents += btnState(inbtn + i, scanned & 1);        
     }
-
-    switch (__button.events)
-    {
-
-    case BUTTON_EMPTY:
-        //New key pressed
-        if (scanned != BUTTON_EMPTY && __button.last == BUTTON_EMPTY)
-        {
-            __button.scanned = scanned;
-            __button.last = scanned;
-            __button.events = BUTTON_PRESSED;
-            break;
-        }
-
-        //is Key still pressed?
-        if (scanned == __button.last)
-        {
-            break;
-        }
-
-        //was the key was released?
-        if (scanned == BUTTON_EMPTY && __button.last != BUTTON_EMPTY)
-        {
-            __button.scanned = __button.last;
-            __button.events = BUTTON_RELEASED;
-            break;
-        }
-        break;
-
-    case BUTTON_PRESSED:
-        //key was released
-        if (scanned == BUTTON_EMPTY)
-        {
-            __button.scanned = __button.last;
-            __button.events = BUTTON_RELEASED;
-            break;
-        }
-
-        //Key still pressed
-        if (scanned == __button.last)
-        {
-            // no new events occurred
-            __button.events = BUTTON_EMPTY;
-            break;
-        }
-
-        //TODO: handle multiple key presses
-        __button.scanned = scanned;
-        __button.last = scanned;
-        break;
-
-    case BUTTON_RELEASED:
-        __button.scanned = BUTTON_EMPTY;
-        __button.last = BUTTON_EMPTY;
-        __button.events = BUTTON_EMPTY;
-        break;
-
-    default:
-        break;
-    }
-    return __button.events;
+    return btn_nevents;
 }
 
-int BUTTON_GetScanned(void)
-{
-    return __button.scanned;
-}
-
-int BUTTON_GetEvent(void)
-{
-    return __button.events;
+int BUTTON_GetEvent(int *key){
+    for(uint8_t idx = 0; idx < BTN_MAX; idx++){
+        if(inbtn[idx].state_changed){
+            inbtn[idx].state_changed = 0;
+            *key = inbtn[idx].key;
+            return inbtn[idx].state;
+        }
+    }
+    return 0;
 }

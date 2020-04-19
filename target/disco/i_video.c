@@ -86,63 +86,28 @@ void I_ShutdownGraphics(void)
 void I_StartTic(void)
 {
     event_t event;
-    char tmp;
+    uint8_t evt;
 
     event.data1 = 0;
     event.data2 = 0;
     event.data3 = 0;
+    if(BUTTON_Read() != 0){
+        while((evt = BUTTON_GetEvent(&event.data1)) != 0){        
+            switch(evt){
+                case BTN_PRESSED:
+                    event.type = ev_keydown;
+                    printf("Key %d, Event: %s\n", event.data1, "key down");
+                    D_PostEvent(&event);
+                    break;
 
-    while(BUTTON_Read() != BUTTON_EMPTY){        
-        
-        switch (BUTTON_GetScanned()){          
-            case KEY_ESCAPE:
-                if(vc_getCharNonBlocking(&tmp)){
-                    switch(tmp){
-                        case '[':
-                           if(vc_getCharNonBlocking(&tmp)){
-                                switch(tmp){
-                                    case 'A':
-                                        event.data1 = KEY_UPARROW;
-                                        break;
-                                    case 'B':
-                                        event.data1 = KEY_DOWNARROW;
-                                        break;
-                                    case 'C':
-                                        event.data1 = KEY_RIGHTARROW;
-                                        break;
-                                    case 'D':
-                                        event.data1 = KEY_LEFTARROW;
-                                        break;
-                                    default:                                    
-                                        break;
-                                }
-                           }                           
-                        default:                            
-                            break;
-                    }
-                }
-                break;
-            default:
-                event.data1 = BUTTON_GetScanned() & 255;
-                break;
-        }
-        
-        switch(BUTTON_GetEvent()){
-            case BUTTON_PRESSED:
-                event.type = ev_keydown;
-                printf("Key %d, Event: %s\n", event.data1, "key down");
-                D_PostEvent(&event);
-                break;
-
-            case BUTTON_RELEASED:
-                event.type = ev_keyup;
-                printf("Key %d, Event: %s\n", event.data1, "key up");
-                D_PostEvent(&event);
-                break;
-        }
-        
-    }
-       
+                case BTN_RELEASED:
+                    event.type = ev_keyup;
+                    printf("Key %d, Event: %s\n", event.data1, "key up");
+                    D_PostEvent(&event);
+                    break;
+            }        
+        }     
+    }  
 }
 
 //

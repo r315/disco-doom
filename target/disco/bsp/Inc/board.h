@@ -10,8 +10,8 @@ typedef struct _i2cbus_t{
     uint32_t   (*write)(uint8_t Addr, uint8_t *Buffer, uint16_t Length);
 }i2cbus_t;
 
-#define IO_EXPANDER
-//#define ACCELEROMETER
+//#define IO_EXPANDER
+#define ACCELEROMETER
 
 #ifdef ACCELEROMETER
 #include "lis302.h"
@@ -19,20 +19,12 @@ typedef struct _i2cbus_t{
 #include "pcf8574.h"
 #endif
 
-typedef struct {
-	uint32_t scanned;
-	uint32_t last;
-	uint32_t counter;
-	uint32_t events;
-    uint32_t htime;
-}BUTTON_Controller;
-
 enum Benvent{
-    BUTTON_EMPTY = 0,
-    BUTTON_PRESSED,
-    BUTTON_RELEASED	
+    BTN_EMPTY = 0,
+    BTN_PRESSED,
+    BTN_HOLD,
+    BTN_RELEASED	
 };
-
 
 uint8_t vc_getCharNonBlocking(char *c);
 void OnError_Handler(uint32_t condition);
@@ -53,10 +45,10 @@ static i2cbus_t ext_i2cbus = {
 #ifdef ACCELEROMETER
 
 static input_drv_t input_drv = {
-    .init = lis302_Init,
-    .read = lis302_read,
-    .write = lis302_write,
-    .data = lis302_ReadID
+    lis302_Init,
+    lis302_read,
+    lis302_write,
+    lis302_ReadID
 };
 
 

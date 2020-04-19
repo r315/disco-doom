@@ -41,7 +41,7 @@ uint8_t data;
 	
 	// Check is has new data
 	if( (data & LIS302_STATUS_ZYXDA) == 0 ){
-		*(uint16_t*)dst = 0xFFFF;
+		//*(uint16_t*)dst = 0xFFFF;
 		return 0;
 	}
 

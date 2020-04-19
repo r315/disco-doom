@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include "board.h"
 
 /************************************
 LIS302D Pinout (Top View)

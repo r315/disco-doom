@@ -11,9 +11,8 @@ typedef struct {
 }input_drv_t;
 
 
-int BUTTON_GetScanned(void);
-int BUTTON_GetEvent(void);
 int BUTTON_Read(void);
+int BUTTON_GetEvent(int *key);
 
 void INPUT_Init(void);
 uint32_t INPUT_Read(uint32_t *dst, uint32_t size);

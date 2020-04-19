@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define PCF8574_I2C_ADDRESS   			0x40 //0x20 // 7-bit address
+#define PCF8574_I2C_ADDRESS   			0x40 // 8-bit address
 
 void pcf8574_Init(void *param);
 uint16_t pcf8574_Read(uint8_t *dst, uint16_t size);
