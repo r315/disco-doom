@@ -58,6 +58,7 @@ $(BSP_DIR)/src/input.c \
 $(BSP_DIR)/src/lis302.c \
 $(BSP_DIR)/src/pcf8574.c \
 $(BSP_DIR)/src/i2c.c \
+$(BSP_DIR)/src/audio.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dsi.c \
@@ -83,6 +84,7 @@ $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c_ex.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_exti.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_uart.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sd.c \
+$(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src//stm32f7xx_hal_sai.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src//stm32f7xx_ll_sdmmc.c \
 $(REPOSITORY_DIR)/Middlewares/Third_Party/FatFs/src/diskio.c \
 $(REPOSITORY_DIR)/Middlewares/Third_Party/FatFs/src/ff.c \
@@ -99,9 +101,9 @@ $(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery.c \
 $(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_lcd.c \
 $(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_sdram.c \
 $(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_sd.c \
-$(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_audio.c \
 $(REPOSITORY_DIR)/Drivers/BSP/Components/otm8009a/otm8009a.c \
 $(REPOSITORY_DIR)/Drivers/BSP/Components/wm8994/wm8994.c \
+#$(REPOSITORY_DIR)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_audio.c \
 
 DOOM_SOURCES = \
 $(wildcard $(DOOM_SOURCES_PATH)/*.c) \

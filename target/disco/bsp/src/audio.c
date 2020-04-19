@@ -1,69 +1,44 @@
-//#include "stm32f769i_discovery.h"
-//#include "stm32f769i_discovery_audio.h"
-//#include "audio.h"
-//#include "../Components/wm8994/wm8994.h"
-#include "main.h"
-//#include "math.h"
+#include "stm32f769i_discovery.h"
+#include "stm32f769i_discovery_audio.h"
+#include "audio.h"
+#include "wm8994.h"
 
-#define PI 3.14159265358979323846
-
-#define AUDIO_BUFF_SIZE 4096
-#define DEFAULT_VOLUME 20
-
-typedef void (*callback_t)(void *stream, uint32_t len);
+static audiospec_t *audio;
+static AUDIO_DrvTypeDef *drv;
+static DMA_HandleTypeDef hSaiDma;
 
 SAI_HandleTypeDef SaiHandle;
-AUDIO_DrvTypeDef *audio_drv;
-uint16_t *buffer_pos;
-uint16_t audio_buffer[AUDIO_BUFF_SIZE];
-uint32_t audio_buffer_len;
-uint32_t sample_rate;
-callback_t call_back;
 
-double sampleSquaWare(double f, double t);
-void AUD_HW_Init(uint32_t sr);
+uint16_t audio_buffer[AUDIO_MAX_BUFF_SIZE];
 
-AUDIO_DrvTypeDef *AUD_Init(uint32_t freq, uint8_t channels, uint32_t samples, callback_t callback)
-{
-    AUDIO_DrvTypeDef *drv = &wm8994_drv;
-    sample_rate = freq;
-    AUD_HW_Init(freq);
+void AUD_Init(audiospec_t *spec){
+    audio = spec;
+    drv = &wm8994_drv;   
+    spec->buf = audio_buffer; 
+
+    AUD_HW_Init(audio);
     /* Initialize audio driver */
     if (WM8994_ID != drv->ReadID(AUDIO_I2C_ADDRESS))
     {
         Error_Handler();
     }
-
     drv->Reset(AUDIO_I2C_ADDRESS);
 
-    if (0 != drv->Init(AUDIO_I2C_ADDRESS, OUTPUT_DEVICE_HEADPHONE, DEFAULT_VOLUME, sample_rate) || callback == NULL)
+    if (drv->Init(AUDIO_I2C_ADDRESS, OUTPUT_DEVICE_HEADPHONE, DEFAULT_VOLUME, audio->freq) != 0 || audio->callback == NULL)
     {
         Error_Handler();
     }
-
-    audio_drv = drv;
-    audio_buffer_len = samples;
-    call_back = callback;
-    buffer_pos = audio_buffer;
-    return drv;
 }
 
-void AUD_Start()
+void AUD_Start(audiospec_t *spec)
 {
-
-    for (int i = 0; i < AUDIO_BUFF_SIZE; i += 2)
-    {
-        //audio_buffer[i] = ((i >> DIV) & 1) * 0x1000;     //2kHz on right
-        //audio_buffer[i + 1] = ((i >> DIV) & 1) * 0x1000; //2kHz on left
-    }
-
     /* Start the playback */
-    if (audio_drv->Play(AUDIO_I2C_ADDRESS, NULL, 0) != 0)
+    if (drv->Play(AUDIO_I2C_ADDRESS, NULL, 0) != 0)
     {
         Error_Handler();
     }
 
-    if (HAL_SAI_Transmit_DMA(&SaiHandle, (uint8_t *)buffer_pos, audio_buffer_len) != HAL_OK)
+    if (HAL_SAI_Transmit_DMA(&SaiHandle, (uint8_t *)spec->buf, spec->size) != HAL_OK)
     {
         Error_Handler();
     }
@@ -74,11 +49,11 @@ void AUD_Start()
   * @param  None
   * @retval None
   */
-void AUD_HW_Init(uint32_t AudioFreq)
+void AUD_HW_Init(audiospec_t *spec)
 {
     RCC_PeriphCLKInitTypeDef RCC_PeriphCLKInitStruct;
 
-    if((AudioFreq == AUDIO_FREQUENCY_11K) || (AudioFreq == AUDIO_FREQUENCY_22K) || (AudioFreq == AUDIO_FREQUENCY_44K)){
+    if((spec->freq == AUDIO_FREQUENCY_11K) || (spec->freq == AUDIO_FREQUENCY_22K) || (spec->freq == AUDIO_FREQUENCY_44K)){
         /* Configure PLLSAI prescalers */
         /* PLLSAI_VCO: VCO_429M 
         SAI_CLK(first level) = PLLSAI_VCO/PLLSAIQ = 429/2 = 214.5 Mhz
@@ -112,7 +87,7 @@ void AUD_HW_Init(uint32_t AudioFreq)
 
     __HAL_SAI_DISABLE(&SaiHandle);
 
-    SaiHandle.Init.AudioFrequency = AudioFreq;
+    SaiHandle.Init.AudioFrequency = spec->freq;
     SaiHandle.Init.AudioMode = SAI_MODEMASTER_TX;
     SaiHandle.Init.Synchro = SAI_ASYNCHRONOUS;
     SaiHandle.Init.OutputDrive = SAI_OUTPUTDRIVE_ENABLE;
@@ -144,6 +119,80 @@ void AUD_HW_Init(uint32_t AudioFreq)
 }
 
 /**
+  * @brief  SAI MSP Init.
+  * @param  hsai : pointer to a SAI_HandleTypeDef structure that contains
+  *                the configuration information for SAI module.
+  * @retval None
+  */
+void HAL_SAI_MspInit(SAI_HandleTypeDef *hsai)
+{
+  GPIO_InitTypeDef  GPIO_Init;
+  
+  /* Enable SAI1 clock */
+  __HAL_RCC_SAI1_CLK_ENABLE();
+  
+  /* Configure GPIOs used for SAI2 */
+  AUDIO_SAIx_MCLK_ENABLE();
+  AUDIO_SAIx_SCK_ENABLE();
+  AUDIO_SAIx_FS_ENABLE();
+  AUDIO_SAIx_SD_ENABLE();
+  
+  GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+  GPIO_Init.Pull      = GPIO_NOPULL;
+  GPIO_Init.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+  
+  GPIO_Init.Alternate = AUDIO_SAIx_FS_AF;
+  GPIO_Init.Pin       = AUDIO_SAIx_FS_PIN;
+  HAL_GPIO_Init(AUDIO_SAIx_FS_GPIO_PORT, &GPIO_Init);
+  GPIO_Init.Alternate = AUDIO_SAIx_SCK_AF;
+  GPIO_Init.Pin       = AUDIO_SAIx_SCK_PIN;
+  HAL_GPIO_Init(AUDIO_SAIx_SCK_GPIO_PORT, &GPIO_Init);
+  GPIO_Init.Alternate = AUDIO_SAIx_SD_AF;
+  GPIO_Init.Pin       = AUDIO_SAIx_SD_PIN;
+  HAL_GPIO_Init(AUDIO_SAIx_SD_GPIO_PORT, &GPIO_Init);
+  GPIO_Init.Alternate = AUDIO_SAIx_MCLK_AF;
+  GPIO_Init.Pin       = AUDIO_SAIx_MCLK_PIN;
+  HAL_GPIO_Init(AUDIO_SAIx_MCLK_GPIO_PORT, &GPIO_Init);
+  
+  /* Configure DMA used for SAI2 */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  if(hsai->Instance == AUDIO_SAIx)
+  {
+    hSaiDma.Init.Channel             = DMA_CHANNEL_10;
+    hSaiDma.Init.Direction           = DMA_MEMORY_TO_PERIPH;
+    hSaiDma.Init.PeriphInc           = DMA_PINC_DISABLE;
+    hSaiDma.Init.MemInc              = DMA_MINC_ENABLE;
+    hSaiDma.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hSaiDma.Init.MemDataAlignment    = DMA_MDATAALIGN_HALFWORD;
+    hSaiDma.Init.Mode                = DMA_CIRCULAR;
+    hSaiDma.Init.Priority            = DMA_PRIORITY_HIGH;
+    hSaiDma.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;      
+    hSaiDma.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    hSaiDma.Init.MemBurst            = DMA_MBURST_SINGLE;         
+    hSaiDma.Init.PeriphBurst         = DMA_PBURST_SINGLE;         
+
+    /* Select the DMA instance to be used for the transfer : DMA2_Stream6 */
+    hSaiDma.Instance                 = DMA2_Stream6;
+  
+    /* Associate the DMA handle */
+    __HAL_LINKDMA(hsai, hdmatx, hSaiDma);
+
+    /* Deinitialize the Stream for new transfer */
+    HAL_DMA_DeInit(&hSaiDma);
+
+    /* Configure the DMA Stream */
+    if (HAL_OK != HAL_DMA_Init(&hSaiDma))
+    {
+      Error_Handler();
+    }
+  }
+	
+  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0x01, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
+}
+
+/**
   * @brief Tx Transfer completed callbacks.
   * @param  hsai : pointer to a SAI_HandleTypeDef structure that contains
   *                the configuration information for SAI module.
@@ -151,7 +200,7 @@ void AUD_HW_Init(uint32_t AudioFreq)
   */
 void HAL_SAI_TxCpltCallback(SAI_HandleTypeDef *hsai)
 {
-    call_back(&audio_buffer[audio_buffer_len / 2], audio_buffer_len/2);
+    audio->callback(audio->buf + (audio->size >> 1), audio->size >> 1);
 }
 
 /**
@@ -162,5 +211,5 @@ void HAL_SAI_TxCpltCallback(SAI_HandleTypeDef *hsai)
   */
 void HAL_SAI_TxHalfCpltCallback(SAI_HandleTypeDef *hsai)
 {    
-    call_back(audio_buffer, audio_buffer_len/2);
+    audio->callback(audio->buf, audio->size >> 1);
 }

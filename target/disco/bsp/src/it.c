@@ -36,6 +36,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 extern LTDC_HandleTypeDef hltdc_discovery;
+extern SAI_HandleTypeDef SaiHandle;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -224,6 +225,23 @@ void LTDC_IRQHandler(void)
 void USART6_IRQHandler(void){
 
 }
+
+/******************************************************************************/
+/*                 STM32F7xx Peripherals Interrupt Handlers                   */
+/*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
+/*  available peripheral interrupt handler's name please refer to the startup */
+/*  file (startup_stm32f7xx.s).                                               */
+/******************************************************************************/
+/**
+  * @brief  This function handles SAI DMA interrupt request.
+  * @param  None
+  * @retval None
+  */
+void DMA2_Stream6_IRQHandler(void)
+{ 
+  HAL_DMA_IRQHandler(SaiHandle.hdmatx);  
+}
+
 /**
   * @}
   */
