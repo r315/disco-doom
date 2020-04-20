@@ -14,6 +14,7 @@ typedef struct audiospec{
     uint32_t size;
     uint32_t volume;
     uint16_t *buf;
+    uint16_t playing;
     void (*callback)(void *stream, uint32_t len);
 }audiospec_t;
 

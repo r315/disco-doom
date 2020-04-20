@@ -41,7 +41,6 @@ static const char
 #define NUM_CHANNELS    8
 #define SAMPLERATE      11025 // Hz
 #define SAMPLECOUNT     512
-#define DEFAULT_VOLUME  40
 
 // Needed for calling the actual sound output.
 static audiospec_t specs;
@@ -156,7 +155,7 @@ void *getsfx(char *sfxname, int *len)
 //
 int addsfx(int sfxid, int volume, int step, int seperation)
 {   
-static unsigned short	handlenums = 0;
+    static unsigned short	handlenums = 0;
  
     int		i;
     int		rc = -1;
@@ -284,15 +283,46 @@ static unsigned short	handlenums = 0;
 //
 void I_SetChannels()
 {
+    // Init internal lookups (raw data, mixing buffer, channels).
+    // This function sets up internal lookups used during
+    //  the mixing process. 
+    int		i;
+    int		j;
+    
+    int*	steptablemid = steptable + 128;
+  
+    // Okay, reset internal mixing channels to zero.
+    /*for (i=0; i<NUM_CHANNELS; i++)
+    {
+        channels[i] = 0;
+    }*/
+
+    // This table provides step widths for pitch parameters.
+    // I fail to see that this is currently used.
+    for (i=-128 ; i<128 ; i++){
+        steptablemid[i] = (int)(pow(2.0, (i/64.0))*65536.0);
+    }  
+  
+    // Generates volume lookup tables
+    //  which also turn the unsigned samples
+    //  into signed samples.
+    for (i=0 ; i<128 ; i++){
+        for (j=0 ; j<256 ; j++) {
+            vol_lookup[i*256+j] = (i*(j-128)*256)/127;
+            //fprintf(stderr, "vol_lookup[%d*256+%d] = %d\n", i, j, vol_lookup[i*256+j]);
+        }
+    }
 }
 
 void I_SetSfxVolume(int volume)
 {
+    printf("%s\n",__FUNCTION__);
 }
 
 // MUSIC API - dummy. Some code from DOS version.
 void I_SetMusicVolume(int volume)
 {
+    printf("%s\n",__FUNCTION__);
 }
 
 //
@@ -301,7 +331,9 @@ void I_SetMusicVolume(int volume)
 //
 int I_GetSfxLumpNum(sfxinfo_t *sfx)
 {
-    return 0;
+    char namebuf[9];
+    sprintf(namebuf, "ds%s", sfx->name);
+    return W_GetNumForName(namebuf);
 }
 
 //
@@ -336,11 +368,12 @@ int I_StartSound(int id, int vol, int sep, int pitch, int priority)
 
 void I_StopSound(int handle)
 {
+    printf("%s\n",__FUNCTION__);
 }
 
 int I_SoundIsPlaying(int handle)
 {
-
+    printf("%s\n",__FUNCTION__);
     return 0;
 }
 
@@ -357,7 +390,96 @@ int I_SoundIsPlaying(int handle)
 //
 void I_UpdateSound(void *stream, uint32_t len)
 {
-        //memcpy(stream, I_InitSound, 512);
+    // Mix current sound data.
+    // Data, from raw sound, for right and left.
+    unsigned int	sample;
+    int		dl;
+    int		dr;
+  
+    // Pointers in audio stream, left, right, end.
+    signed short*		leftout;
+    signed short*		rightout;
+    signed short*		leftend;
+    // Step in stream, left and right, thus two.
+    int				step;
+
+    // Mixing channel index.
+    int				chan;
+    
+    // Left and right channel
+    //  are in audio stream, alternating.
+    leftout = (signed short *)stream;
+    rightout = ((signed short *)stream) + 1;
+    step = 2;
+
+    // Determine end, for left channel only
+    //  (right channel is implicit).
+    leftend = leftout + len * step;
+
+    // Mix sounds into the mixing buffer.
+    // Loop over step * SAMPLECOUNT,
+    // that is 512 values for two channels.
+    while (leftout != leftend)
+    {
+	    // Reset left/right value. 
+	    dl = 0;
+	    dr = 0;
+
+	    // Love thy L2 chache - made this a loop.
+	    // Now more channels could be set at compile time
+	    //  as well. Thus loop those  channels.
+	    for ( chan = 0; chan < NUM_CHANNELS; chan++ )
+	    {
+	        // Check channel, if active.
+	        if (channels[ chan ])
+	        {
+		        // Get the raw data from the channel. 
+		        sample = *channels[ chan ];
+		        // Add left and right part
+		        //  for this channel (sound)
+		        //  to the current data.
+		        // Adjust volume accordingly.
+		        dl += channelleftvol_lookup[ chan ][ sample ];
+		        dr += channelrightvol_lookup[ chan ][ sample ];
+		        // Increment index ???
+		        channelstepremainder[ chan ] += channelstep[ chan ];
+		        // MSB is next sample???
+		        channels[ chan ] += channelstepremainder[ chan ] >> 16;
+		        // Limit to LSB???
+		        channelstepremainder[ chan ] &= 65536 - 1;
+		        // Check whether we are done.
+		        if (channels[ chan ] >= channelsend[ chan ]){
+		            channels[ chan ] = 0;
+                }
+	        }
+	    }
+	
+	    // Clamp to range. Left hardware channel.
+	    // Has been char instead of short.
+	    // if (dl > 127) *leftout = 127;
+	    // else if (dl < -128) *leftout = -128;
+	    // else *leftout = dl;
+	    if (dl > 0x7fff){
+	        *leftout = 0x7fff;
+        }else if (dl < -0x8000){
+	        *leftout = -0x8000;
+        }else{
+	        *leftout = dl;
+        }
+
+	    // Same for right hardware channel.
+	    if (dr > 0x7fff){
+	        *rightout = 0x7fff;
+        }else if (dr < -0x8000){
+	        *rightout = -0x8000;
+        }else{
+	        *rightout = dr;
+        }
+	
+        // Increment current pointers in stream
+	    leftout += step;
+	    rightout += step;
+    }
 }
 
 void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
@@ -372,6 +494,7 @@ void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
 
 void I_ShutdownSound(void)
 {
+    printf("%s\n",__FUNCTION__);
 }
 
 void I_InitSound()
@@ -381,8 +504,7 @@ void I_InitSound()
     specs.size = SAMPLECOUNT;
     specs.callback = I_UpdateSound;
     specs.volume = DEFAULT_VOLUME;
-    specs.buf = I_InitSound;
-
+    
     printf("I_InitSound: ");
     AUD_Init(&specs);
     printf("configured audio device with %d samples/slice\n", specs.size);
@@ -409,6 +531,7 @@ void I_InitSound()
 
     printf("I_InitSound: pre-cached all sound data\n");
     printf("I_InitSound: sound module ready\n");
+    //AUD_Start(&specs);
 }
 
 //

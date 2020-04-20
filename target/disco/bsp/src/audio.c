@@ -28,10 +28,15 @@ void AUD_Init(audiospec_t *spec){
     {
         Error_Handler();
     }
+
+    spec->playing = 0;
 }
 
 void AUD_Start(audiospec_t *spec)
 {
+    if(spec->playing){
+      return;
+    }
     /* Start the playback */
     if (drv->Play(AUDIO_I2C_ADDRESS, NULL, 0) != 0)
     {
@@ -42,6 +47,8 @@ void AUD_Start(audiospec_t *spec)
     {
         Error_Handler();
     }
+
+    spec->playing = 1;
 }
 
 /**
