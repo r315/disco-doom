@@ -54,9 +54,7 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-static inline void Error_Handler(void){
-  printf("%s, %s\n",__FILE__, __FUNCTION__);
-}
+void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 

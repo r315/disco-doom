@@ -309,3 +309,10 @@ FRESULT scanFiles (char* path)
 
     return res;
 }
+
+void Error_Handler(void){
+  printf("%s, %s\n",__FILE__, __FUNCTION__);
+  while(1){
+      asm("nop");
+  }
+}
