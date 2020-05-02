@@ -71,15 +71,62 @@ static FIL files[MAX_FILES];
 static FIL *openfiles[MAX_FILES];
 extern UART_HandleTypeDef huart1;
 
+const char *ff_errors [] = {
+    "FR_OK",
+    "FR_DISK_ERR",			
+    "FR_INT_ERR",				
+    "FR_NOT_READY",			
+    "FR_NO_FILE",				
+    "FR_NO_PATH",				
+    "FR_INVALID_NAME",		
+    "FR_DENIED",				
+    "FR_EXIST",				
+    "FR_INVALID_OBJECT",		
+    "FR_WRITE_PROTECTED",		
+    "FR_INVALID_DRIVE",		
+    "FR_NOT_ENABLED",			
+    "FR_NO_FILESYSTEM",		
+    "FR_MKFS_ABORTED",		
+    "FR_TIMEOUT",			
+    "FR_LOCKED",				
+    "FR_NOT_ENOUGH_CORE",		
+    "FR_TOO_MANY_OPEN_FILES",	
+    "FR_INVALID_PARAMETER"
+};
+
+void ff_error(const char *fname, FRESULT err){
+    if(err){
+        printf("%s: (%d) %s\n", fname, err, ff_errors[err]);
+    }
+}
+
 
 /* Functions */
 uint32_t memavail(void){
 	return (SDRAM_DEVICE_ADDR + SDRAM_DEVICE_SIZE) - (uint32_t)heap_end;
 }
 
-void initialise_monitor_handles()
-{
+caddr_t _sbrk(int incr)
+{	
+	char *prev_heap_end;
 
+	if (heap_end == 0)
+	{
+		heap_end = (char *)SDRAM_DEVICE_ADDR + (SDRAM_DEVICE_SIZE >> 1);
+	}
+
+	prev_heap_end = heap_end;
+	if ((uint32_t)(heap_end + incr) > (SDRAM_DEVICE_ADDR + SDRAM_DEVICE_SIZE))
+	{
+		//		write(1, "Heap and stack collision\n", 25);
+		//		abort();
+		errno = ENOMEM;
+		return (caddr_t)-1;
+	}
+
+	heap_end += incr;
+
+	return (caddr_t)prev_heap_end;
 }
 
 int __getpid(void)
@@ -106,27 +153,28 @@ int _read(int file, char *ptr, int len)
 	FRESULT fr;
 	UINT br;	
 
-	if (file == STDIN_FILENO){
+	if (file == STDOUT_FILENO){
+		errno = EBADF;
 		return -1;
 	}
 
 	// Skip system files
 	file >>= 4;
 
-	if(file > MAX_FILES){		
+	if(file > MAX_FILES){
+		errno = EMFILE;
 		return -1;
 	}
 
 	fr = f_read(&files[file - 1], ptr, len, &br);
 
-	if (fr == FR_OK)
+	if (fr != FR_OK)
 	{
-		return br;
+		ff_error(__FUNCTION__, fr);
+		return -1;
 	}
-
-	return -1;
+	return br;
 }
-
 
 int _write(int file, char *data, int len)
 {
@@ -147,36 +195,13 @@ int _write(int file, char *data, int len)
 	return -1;
 }
 
-caddr_t _sbrk(int incr)
-{	
-	char *prev_heap_end;
-
-	if (heap_end == 0)
-	{
-		heap_end = (char *)SDRAM_DEVICE_ADDR + (SDRAM_DEVICE_SIZE >> 1);
-	}
-
-	prev_heap_end = heap_end;
-	if ((uint32_t)(heap_end + incr) > (SDRAM_DEVICE_ADDR + SDRAM_DEVICE_SIZE))
-	{
-		//		write(1, "Heap and stack collision\n", 25);
-		//		abort();
-		errno = ENOMEM;
-		return (caddr_t)-1;
-	}
-
-	heap_end += incr;
-
-	return (caddr_t)prev_heap_end;
-}
-
 int _close(int file)
 {
 	// Skip system files
 	file >>= 4;
 
 	if(file > MAX_FILES){		
-		return -1;
+		return FR_TOO_MANY_OPEN_FILES;
 	}
 
 	openfiles[file - 1] = NULL;
@@ -201,23 +226,23 @@ int _lseek(int file, int ptr, int dir)
 {
 
 	if(ptr < 0 || dir == SEEK_CUR)
-		return -1;
+		return FR_INVALID_PARAMETER;
 
 	// Skip system files
 	file >>= 4;
 
 	if(file > MAX_FILES){		
-		return -1;
+		return FR_TOO_MANY_OPEN_FILES;
 	}
 
 	FRESULT fr = f_lseek(&files[file - 1], ptr);
 
 	if(fr != FR_OK)
 	{
-		return -1;
+		return fr;
 	}
 
-	return 0;
+	return FR_OK;
 }
 
 int _open(char *path, int flags, ...)

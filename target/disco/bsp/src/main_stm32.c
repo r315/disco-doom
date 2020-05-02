@@ -14,28 +14,6 @@ i2cbus_t ext_i2cbus = {
     .read = INPUT_I2C_Read
 };
 
-const char *fs_errors [] = 
-{"FR_OK",
-"FR_DISK_ERR",			
-"FR_INT_ERR",				
-"FR_NOT_READY",			
-"FR_NO_FILE",				
-"FR_NO_PATH",				
-"FR_INVALID_NAME",		
-"FR_DENIED",				
-"FR_EXIST",				
-"FR_INVALID_OBJECT",		
-"FR_WRITE_PROTECTED",		
-"FR_INVALID_DRIVE",		
-"FR_NOT_ENABLED",			
-"FR_NO_FILESYSTEM",		
-"FR_MKFS_ABORTED",		
-"FR_TIMEOUT",				
-"FR_LOCKED",				
-"FR_NOT_ENOUGH_CORE",		
-"FR_TOO_MANY_OPEN_FILES",	
-"FR_INVALID_PARAMETER"};
-
 static void SystemClock_Config(void);
 void Serial_Init(void);
 void vc_putchar(char c);
@@ -54,21 +32,21 @@ void OnError_Handler(uint32_t condition)
     }
 }
 
-int32_t fatFsInit(void)
+FRESULT fatFsInit(void)
 {
 
     if (FATFS_LinkDriver(&SD_Driver, SDPath) != 0)
     {
         printf("FATFS Link Driver fail\n");
-        return -1;
+        return FR_DISK_ERR;
     }
 
     FRESULT fr = f_mount(&SDFatFS, (TCHAR const *)SDPath, 1);
 
     if (fr != FR_OK)
     {
-        printf("FATFS Fail to mount: %s [%s]\n",SDPath, fs_errors[fr]);
-        return -1;
+        printf("FATFS Fail to mount: %s\n",SDPath);
+        return fr;
     }
 
     printf("FatFs succsessfully mounted, type: %d\n", SDFatFS.fs_type);
@@ -78,7 +56,7 @@ int32_t fatFsInit(void)
     //scan_files(buff);
 
     //FATFS_UnLinkDriver(SDPath);
-    return 0;
+    return FR_OK;
 }
 
 
@@ -121,6 +99,7 @@ int main(void)
 
     Serial_Init();
     printf("\e[2J\r");
+    printf("\nCPU Clock: %dMHz \n", (int)(SystemCoreClock/1000000));
 
     BSP_LED_Init(LED1);
     BSP_LED_Init(LED2);
@@ -137,10 +116,8 @@ int main(void)
 
     INPUT_Init();
 
-    uint32_t *dram = (uint32_t*)SDRAM_DEVICE_ADDR;
-
+    printf("Memmory region %08X:%08X\n", (int)SDRAM_DEVICE_ADDR, (int)(SDRAM_DEVICE_ADDR | SDRAM_DEVICE_SIZE));
     printf("Memory available: %d\n", (int)memavail());
-    printf("Memmory region %08X:%08X\n", (int)dram, (int)*dram);
     printf("Starting DOOM...\n\n");
     
     D_DoomMain();
