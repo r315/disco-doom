@@ -24,28 +24,26 @@
 static const char
     rcsid[] = "$Id: i_unix.c,v 1.5 1997/02/03 22:45:10 b1 Exp $";
 
-//#include <math.h>
 #include <stdlib.h>
-
-#include "audio.h"
-#include "z_zone.h"
-//#include "m_swap.h"
-#include "i_system.h"
-#include "i_sound.h"
-//#include "m_argv.h"
-//#include "m_misc.h"
-#include "w_wad.h"
+#include <math.h>
 
 #include "doomdef.h"
+#include "audio.h"
+#include "z_zone.h"
+#include "i_system.h"
+#include "i_sound.h"
+#include "w_wad.h"
 
 #define NUM_CHANNELS    8
 #define SAMPLERATE      11025 // Hz
 #define SAMPLECOUNT     512
 
+#define NO_AUDIO
+
+
 // Needed for calling the actual sound output.
 static audiospec_t specs;
 int lengths[NUMSFX];
-
 // The channel step amount...
 unsigned int channelstep[NUM_CHANNELS];
 // ... and a 0.16 bit remainder of last step.
@@ -73,7 +71,6 @@ int	steptable[256];
 int	steptable[256];
 // Volume lookups.
 int	*vol_lookup;
-
 // Hardware left and right channel volume lookup.
 int *channelleftvol_lookup[NUM_CHANNELS];
 int *channelrightvol_lookup[NUM_CHANNELS];
@@ -271,6 +268,16 @@ int addsfx(int sfxid, int volume, int step, int seperation)
     // You tell me.
     return rc; 
 }
+//
+// Retrieve the raw data lump index
+//  for a given SFX name.
+//
+int I_GetSfxLumpNum(sfxinfo_t *sfx)
+{
+    char namebuf[9];
+    sprintf(namebuf, "ds%s", sfx->name);
+    return W_GetNumForName(namebuf);
+}
 
 //
 // SFX API
@@ -300,7 +307,8 @@ void I_SetChannels()
     // This table provides step widths for pitch parameters.
     // I fail to see that this is currently used.
     for (i=-128 ; i<128 ; i++){
-        steptablemid[i] = (int)(pow(2.0, (i/64.0))*65536.0);
+        steptablemid[i] = (int)(pow(2.0, (i/64.0)) * 65536.0);
+        //printf("steptable[%d] = %d\n", i, steptablemid[i]);
     }  
   
     // Generates volume lookup tables
@@ -316,7 +324,7 @@ void I_SetChannels()
 
 void I_SetSfxVolume(int volume)
 {
-    printf("%s\n",__FUNCTION__);
+    printf("I_SOUND: %s %d\n",__FUNCTION__, volume);
 }
 
 // MUSIC API - dummy. Some code from DOS version.
@@ -325,56 +333,16 @@ void I_SetMusicVolume(int volume)
     printf("%s\n",__FUNCTION__);
 }
 
-//
-// Retrieve the raw data lump index
-//  for a given SFX name.
-//
-int I_GetSfxLumpNum(sfxinfo_t *sfx)
-{
-    char namebuf[9];
-    sprintf(namebuf, "ds%s", sfx->name);
-    return W_GetNumForName(namebuf);
-}
-
-//
-// Starting a sound means adding it
-//  to the current list of active sounds
-//  in the internal channels.
-// As the SFX info struct contains
-//  e.g. a pointer to the raw data,
-//  it is ignored.
-// As our sound handling does not handle
-//  priority, it is ignored.
-// Pitching (that is, increased speed of playback)
-//  is set, but currently not used by mixing.
-//
-int I_StartSound(int id, int vol, int sep, int pitch, int priority)
-{
-    // UNUSED
-    priority = 0;
-  
-    // Debug.
-    //fprintf( stderr, "starting sound %d", id );
-    
-    // Returns a handle (not used).
-//SDL_LockAudio();
-    id = addsfx( id, vol, steptable[pitch], sep );
-//SDL_UnlockAudio();
-
-    // fprintf( stderr, "/handle is %d\n", id );
-    AUD_Start(&specs);
-    return id;
-}
-
 void I_StopSound(int handle)
 {
     printf("%s\n",__FUNCTION__);
+    AUDIO_Stop(&specs);
 }
 
 int I_SoundIsPlaying(int handle)
 {
-    printf("%s\n",__FUNCTION__);
-    return 0;
+    // Ouch.
+    return gametic < handle;
 }
 
 //
@@ -453,7 +421,7 @@ void I_UpdateSound(void *stream, uint32_t len)
                 }
 	        }
 	    }
-	
+
 	    // Clamp to range. Left hardware channel.
 	    // Has been char instead of short.
 	    // if (dl > 127) *leftout = 127;
@@ -474,8 +442,7 @@ void I_UpdateSound(void *stream, uint32_t len)
 	        *rightout = -0x8000;
         }else{
 	        *rightout = dr;
-        }
-	
+        }	
         // Increment current pointers in stream
 	    leftout += step;
 	    rightout += step;
@@ -497,6 +464,43 @@ void I_ShutdownSound(void)
     printf("%s\n",__FUNCTION__);
 }
 
+
+//
+// Starting a sound means adding it
+//  to the current list of active sounds
+//  in the internal channels.
+// As the SFX info struct contains
+//  e.g. a pointer to the raw data,
+//  it is ignored.
+// As our sound handling does not handle
+//  priority, it is ignored.
+// Pitching (that is, increased speed of playback)
+//  is set, but currently not used by mixing.
+//
+int I_StartSound(int id, int vol, int sep, int pitch, int priority)
+{
+    // UNUSED
+    priority = 0;
+  
+    // Debug.
+    printf("I_Sound: Starting sound %d\n", id );
+    
+    // Returns a handle (not used).
+//SDL_LockAudio();
+    id = addsfx( id, vol, steptable[pitch], sep );
+//SDL_UnlockAudio();
+
+    // fprintf( stderr, "/handle is %d\n", id );
+#if defined(NO_AUDIO)
+    AUDIO_Play(&specs);
+#endif
+    return id;
+}
+
+//
+// Initialises audio driver and precaches audio samples
+//
+// 
 void I_InitSound()
 {
     specs.channels = 1;
@@ -506,8 +510,10 @@ void I_InitSound()
     specs.volume = DEFAULT_VOLUME;
     
     printf("I_InitSound: ");
-    AUD_Init(&specs);
-    printf("configured audio device with %d samples/slice\n", specs.size);
+#if defined(NO_AUDIO)
+    AUDIO_Init(&specs);
+#endif
+    printf("configured audio device with %d samples/slice\n", (int)specs.size);
     
     vol_lookup = (int*)malloc(128 * 256 * sizeof(int));
 
