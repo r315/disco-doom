@@ -33,7 +33,7 @@ BUILD_DIR =build
 ifeq ($(shell uname -s), Linux)
 REPOSITORY_DIR = $(HOME)/STM32Cube/Repository/STM32Cube_FW_F7_V1.15.0
 else
-REPOSITORY_DIR =C:/Users/hmr/STM32Cube/Repository/STM32Cube_FW_F7_V1.15.0
+REPOSITORY_DIR =C:/Users/hmr/STM32Cube/Repository/STM32Cube_FW_F7_V1.16.0
 endif
 BSP_DIR =bsp
 DOOM_SOURCES_PATH =../../src
@@ -107,10 +107,10 @@ $(REPOSITORY_DIR)/Drivers/BSP/Components/wm8994/wm8994.c \
 
 DOOM_SOURCES = \
 $(wildcard $(DOOM_SOURCES_PATH)/*.c) \
-../../i_system.c \
-../i_sound.c \
-../i_net.c \
-../i_video.c \
+../i_system.c \
+i_sound.c \
+i_net.c \
+i_video.c \
 
 C_SOURCES +=$(BSP_C_SOURCES) $(DOOM_SOURCES) 
 #######################################
@@ -204,7 +204,7 @@ LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,--gc-sect
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
 
 flash-openocd: all
-	openocd -f $(BSP_DIR)/startup/STM32F769-DISCO.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	openocd -f "$(BSP_DIR)/startup/stm32f769-disco.cfg" -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 aslist: $(BUILD_DIR)/$(TARGET).elf
 	@$(OBJDUMP) -D $< > $(BUILD_DIR)/$(TARGET).lst
@@ -251,5 +251,8 @@ clean:
 # dependencies
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
-
+ifeq ($(GCC_COLORS), )
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+#unexport GCC_COLORS
+endif
 # *** EOF ***

@@ -194,7 +194,6 @@ void I_InitGraphics(void)
 {    
     OnError_Handler(BSP_LCD_Init() != LCD_OK);
 
-
     BSP_LCD_LayerDefaultInit(DMA2D_FOREGROUND_LAYER, LCD_FB_START_ADDRESS);     
     BSP_LCD_SelectLayer(DMA2D_FOREGROUND_LAYER);
 

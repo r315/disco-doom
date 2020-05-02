@@ -335,19 +335,23 @@ void W_ReadLump
 	
     if (l->handle == -1)
     {
-	// reloadable file, so use open / read / close
-	if ( (handle = fopen (reloadname,"rb")) == NULL)
-	    I_Error ("W_ReadLump: couldn't open %s",reloadname);
+	    // reloadable file, so use open / read / close
+	    if ( (handle = fopen (reloadname,"rb")) == NULL){
+	        I_Error ("W_ReadLump: couldn't open %s",reloadname);
+        }
     }
     else
 	handle = (FILE *)l->handle;
 		
-    fseek (handle, l->position, SEEK_SET);
+    if((c = fseek (handle, l->position, SEEK_SET))){
+        I_Error ("W_ReadLump: fail seek to %d", l->position);       
+    }
+
     c = fread (dest, 1, l->size, handle);
 
-    if (c < l->size)
-	I_Error ("W_ReadLump: only read %i of %i on lump %i",
-		 c,l->size,lump);	
+    if (c < l->size){
+	    I_Error ("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
+    }
 
     if (l->handle == -1)
 	fclose (handle);

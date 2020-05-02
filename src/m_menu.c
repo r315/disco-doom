@@ -523,6 +523,9 @@ void M_ReadSaveStrings(void)
 	}
 	count = fread (&savegamestrings[i], 1, SAVESTRINGSIZE, handle);
 	fclose (handle);
+    if (count != SAVESTRINGSIZE){
+	    I_Error ("M_ReadSaveStrings: Couldn't read save game strings");
+    }
 	LoadMenu[i].status = 1;
     }
 }

@@ -36,7 +36,7 @@ VPATH +=$(dir $(CSRCS))
 
 ifeq ("$(TARGET)", "disco")
 all:	
-	$(MAKE) -C $(PLATFORM_PATH) BUILD_DIR=$(OUTPUT_DIR)
+	"$(MAKE)" -C $(PLATFORM_PATH) BUILD_DIR=$(OUTPUT_DIR)
 
 else
 all: $(TARGET)

@@ -12,8 +12,8 @@ typedef struct _i2cbus_t{
     uint32_t   (*write)(uint8_t Addr, uint8_t *Buffer, uint16_t Length);
 }i2cbus_t;
 
-//#define IO_EXPANDER
-#define ACCELEROMETER
+#define IO_EXPANDER
+//#define ACCELEROMETER
 
 enum Benvent{
     BTN_EMPTY = 0,

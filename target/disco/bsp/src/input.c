@@ -22,7 +22,7 @@ typedef struct{
 }btnstate_t;
 
 //up, down, left, righ, mid, btn1, btn2, btn3
-const uint8_t btn_values[BTN_MAX] = {'w', 's', 172, 174, 0, 'e', 0, ' '};
+const uint8_t btn_values[BTN_MAX] = {'w', 's', 172, 174, 13, 'e', 27, ' '};
 static btnstate_t inbtn[BTN_MAX];
 static uint8_t btn_nevents;
 
