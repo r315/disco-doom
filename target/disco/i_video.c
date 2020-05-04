@@ -8,8 +8,10 @@
 
 #include "board.h"
 
+//#define NO_VIDEO
 #define DOUBLE_SCREEN 1
 
+#ifndef NO_VIDEO
 typedef struct __attribute__((__packed__)){
     byte b;    
     byte g;
@@ -19,7 +21,6 @@ typedef struct __attribute__((__packed__)){
 
 static DMA2D_HandleTypeDef  hdma2d;
 static uint32_t forground_clut[256];
-
 //
 //  LoadPalette
 //
@@ -67,7 +68,7 @@ void LoadPalette(uint32_t *clut)
         }
     }   
 }
-
+#endif
 
 /**
  * Game API
@@ -123,7 +124,7 @@ void I_UpdateNoBlit(void)
 //
 void I_FinishUpdate(void)
 {
-
+#ifndef NO_VIDEO
 #ifdef DOUBLE_SCREEN   
     #define FRAME_OFFSET ( ((400 - SCREENWIDTH) + ((240 - SCREENHEIGHT) * 800)) * 4)
 
@@ -153,7 +154,8 @@ void I_FinishUpdate(void)
         /* Polling For DMA transfer */  
         HAL_DMA2D_PollForTransfer(&hdma2d, 100);               
     }
-#endif
+#endif /* DOUBLE_SCREEN */
+#endif /* NO_VIDEO */
 }
 
 //
@@ -169,6 +171,7 @@ void I_ReadScreen(byte *scr)
 //
 void I_SetPalette(byte *palette)
 {
+#ifndef NO_VIDEO
   palette_t *pClut = (palette_t*)forground_clut;
   byte brightness = 50;
 
@@ -185,13 +188,15 @@ void I_SetPalette(byte *palette)
     }
     
     LoadPalette(forground_clut);
+#endif
 }
 
 //
 // I_InitGraphics
 //
 void I_InitGraphics(void)
-{    
+{
+#ifndef NO_VIDEO    
     OnError_Handler(BSP_LCD_Init() != LCD_OK);
 
     BSP_LCD_LayerDefaultInit(DMA2D_FOREGROUND_LAYER, LCD_FB_START_ADDRESS);     
@@ -203,7 +208,7 @@ void I_InitGraphics(void)
 
     //BSP_LCD_SetFont(&Font16);
     //BSP_LCD_DisplayStringAtLine(0, "Hello"); 
-
+#endif
     screens[0] = (unsigned char *)malloc(SCREENWIDTH * SCREENHEIGHT);
 
     if (screens[0] == NULL)
