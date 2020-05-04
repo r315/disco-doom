@@ -37,6 +37,7 @@
 /* Private variables ---------------------------------------------------------*/
 extern LTDC_HandleTypeDef hltdc_discovery;
 extern SAI_HandleTypeDef SaiHandle;
+extern SD_HandleTypeDef uSdHandle;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -135,10 +136,10 @@ void MemManage_Handler(void)
   */
 void BusFault_Handler(void)
 {
-  /* Go to infinite loop when Bus Fault exception occurs */
-  while (1)
-  {
-  }
+    /* Go to infinite loop when Bus Fault exception occurs */
+    while (1)
+    {
+    }
 }
 
 /**
@@ -148,10 +149,10 @@ void BusFault_Handler(void)
   */
 void UsageFault_Handler(void)
 {
-  /* Go to infinite loop when Usage Fault exception occurs */
-  while (1)
-  {
-  }
+    /* Go to infinite loop when Usage Fault exception occurs */
+    while (1)
+    {
+    }
 }
 
 /**
@@ -182,7 +183,6 @@ void WWDG_IRQHandler(void)
 {
 }
 
-
 /**
   * @brief  This function handles PendSVC exception.
   * @param  None
@@ -199,7 +199,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-  HAL_IncTick();
+    HAL_IncTick();
 }
 
 /******************************************************************************/
@@ -216,34 +216,27 @@ void SysTick_Handler(void)
   */
 void LTDC_IRQHandler(void)
 {
-  HAL_LTDC_IRQHandler(&hltdc_discovery);
+    HAL_LTDC_IRQHandler(&hltdc_discovery);
 }
 
-/**
-  * @}
-  */
-void USART6_IRQHandler(void){
-
+void SDMMC2_IRQHandler(void)
+{
+    HAL_SD_IRQHandler(&uSdHandle);
 }
 
-/******************************************************************************/
-/*                 STM32F7xx Peripherals Interrupt Handlers                   */
-/*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
-/*  available peripheral interrupt handler's name please refer to the startup */
-/*  file (startup_stm32f7xx.s).                                               */
-/******************************************************************************/
-/**
-  * @brief  This function handles SAI DMA interrupt request.
-  * @param  None
-  * @retval None
-  */
+void DMA2_Stream0_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(uSdHandle.hdmarx);
+}
+
+void DMA2_Stream5_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(uSdHandle.hdmatx);
+}
+
 void DMA2_Stream6_IRQHandler(void)
 { 
-  HAL_DMA_IRQHandler(SaiHandle.hdmatx);  
+    HAL_DMA_IRQHandler(SaiHandle.hdmatx);  
 }
-
-/**
-  * @}
-  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
