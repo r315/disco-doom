@@ -71,35 +71,6 @@ static FIL files[MAX_FILES];
 static FIL *openfiles[MAX_FILES];
 extern UART_HandleTypeDef huart1;
 
-const char *ff_errors [] = {
-    "FR_OK",
-    "FR_DISK_ERR",			
-    "FR_INT_ERR",				
-    "FR_NOT_READY",			
-    "FR_NO_FILE",				
-    "FR_NO_PATH",				
-    "FR_INVALID_NAME",		
-    "FR_DENIED",				
-    "FR_EXIST",				
-    "FR_INVALID_OBJECT",		
-    "FR_WRITE_PROTECTED",		
-    "FR_INVALID_DRIVE",		
-    "FR_NOT_ENABLED",			
-    "FR_NO_FILESYSTEM",		
-    "FR_MKFS_ABORTED",		
-    "FR_TIMEOUT",			
-    "FR_LOCKED",				
-    "FR_NOT_ENOUGH_CORE",		
-    "FR_TOO_MANY_OPEN_FILES",	
-    "FR_INVALID_PARAMETER"
-};
-
-void ff_error(const char *fname, FRESULT err){
-    if(err){
-        printf("%s: (%d) %s\n", fname, err, ff_errors[err]);
-    }
-}
-
 
 /* Functions */
 uint32_t memavail(void){
@@ -170,7 +141,7 @@ int _read(int file, char *ptr, int len)
 
 	if (fr != FR_OK)
 	{
-		ff_error(__FUNCTION__, fr);
+		errno = EMFILE;
 		return -1;
 	}
 	return br;
@@ -222,24 +193,28 @@ int __isatty(int file)
 	return 1;
 }
 
-int _lseek(int file, int ptr, int dir)
+int _lseek(int file, int offset, int directive)
 {
 
-	if(ptr < 0 || dir == SEEK_CUR)
-		return FR_INVALID_PARAMETER;
+	if(offset < 0 || directive == SEEK_CUR){
+		errno = EINVAL;
+		return -1;
+	}
 
 	// Skip system files
 	file >>= 4;
 
-	if(file > MAX_FILES){		
-		return FR_TOO_MANY_OPEN_FILES;
+	if(file > MAX_FILES){
+		errno = EMFILE;
+		return -1;
 	}
-
-	FRESULT fr = f_lseek(&files[file - 1], ptr);
+	
+	FRESULT fr = f_lseek(&files[file - 1], offset);
 
 	if(fr != FR_OK)
 	{
-		return fr;
+		errno = EINVAL;
+		return -1;
 	}
 
 	return FR_OK;
