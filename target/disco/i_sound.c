@@ -38,9 +38,9 @@ static const char
 #define SAMPLERATE      11025 // Hz
 #define SAMPLECOUNT     512
 
-#define NO_AUDIO
+//#define NO_AUDIO
 
-
+#ifndef NO_AUDIO
 // Needed for calling the actual sound output.
 static audiospec_t specs;
 int lengths[NUMSFX];
@@ -74,7 +74,9 @@ int	*vol_lookup;
 // Hardware left and right channel volume lookup.
 int *channelleftvol_lookup[NUM_CHANNELS];
 int *channelrightvol_lookup[NUM_CHANNELS];
+#endif
 
+#ifndef NO_AUDIO
 //
 // This function loads the sound data from the WAD lump,
 //  for single sound.
@@ -268,6 +270,7 @@ int addsfx(int sfxid, int volume, int step, int seperation)
     // You tell me.
     return rc; 
 }
+#endif
 //
 // Retrieve the raw data lump index
 //  for a given SFX name.
@@ -290,6 +293,7 @@ int I_GetSfxLumpNum(sfxinfo_t *sfx)
 //
 void I_SetChannels()
 {
+#ifndef NO_AUDIO
     // Init internal lookups (raw data, mixing buffer, channels).
     // This function sets up internal lookups used during
     //  the mixing process. 
@@ -320,6 +324,7 @@ void I_SetChannels()
             //fprintf(stderr, "vol_lookup[%d*256+%d] = %d\n", i, j, vol_lookup[i*256+j]);
         }
     }
+#endif
 }
 
 void I_SetSfxVolume(int volume)
@@ -336,7 +341,9 @@ void I_SetMusicVolume(int volume)
 void I_StopSound(int handle)
 {
     printf("%s\n",__FUNCTION__);
+#ifndef NO_AUDIO
     AUDIO_Stop(&specs);
+#endif
 }
 
 int I_SoundIsPlaying(int handle)
@@ -356,6 +363,7 @@ int I_SoundIsPlaying(int handle)
 //
 // This function currently supports only 16bit.
 //
+#ifndef NO_AUDIO
 void I_UpdateSound(void *stream, uint32_t len)
 {
     // Mix current sound data.
@@ -448,7 +456,7 @@ void I_UpdateSound(void *stream, uint32_t len)
 	    rightout += step;
     }
 }
-
+#endif
 void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
 {
     // I fail too see that this is used.
@@ -464,7 +472,6 @@ void I_ShutdownSound(void)
     printf("%s\n",__FUNCTION__);
 }
 
-
 //
 // Starting a sound means adding it
 //  to the current list of active sounds
@@ -479,6 +486,7 @@ void I_ShutdownSound(void)
 //
 int I_StartSound(int id, int vol, int sep, int pitch, int priority)
 {
+ #ifndef NO_AUDIO
     // UNUSED
     priority = 0;
   
@@ -491,7 +499,7 @@ int I_StartSound(int id, int vol, int sep, int pitch, int priority)
 //SDL_UnlockAudio();
 
     // fprintf( stderr, "/handle is %d\n", id );
-#if defined(NO_AUDIO)
+
     AUDIO_Play(&specs);
 #endif
     return id;
@@ -503,16 +511,17 @@ int I_StartSound(int id, int vol, int sep, int pitch, int priority)
 // 
 void I_InitSound()
 {
+#ifndef NO_AUDIO
     specs.channels = 1;
     specs.freq = SAMPLERATE;
     specs.size = SAMPLECOUNT;
     specs.callback = I_UpdateSound;
     specs.volume = DEFAULT_VOLUME;
-    
+
     printf("I_InitSound: ");
-#if defined(NO_AUDIO)
+
     AUDIO_Init(&specs);
-#endif
+
     printf("configured audio device with %d samples/slice\n", (int)specs.size);
     
     vol_lookup = (int*)malloc(128 * 256 * sizeof(int));
@@ -537,7 +546,7 @@ void I_InitSound()
 
     printf("I_InitSound: pre-cached all sound data\n");
     printf("I_InitSound: sound module ready\n");
-    //AUD_Start(&specs);
+#endif
 }
 
 //
