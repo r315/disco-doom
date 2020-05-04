@@ -10,6 +10,12 @@ typedef struct {
   void        *data;
 }input_drv_t;
 
+enum Benvent{
+    BTN_EMPTY = 0,
+    BTN_PRESSED,
+    BTN_HOLD,
+    BTN_RELEASED	
+};
 
 int BUTTON_Read(void);
 int BUTTON_GetEvent(int *key);
