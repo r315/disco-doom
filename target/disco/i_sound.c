@@ -157,7 +157,7 @@ int addsfx(int sfxid, int volume, int step, int seperation)
     static unsigned short	handlenums = 0;
  
     int		i;
-    int		rc = -1;
+    int		handle = -1;
     
     int		oldest = gametic;
     int		oldestnum = 0;
@@ -224,7 +224,7 @@ int addsfx(int sfxid, int volume, int step, int seperation)
 
     // Assign current handle number.
     // Preserved so sounds could be stopped (unused).
-    channelhandles[slot] = rc = handlenums++;
+    channelhandles[slot] = handle = handlenums++;
 
     // Set stepping???
     // Kinda getting the impression this is never used.
@@ -268,7 +268,7 @@ int addsfx(int sfxid, int volume, int step, int seperation)
     channelids[slot] = sfxid;
 
     // You tell me.
-    return rc; 
+    return handle; 
 }
 #endif
 //
@@ -348,6 +348,7 @@ void I_StopSound(int handle)
 
 int I_SoundIsPlaying(int handle)
 {
+    //printf("%s, handle %d, gametic %d\n",__FUNCTION__, handle, gametic);
     // Ouch.
     return gametic < handle;
 }
@@ -487,22 +488,17 @@ void I_ShutdownSound(void)
 int I_StartSound(int id, int vol, int sep, int pitch, int priority)
 {
  #ifndef NO_AUDIO
-    // UNUSED
-    priority = 0;
+    int handle;
   
-    // Debug.
-    printf("I_Sound: Starting sound %d\n", id );
-    
-    // Returns a handle (not used).
 //SDL_LockAudio();
-    id = addsfx( id, vol, steptable[pitch], sep );
+    handle = addsfx( id, vol, steptable[pitch], sep );
 //SDL_UnlockAudio();
 
-    // fprintf( stderr, "/handle is %d\n", id );
+    //printf("I_Sound: Starting sound %d with handle %d\n", id, handle );
 
     AUDIO_Play(&specs);
 #endif
-    return id;
+    return handle;
 }
 
 //
