@@ -146,20 +146,35 @@ static DSTATUS SD_CheckStatus(BYTE lun)
   */
 DSTATUS SD_initialize(BYTE lun)
 {
-
 #if !defined(DISABLE_SD_INIT)
+    HAL_SD_CardInfoTypeDef ci;
 
-    if (BSP_SD_Init() == MSD_OK)
-    {
+    uint8_t res = BSP_SD_Init();
+
+    if(res == MSD_OK){
+        printf("\nSd card successfully initialized\n");
+        BSP_SD_GetCardInfo(&ci);
+        printf("\tType: %x\n", (int)ci.CardType);
+        printf("\tVersion: %x\n", (int)ci.CardVersion);
+        printf("\tClass: %x\n", (int)ci.Class);
+        printf("\tRelative address: %x\n", (int)ci.RelCardAdd);
+        printf("\tNumber of blocks: %x, (%d)\n", (int)ci.BlockNbr, (int)ci.BlockNbr);
+        printf("\tBlock Size: %d\n", (int)ci.BlockSize);
+        printf("\tLogical Number of blocks: %x, (%d)\n", (int)ci.LogBlockNbr, (int)ci.LogBlockNbr);
+        printf("\tLogical Block Size: %d\n\n", (int)ci.LogBlockSize);
+
         Stat = SD_CheckStatus(lun);
-    }
 
+    }else if(res == MSD_ERROR_SD_NOT_PRESENT){
+        printf("SD card not present\n");
+    }else{
+        printf("Fail to init card\n");
+    }
 #else
     Stat = SD_CheckStatus(lun);
 #endif
     return Stat;
 }
-
 /**
   * @brief  Gets Disk Status
   * @param  lun : not used

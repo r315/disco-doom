@@ -35,6 +35,7 @@ extern "C" {
 #include <stdio.h>
 #include "stm32f769i_discovery_ts.h"
 #include "stm32f769i_discovery_lcd.h"
+#include "stm32f769i_discovery_sd.h"
 //#include "fatfs.h"
 /* USER CODE END Includes */
 

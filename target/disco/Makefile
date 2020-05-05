@@ -59,6 +59,7 @@ $(BSP_DIR)/src/lis302.c \
 $(BSP_DIR)/src/pcf8574.c \
 $(BSP_DIR)/src/i2c.c \
 $(BSP_DIR)/src/audio.c \
+$(BSP_DIR)/src/debug.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c \
 $(REPOSITORY_DIR)/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dsi.c \

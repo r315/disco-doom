@@ -60,34 +60,6 @@ FRESULT fatFsInit(void)
 }
 
 
-int32_t sdCardInit(void)
-{   
-    HAL_SD_CardInfoTypeDef ci;
-
-    switch(BSP_SD_Init()){
-        case MSD_OK:
-            break;
-        case MSD_ERROR_SD_NOT_PRESENT:
-            printf("SD card not present\n");
-            return -1;
-        default:
-            printf("Fail to init card\n");
-            return -2;
-    }
-    printf("\nSd card successfully initialized\n");
-    BSP_SD_GetCardInfo(&ci);
-    printf("\tType: %x\n", (int)ci.CardType);
-    printf("\tVersion: %x\n", (int)ci.CardVersion);
-    printf("\tClass: %x\n", (int)ci.Class);
-    printf("\tRelative address: %x\n", (int)ci.RelCardAdd);
-    printf("\tNumber of blocks: %x, (%d)\n", (int)ci.BlockNbr, (int)ci.BlockNbr);
-    printf("\tBlock Size: %d\n", (int)ci.BlockSize);
-    printf("\tLogical Number of blocks: %x, (%d)\n", (int)ci.LogBlockNbr, (int)ci.LogBlockNbr);
-    printf("\tLogical Block Size: %d\n\n", (int)ci.LogBlockSize);
-    return 0;
-}
-
-
 int main(void)
 {
     SCB_EnableICache();
@@ -101,24 +73,17 @@ int main(void)
     printf("\e[2J\r");
     printf("\nCPU Clock: %dMHz \n", (int)(SystemCoreClock/1000000));
 
+    printf("Memory region %08X:%08X\n", (int)SDRAM_DEVICE_ADDR, (int)(SDRAM_DEVICE_ADDR | SDRAM_DEVICE_SIZE));
+    printf("Memory available: %d\n", (int)memavail());
+
     BSP_LED_Init(LED1);
     BSP_LED_Init(LED2);
-
-    if(sdCardInit()){
-        OnError_Handler(true);
-    }
-
-    //SD_DumpSector(0);
 
     if(fatFsInit()){
         OnError_Handler(true);
     }
 
     INPUT_Init();
-
-    printf("Memmory region %08X:%08X\n", (int)SDRAM_DEVICE_ADDR, (int)(SDRAM_DEVICE_ADDR | SDRAM_DEVICE_SIZE));
-    printf("Memory available: %d\n", (int)memavail());
-    printf("Starting DOOM...\n\n");
     
     D_DoomMain();
 
@@ -223,42 +188,6 @@ int access(char *file, int mode)
 }
 
 
-/**
- * Util stuff
- */
-void dumpSector(uint32_t sector)
-{
-    uint8_t sector_data[BLOCKSIZE];
-    uint8_t sdRes;
-
-    //res = BSP_SD_ReadBlocks_DMA((uint32_t*)sector_data, 0, 1);
-    sdRes = BSP_SD_ReadBlocks((uint32_t *)sector_data, sector, 1, 1024);
-    while (BSP_SD_GetCardState() != SD_TRANSFER_OK)
-        ;
-
-    if (sdRes != MSD_OK)
-    {
-        printf("Fail to read: %x\n", sdRes);
-        return;
-    }  
-
-    dumpBuf(sector_data, sector, BLOCKSIZE);  
-}
-
-
-void dumpBuf(uint8_t *buf, uint32_t off, uint32_t size){
-    for (uint32_t i = 0; i < size; i++)
-    {
-        if ((i & 0x0F) == 0)
-        {
-            putchar('\n');
-            printf("%08X: ", (unsigned int)(off + i));
-        }
-        printf("%02X ", buf[i]);
-    }
-    putchar('\n');
-}
-
 FRESULT scanFiles (char* path)
 {
     FRESULT res;
@@ -288,7 +217,7 @@ FRESULT scanFiles (char* path)
 }
 
 void Error_Handler(void){
-  printf("%s, %s\n",__FILE__, __FUNCTION__);
+  //printf("%s, %s\n",__FILE__, __FUNCTION__);
   while(1){
       asm("nop");
   }
