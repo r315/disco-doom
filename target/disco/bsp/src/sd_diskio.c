@@ -27,6 +27,8 @@
 
 #include "ff_gen_drv.h"
 #include "sd_diskio.h"
+#include "stm32f7xx_hal.h"
+#include "debug.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -36,75 +38,43 @@
  * in case of errors in either BSP_SD_ReadCpltCallback() or BSP_SD_WriteCpltCallback()
  * the value by default is as defined in the BSP platform driver otherwise 30 secs
  */
-#define SD_TIMEOUT 30 * 1000
-
+#define SD_TIMEOUT (30 * 1000)
 #define SD_DEFAULT_BLOCK_SIZE 512
+#define ENABLE_SD_DMA_CACHE_MAINTENANCE
 
-/*
- * Depending on the use case, the SD card initialization could be done at the
- * application level: if it is the case define the flag below to disable
- * the BSP_SD_Init() call in the SD_Initialize() and add a call to 
- * BSP_SD_Init() elsewhere in the application.
- */
-/* USER CODE BEGIN disableSDInit */
-/* #define DISABLE_SD_INIT */
-/* USER CODE END disableSDInit */
-
-/* 
- * when using cachable memory region, it may be needed to maintain the cache
- * validity. Enable the define below to activate a cache maintenance at each
- * read and write operation.
- * Notice: This is applicable only for cortex M7 based platform.
- */
-/* USER CODE BEGIN enableSDDmaCacheMaintenance */
-/* #define ENABLE_SD_DMA_CACHE_MAINTENANCE  1 */
-/* USER CODE BEGIN enableSDDmaCacheMaintenance */
-
+/* Private variables ---------------------------------------------------------*/
 /*
 * Some DMA requires 4-Byte aligned address buffer to correctly read/wite data,
 * in FatFs some accesses aren't thus we need a 4-byte aligned scratch buffer to correctly
 * transfer data
 */
-#define ENABLE_SCRATCH_BUFFER
-
-/* Private variables ---------------------------------------------------------*/
-#if defined(ENABLE_SCRATCH_BUFFER)
-#if defined(ENABLE_SD_DMA_CACHE_MAINTENANCE)
+#ifdef ENABLE_SD_DMA_CACHE_MAINTENANCE
 ALIGN_32BYTES(static uint8_t scratch[BLOCKSIZE]); // 32-Byte aligned for cache maintenance
 #else
 __ALIGN_BEGIN static uint8_t scratch[BLOCKSIZE] __ALIGN_END;
 #endif
-#endif
 
 /* Disk status */
 static volatile DSTATUS Stat = STA_NOINIT;
-
-static volatile UINT WriteStatus = 0, ReadStatus = 0;
+static volatile uint32_t WriteStatus = 0, ReadStatus = 0, TransferError = 0;
 /* Private function prototypes -----------------------------------------------*/
 static DSTATUS SD_CheckStatus(BYTE lun);
 DSTATUS SD_initialize(BYTE);
 DSTATUS SD_status(BYTE);
 DRESULT SD_read(BYTE, BYTE *, DWORD, UINT);
-#if _USE_WRITE == 1
 DRESULT SD_write(BYTE, const BYTE *, DWORD, UINT);
-#endif /* _USE_WRITE == 1 */
-#if _USE_IOCTL == 1
 DRESULT SD_ioctl(BYTE, BYTE, void *);
-#endif /* _USE_IOCTL == 1 */
-
-const Diskio_drvTypeDef SD_Driver =
-{
+/* Public variables -----------------------------------------------*/
+const Diskio_drvTypeDef SD_Driver = {
         SD_initialize,
         SD_status,
         SD_read,
-#if _USE_WRITE == 1
         SD_write,
-#endif /* _USE_WRITE == 1 */
-
-#if _USE_IOCTL == 1
         SD_ioctl,
-#endif /* _USE_IOCTL == 1 */
 };
+
+/* External variables-----------------------------------------------*/
+extern SD_HandleTypeDef uSdHandle;
 
 /* USER CODE BEGIN beforeFunctionSection */
 /* can be used to modify / undefine following code or add new code */
@@ -112,6 +82,15 @@ const Diskio_drvTypeDef SD_Driver =
 
 /* Private functions ---------------------------------------------------------*/
 
+static void sd_error(){
+    DBG_SD_Error(uSdHandle.ErrorCode);
+}
+
+/**
+  * @brief  Initializes a Drive
+  * @param  lun : not used
+  * @retval DSTATUS: Operation status
+  */
 static int SD_CheckStatusWithTimeout(uint32_t timeout)
 {
     uint32_t timer = HAL_GetTick();
@@ -127,6 +106,11 @@ static int SD_CheckStatusWithTimeout(uint32_t timeout)
     return -1;
 }
 
+/**
+  * @brief  Initializes a Drive
+  * @param  lun : not used
+  * @retval DSTATUS: Operation status
+  */
 static DSTATUS SD_CheckStatus(BYTE lun)
 {
     Stat = STA_NOINIT;
@@ -138,7 +122,7 @@ static DSTATUS SD_CheckStatus(BYTE lun)
 
     return Stat;
 }
-
+/* Public functions ------------------------------------------------*/
 /**
   * @brief  Initializes a Drive
   * @param  lun : not used
@@ -148,7 +132,7 @@ DSTATUS SD_initialize(BYTE lun)
 {
 #if !defined(DISABLE_SD_INIT)
     HAL_SD_CardInfoTypeDef ci;
-
+    
     uint8_t res = BSP_SD_Init();
 
     if(res == MSD_OK){
@@ -163,8 +147,8 @@ DSTATUS SD_initialize(BYTE lun)
         printf("\tLogical Number of blocks: %x, (%d)\n", (int)ci.LogBlockNbr, (int)ci.LogBlockNbr);
         printf("\tLogical Block Size: %d\n\n", (int)ci.LogBlockSize);
 
-        Stat = SD_CheckStatus(lun);
-
+        Stat = SD_CheckStatus(lun);       
+    
     }else if(res == MSD_ERROR_SD_NOT_PRESENT){
         printf("SD card not present\n");
     }else{
@@ -175,6 +159,7 @@ DSTATUS SD_initialize(BYTE lun)
 #endif
     return Stat;
 }
+
 /**
   * @brief  Gets Disk Status
   * @param  lun : not used
@@ -185,9 +170,6 @@ DSTATUS SD_status(BYTE lun)
     return SD_CheckStatus(lun);
 }
 
-/* USER CODE BEGIN beforeReadSection */
-/* can be used to modify previous code / undefine following code / add new code */
-/* USER CODE END beforeReadSection */
 /**
   * @brief  Reads Sector(s)
   * @param  lun : not used
@@ -196,37 +178,21 @@ DSTATUS SD_status(BYTE lun)
   * @param  count: Number of sectors to read (1..128)
   * @retval DRESULT: Operation result
   */
-
 DRESULT SD_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
 {
     DRESULT res = RES_ERROR;
-    //printf("Sector: %d, count %d\n", sector, count);
-
-    if (!((uint32_t)buff & 0x3))
-    {
-        if (BSP_SD_ReadBlocks((uint32_t *)buff, (uint32_t)(sector), count, SDMMC_DATATIMEOUT) == MSD_OK)
-        {
-            // wait until the read operation is finished
-            while (BSP_SD_GetCardState() != MSD_OK);
-            res = RES_OK;
-        }
-    }
-    else
-    {
-        //printf("Unaligned buffer %p\n", buff);
-        for (uint32_t i = 0; i < count; i++)
-        {
-            res = BSP_SD_ReadBlocks((uint32_t *)scratch, (uint32_t)(sector++), 1, SDMMC_DATATIMEOUT);
-            if (res != MSD_OK)
-            {
-                break;
+    /* Blocking  */
+    for (uint32_t i = 0; i < count; i++){
+        do{
+            res = BSP_SD_ReadBlocks((uint32_t *)scratch, (uint32_t)(sector + i), 1, SD_TIMEOUT);
+            if (res != MSD_OK){
+                sd_error();
             }
-
-            while (BSP_SD_GetCardState() != MSD_OK)
-                ;
-
-            memcpy(buff, scratch, BLOCKSIZE);
-            buff += BLOCKSIZE;
+            while (BSP_SD_GetCardState() != MSD_OK);
+        }while(res != MSD_OK); // On error, try again
+        // Copy sector to buffer
+        for(uint32_t i = 0; i < BLOCKSIZE; i++, buff++){
+            *buff = scratch[i];
         }
     }
     return res;
@@ -243,8 +209,6 @@ DRESULT SD_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
   * @param  count: Number of sectors to write (1..128)
   * @retval DRESULT: Operation result
   */
-#if _USE_WRITE == 1
-
 DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
 {
     DRESULT res = RES_ERROR;
@@ -346,7 +310,6 @@ DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
     }
     return res;
 }
-#endif /* _USE_WRITE == 1 */
 
 /* USER CODE BEGIN beforeIoctlSection */
 /* can be used to modify previous code / undefine following code / add new code */
@@ -358,7 +321,6 @@ DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
   * @param  *buff: Buffer to send/receive control data
   * @retval DRESULT: Operation result
   */
-#if _USE_IOCTL == 1
 DRESULT SD_ioctl(BYTE lun, BYTE cmd, void *buff)
 {
     DRESULT res = RES_ERROR;
@@ -401,58 +363,5 @@ DRESULT SD_ioctl(BYTE lun, BYTE cmd, void *buff)
 
     return res;
 }
-#endif /* _USE_IOCTL == 1 */
 
-/* USER CODE BEGIN afterIoctlSection */
-/* can be used to modify previous code / undefine following code / add new code */
-/* USER CODE END afterIoctlSection */
 
-/* USER CODE BEGIN callbackSection */
-/* can be used to modify / following code or add new code */
-/* USER CODE END callbackSection */
-/**
-  * @brief Tx Transfer completed callbacks
-  * @param hsd: SD handle
-  * @retval None
-  */
-void BSP_SD_WriteCpltCallback(void)
-{
-    WriteStatus = 1;
-}
-
-/**
-  * @brief Rx Transfer completed callbacks
-  * @param hsd: SD handle
-  * @retval None
-  */
-void BSP_SD_ReadCpltCallback(void)
-{
-    ReadStatus = 1;
-}
-
-/* USER CODE BEGIN ErrorAbortCallbacks */
-/*
- ======================================================================
- enable the callbacks below to deal with Error/Abort usecases.
- Depending on the HAL/SD Driver version, the HAL_SD_ErrorCallback() may
- not be available
- =====================================================================
-void BSP_SD_ErrorCallback(void)
-{
-  BSP_ErrorHandler();
-
-   osMessagePut(SDQueueID, RW_ERROR_MSG, osWaitForever);
-}
-
-void BSP_SD_AbortCallback(void)
-{
-  osMessagePut(SDQueueID, RW_ABORT_MSG, osWaitForever);
-}
-*/
-/* USER CODE END ErrorAbortCallbacks */
-
-/* USER CODE BEGIN lastSection */
-/* can be used to modify / undefine previous code or add new code */
-/* USER CODE END lastSection */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
