@@ -40,7 +40,7 @@
  */
 #define SD_TIMEOUT (30 * 1000)
 #define SD_DEFAULT_BLOCK_SIZE 512
-#define ENABLE_SD_DMA_CACHE_MAINTENANCE
+#define ENABLE_SD_DMA_CACHE_MAINTENANCE 1
 
 /* Private variables ---------------------------------------------------------*/
 /*
@@ -48,7 +48,7 @@
 * in FatFs some accesses aren't thus we need a 4-byte aligned scratch buffer to correctly
 * transfer data
 */
-#ifdef ENABLE_SD_DMA_CACHE_MAINTENANCE
+#if defined(ENABLE_SD_DMA_CACHE_MAINTENANCE)
 ALIGN_32BYTES(static uint8_t scratch[BLOCKSIZE]); // 32-Byte aligned for cache maintenance
 #else
 __ALIGN_BEGIN static uint8_t scratch[BLOCKSIZE] __ALIGN_END;
@@ -225,11 +225,9 @@ DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
     {
         return res;
     }
-
-#if defined(ENABLE_SCRATCH_BUFFER)
+    
     if (!((uint32_t)buff & 0x3))
     {
-#endif
 #if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
 
         /*

@@ -226,8 +226,8 @@ default_t	defaults[] =
 
     {"key_right",&key_right, KEY_RIGHTARROW},
     {"key_left",&key_left, KEY_LEFTARROW},
-    {"key_up",&key_up,'w'},
-    {"key_down",&key_down,'s'},
+    {"key_up",&key_up,KEY_UPARROW},
+    {"key_down",&key_down,KEY_DOWNARROW},
     {"key_strafeleft",&key_strafeleft, 'a'},
     {"key_straferight",&key_straferight, 'd'},
 

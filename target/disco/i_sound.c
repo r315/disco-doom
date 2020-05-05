@@ -329,18 +329,18 @@ void I_SetChannels()
 
 void I_SetSfxVolume(int volume)
 {
-    printf("I_SOUND: %s %d\n",__FUNCTION__, volume);
+    printf("%s: %d\n",__FUNCTION__, volume);
 }
 
 // MUSIC API - dummy. Some code from DOS version.
 void I_SetMusicVolume(int volume)
 {
-    printf("%s\n",__FUNCTION__);
+    printf("%s: %d\n",__FUNCTION__, volume);
 }
 
 void I_StopSound(int handle)
 {
-    printf("%s\n",__FUNCTION__);
+    printf("%s handle: %d\n",__FUNCTION__, handle);
 #ifndef NO_AUDIO
     AUDIO_Stop(&specs);
 #endif
