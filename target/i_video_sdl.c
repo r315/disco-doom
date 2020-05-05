@@ -35,6 +35,9 @@ static const char
 #include "m_argv.h"
 #include "d_main.h"
 
+#include "hu_lib.h"
+#include "hu_stuff.h"
+
 #include "doomdef.h"
 
 SDL_Surface *screen;
@@ -44,6 +47,9 @@ SDL_Surface *screen;
 // According to Dave Taylor, it still is a bonehead thing
 // to use ....
 static int multiply = 1;
+
+static hu_textline_t	h_fps;
+extern patch_t *hu_font[HU_FONTSIZE];
 
 //
 //  Translates the key
@@ -249,6 +255,31 @@ void I_UpdateNoBlit(void)
 	// what is this?
 }
 
+static printFps(char *txt) {
+	HUlib_clearTextLine(&h_fps);
+	while (*txt) {
+		HUlib_addCharToTextLine(&h_fps, *txt++);
+	}
+	HUlib_drawTextLine(&h_fps, false);
+}
+
+static void updateFps() {
+	static int fps_tick = 0;
+	static char tmp[10];
+	static int fps = 0;
+
+	if (fps_tick < SDL_GetTicks()) {		
+		sprintf(tmp, "%d", fps);				
+		fps = 0;
+		fps_tick = SDL_GetTicks() + 1000;
+	}
+	else {
+		fps++;
+	}
+
+	printFps(tmp);
+}
+
 //
 // I_FinishUpdate
 //
@@ -274,6 +305,8 @@ void I_FinishUpdate(void)
 		for (; i < 20 * 2; i += 2)
 			screens[0][(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0x0;
 	}
+	
+	updateFps();
 
 	// scales the screen size before blitting it
 	if (SDL_MUSTLOCK(screen))
@@ -503,4 +536,6 @@ void I_InitGraphics(void)
 		if (screens[0] == NULL)
 			I_Error("Couldn't allocate screen memory");
 	}
+
+	HUlib_initTextLine(&h_fps, 10, 10, hu_font, HU_FONTSTART);
 }

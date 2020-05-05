@@ -471,6 +471,9 @@ void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
 void I_ShutdownSound(void)
 {
     printf("%s\n",__FUNCTION__);
+    if(vol_lookup == NULL){
+        free(vol_lookup);
+    }
 }
 
 //
@@ -487,9 +490,8 @@ void I_ShutdownSound(void)
 //
 int I_StartSound(int id, int vol, int sep, int pitch, int priority)
 {
- #ifndef NO_AUDIO
-    int handle;
-  
+    int handle = 0;
+ #ifndef NO_AUDIO  
 //SDL_LockAudio();
     handle = addsfx( id, vol, steptable[pitch], sep );
 //SDL_UnlockAudio();

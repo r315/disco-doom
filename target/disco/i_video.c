@@ -10,6 +10,7 @@
 
 //#define NO_VIDEO
 #define DOUBLE_SCREEN 1
+//#define ROTATION_180 1
 
 #ifndef NO_VIDEO
 typedef struct __attribute__((__packed__)){
@@ -21,6 +22,10 @@ typedef struct __attribute__((__packed__)){
 
 static DMA2D_HandleTypeDef  hdma2d;
 static uint32_t forground_clut[256];
+#ifdef DOUBLE_SCREEN
+#define FRAME_OFFSET ( ((400 - SCREENWIDTH) + ((240 - SCREENHEIGHT) * 800)) * 4)
+uint8_t *dfb;
+#endif
 //
 //  LoadPalette
 //
@@ -78,7 +83,13 @@ void LoadPalette(uint32_t *clut)
 //
 void I_ShutdownGraphics(void)
 { 
-    
+    if(dfb != NULL){
+        free(dfb);
+    }
+
+    if(screens[0] != NULL){
+        free(screens[0]);
+    }   
 }
 
 //
@@ -125,14 +136,29 @@ void I_UpdateNoBlit(void)
 void I_FinishUpdate(void)
 {
 #ifndef NO_VIDEO
+static uint32_t fps_tick = 0;
+static int fps = 0;
+char tmp[5];
+
+    if(fps_tick < HAL_GetTick()){
+        sprintf(tmp, "%d", fps);
+        BSP_LCD_DisplayStringAtLine(0, (uint8_t*)tmp); 
+        fps = 0;
+        fps_tick = HAL_GetTick() + 1000;
+    }else{
+        fps++;
+    }
+
 #ifdef DOUBLE_SCREEN   
-    #define FRAME_OFFSET ( ((400 - SCREENWIDTH) + ((240 - SCREENHEIGHT) * 800)) * 4)
-
-    uint8_t *dfb = malloc(SCREENWIDTH * SCREENHEIGHT * 4);
     uint8_t *fb = screens[0];
-
+    // Double the size
+#ifndef ROTATION_180
     for(int i = 0; i < SCREENHEIGHT<<1; i+=2){
         for(int j = 0; j < SCREENWIDTH<<1; j+=2, fb++){
+#else
+    for(int i = (SCREENHEIGHT<<1) - 2; i >= 0 ; i -= 2){
+        for(int j = (SCREENWIDTH<<1) - 2; j >= 0 ; j -= 2, fb++){
+#endif
             uint8_t idx = *fb;
             dfb[(i*SCREENWIDTH<<1) + j] = idx;
             dfb[(i*SCREENWIDTH<<1) + j + 1] = idx;
@@ -140,13 +166,14 @@ void I_FinishUpdate(void)
             dfb[((i+1)*SCREENWIDTH<<1) + j + 1] = idx;
         }
     }
+    
+
     //CopyBuffer((uint32_t *)LCD_FB_START_ADDRESS, (uint32_t *)screens[0], 400 - 160, 240 - 100, 320, 200);
     if (HAL_DMA2D_Start(&hdma2d, (uint32_t)dfb, LCD_FB_START_ADDRESS + FRAME_OFFSET, SCREENWIDTH<<1, SCREENHEIGHT<<1) == HAL_OK)
     {
         /* Polling For DMA transfer */  
         HAL_DMA2D_PollForTransfer(&hdma2d, 100);               
     }
-    free(dfb);
 #else
     #define FRAME_OFFSET ( ((800 - SCREENWIDTH)/2 + ((480 - SCREENHEIGHT) * 400)) * 4)
     if (HAL_DMA2D_Start(&hdma2d, (uint32_t)screens[0], LCD_FB_START_ADDRESS + FRAME_OFFSET, SCREENWIDTH, SCREENHEIGHT) == HAL_OK)
@@ -204,19 +231,21 @@ void I_InitGraphics(void)
 
     BSP_LCD_Clear(LCD_COLOR_BLACK);
 
-    BSP_LED_On(LED2);   
+    BSP_LED_On(LED2);
 
-    //BSP_LCD_SetFont(&Font16);
-    //BSP_LCD_DisplayStringAtLine(0, "Hello"); 
+    BSP_LCD_SetFont(&Font16);
+    BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+    BSP_LCD_SetBackColor(LCD_COLOR_BLACK);
+
 #endif
     screens[0] = (unsigned char *)malloc(SCREENWIDTH * SCREENHEIGHT);
 
     if (screens[0] == NULL)
         I_Error("Couldn't allocate screen memory");
 
-    //memset(screens[0], 0, 320 * 200);
-    //LCD_LayerInit(0, LCD_FB_START_ADDRESS); 
-    //_CopyBuffer((uint32_t *)LCD_FB_START_ADDRESS, (uint32_t *)screens[0], 400 - 160, 240 - 100, 320, 200);
+    #ifdef DOUBLE_SCREEN
+        dfb = malloc(SCREENWIDTH * SCREENHEIGHT * 4);
+    #endif
 }
 
 
