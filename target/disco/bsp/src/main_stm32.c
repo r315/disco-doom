@@ -16,10 +16,54 @@ i2cbus_t ext_i2cbus = {
 };
 
 static void SystemClock_Config(void);
-void Serial_Init(void);
-void vc_putchar(char c);
 uint32_t memavail(void);
-void dumpBuf(uint8_t *buf, uint32_t off, uint32_t size);
+FRESULT fatFsInit(void);
+void Serial_Init(void);
+
+int main(void)
+{
+    char *arguments[] = {
+        "disco_doom",
+        "doom1.wad",
+        //"-autostart",
+        //"-nomonsters"
+    };
+
+    SCB_EnableICache();
+    SCB_EnableDCache();
+
+    HAL_Init();
+
+    SystemClock_Config();
+
+    Serial_Init();
+    printf("\e[2J\r");
+    printf("\nCPU Clock: %dMHz \n", (int)(SystemCoreClock/1000000));
+
+    printf("Memory region %08X:%08X\n", (int)SDRAM_DEVICE_ADDR, (int)(SDRAM_DEVICE_ADDR | SDRAM_DEVICE_SIZE));
+    printf("Memory available: %d\n", (int)memavail());
+
+    BSP_LED_Init(LED1);
+    BSP_LED_Init(LED2);
+
+    if(fatFsInit()){
+        OnError_Handler(true);
+    }
+
+    INPUT_Init();
+
+    myargv = arguments;
+    myargc = sizeof(arguments) / sizeof(char*); 
+    
+    D_DoomMain();
+
+    FATFS_UnLinkDriver(SDPath);
+
+    while (1)
+    {
+    }
+    return 0;
+}
 
 void OnError_Handler(uint32_t condition)
 {
@@ -58,52 +102,6 @@ FRESULT fatFsInit(void)
 
     //FATFS_UnLinkDriver(SDPath);
     return FR_OK;
-}
-
-
-int main(void)
-{
-    char *arguments[] = {
-        "disco_doom",
-        "doom1.wad",
-        "-autostart",
-        "-nomonsters"
-    };
-
-    SCB_EnableICache();
-    SCB_EnableDCache();
-
-    HAL_Init();
-
-    SystemClock_Config();
-
-    Serial_Init();
-    printf("\e[2J\r");
-    printf("\nCPU Clock: %dMHz \n", (int)(SystemCoreClock/1000000));
-
-    printf("Memory region %08X:%08X\n", (int)SDRAM_DEVICE_ADDR, (int)(SDRAM_DEVICE_ADDR | SDRAM_DEVICE_SIZE));
-    printf("Memory available: %d\n", (int)memavail());
-
-    BSP_LED_Init(LED1);
-    BSP_LED_Init(LED2);
-
-    if(fatFsInit()){
-        OnError_Handler(true);
-    }
-
-    INPUT_Init();
-
-    myargv = arguments;
-    myargc = sizeof(arguments) / sizeof(char*); 
-    
-    D_DoomMain();
-
-    FATFS_UnLinkDriver(SDPath);
-
-    while (1)
-    {
-    }
-    return 0;
 }
 
 static void SystemClock_Config(void)

@@ -634,7 +634,6 @@ void D_QuitNetGame (void)
 
 //
 // TryRunTics 
-// d_main chama esta fun��o
 int	frametics[4];
 int	frameon;
 int	frameskip[4];

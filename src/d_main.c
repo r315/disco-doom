@@ -449,7 +449,7 @@ void D_AdvanceDemo (void)
                 pagetic = 170;
                 
             gamestate = GS_DEMOSCREEN;
-            pagename = "TITLEPIC";
+			pagename = "TITLEPIC";
             if ( gamemode == commercial )
                 S_StartMusic(mus_dm2ttl);
         	else
@@ -534,7 +534,7 @@ int D_CheckWadFile(char *wadname) {
 		char *name = D_GetFilename(wadname);
         if(!strcmp(name, "doom1.wad")){
             gamemode = shareware; 
-        }else if(!strcmp(name, "doom.wad")){
+        }else{
             gamemode = registered;
         }
 		return 1;
