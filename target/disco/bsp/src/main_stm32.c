@@ -63,6 +63,13 @@ FRESULT fatFsInit(void)
 
 int main(void)
 {
+    char *arguments[] = {
+        "disco_doom",
+        "doom1.wad",
+        "-autostart",
+        "-nomonsters"
+    };
+
     SCB_EnableICache();
     SCB_EnableDCache();
 
@@ -85,6 +92,9 @@ int main(void)
     }
 
     INPUT_Init();
+
+    myargv = arguments;
+    myargc = sizeof(arguments) / sizeof(char*); 
     
     D_DoomMain();
 
@@ -160,7 +170,7 @@ int access(char *file, int mode)
 
     printf("Accessing file: %s\n",file);
 
-    fr = f_stat(file+2, &fno);
+    fr = f_stat(file, &fno);
 
     switch (fr)
     {

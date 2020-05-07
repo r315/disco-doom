@@ -351,7 +351,7 @@ void D_Display (void)
 //extern  boolean         demorecording;
 
 void D_DoomLoop (void)
-{		
+{
 #if 0
 	if (M_CheckParm ("-debugfile"))
     {
@@ -361,11 +361,11 @@ void D_DoomLoop (void)
     	debugfile = fopen (filename,"w");
     }
 #endif
-
+   
     eventhead = eventtail = 0;
 
     while (1)
-    {
+    {    	
     	// process one or more tics
         if (singletics)
         {
@@ -381,11 +381,11 @@ void D_DoomLoop (void)
             maketic++;
             break;
         }
-        else
+		else 
 		{
 			TryRunTics(); // will run at least one tic		
 		}
-		
+
 		S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
 
     	// Update display, next frame, with current state.
@@ -442,7 +442,7 @@ void D_AdvanceDemo (void)
     
     switch (demosequence)
     {
-        case 0:
+		case 0:
             if ( gamemode == commercial )
                 pagetic = 35 * 11;
         	else
@@ -483,10 +483,10 @@ void D_AdvanceDemo (void)
 	       }
            break;
            
-      case 5:	G_DeferedPlayDemo ("demo3");	break;
+        case 5:	G_DeferedPlayDemo ("demo3");	break;
       
         // THE DEFINITIVE DOOM Special Edition demo
-      case 6:   G_DeferedPlayDemo ("demo4");    break;
+        case 6:   G_DeferedPlayDemo ("demo4");    break;
     }
 }
 
@@ -499,8 +499,49 @@ void D_StartTitle (void)
 {
     gameaction = ga_nothing;
     demosequence = -1;
-    D_AdvanceDemo ();   // advancedemo = true;
+    D_AdvanceDemo ();
 }
+
+char *D_GetFilename(char *path)
+{
+	char *ptr = path + strlen(path); // start from end
+
+	while (ptr != path) {
+#ifdef _WIN32
+		if (*ptr == '/' || *ptr == '\\') {
+#else
+		if (*ptr == '/') {
+#endif
+			return ptr + 1;
+		}
+		ptr--;
+	}
+	return ptr;
+}
+/**
+
+*/
+int D_CheckWadFile(char *wadname) {
+    
+    if(wadname == NULL || *wadname == '\0'){
+        return 0;
+    }
+    
+	// Test access to file    
+	if (!access(wadname, R_OK)) {
+		printf("using '%s'\n", wadname);
+		wadfilename = wadname;
+		char *name = D_GetFilename(wadname);
+        if(!strcmp(name, "doom1.wad")){
+            gamemode = shareware; 
+        }else if(!strcmp(name, "doom.wad")){
+            gamemode = registered;
+        }
+		return 1;
+	}
+	return 0;
+}
+
 //
 // IdentifyVersion
 // Checks availability of IWAD files by name,
@@ -509,28 +550,24 @@ void D_StartTitle (void)
 //
 void D_IDVersion (void)
 {
-
+    char *wadnames[3] = {
+        NULL,
+        "doom1.wad",
+        "doom.wad"
+    };
+    
     if(myargc > 1){
-        if (!access (myargv[1], R_OK) )
-        {
-            gamemode = shareware;
-            printf("wad file: %s\n", myargv[1]);
-            wadfilename = myargv[1];
-            return;
-        }   
+        wadnames[0] = myargv[1];
     }
 
-    // � possivel aceder ao ficheiro doom1.wad?    
-    if (!access ("./doom1.wad",R_OK) )
-    {
-      gamemode = shareware;
-      printf("found 'doom1.wad'\n");
-      wadfilename = "doom1.wad";
-      return;
-    }
+	gamemode = indetermined;
 
-    printf("Game mode indeterminate.\n");
-    gamemode = indetermined;   
+    for(int i = 0; i < 3; i++){
+        if (D_CheckWadFile(wadnames[i])) {
+		    return;   
+        }
+    }
+	printf("Game mode indeterminate.\n");
 }
 
 //
@@ -538,35 +575,37 @@ void D_IDVersion (void)
 //
 void D_DoomMain (void)
 {
+
     D_IDVersion ();
 
     setbuf (stdout, NULL);
     modifiedgame = false;
 	
-	// hacks ???�
-    nomonsters  = 0;    //M_CheckParm ("-nomonsters");
-    respawnparm = M_CheckParm ("-respawn");
-    fastparm    = M_CheckParm ("-fast");
-    devparm     = 1;    //M_CheckParm ("-devparm");  
-	
+	// hacks ???
+    nomonsters  = M_CheckParm("-nomonsters");
+    respawnparm = M_CheckParm("-respawn");
+    fastparm    = M_CheckParm("-fast");
+    devparm     = M_CheckParm("-devparm");  
+	autostart   = M_CheckParm("-autostart");
+
 	// Version select
-    if(gamemode != shareware){
+    if(gamemode == indetermined){
         I_Error("D_main: no wad file found");
         exit(-1);
     }
 
     printf ("DOOM Shareware Startup v%u.%u\n",		
-		 VERSION_NUM/100,VERSION_NUM%100);    
-
+		 VERSION_NUM/100,VERSION_NUM%100);
     
-/*    // turbo option - parece funcionar    
-    if ((p=M_CheckParm ("-turbo")) )
+	/* turbo option */
+	int p = M_CheckParm("-turbo"); // -turbo <10-400>
+    if (p)
     {
 	   int     scale = 200;
 	   extern int forwardmove[2];
 	   extern int sidemove[2];
 	
-        if (p<myargc-1)
+        if (p < myargc-1)
             scale = atoi (myargv[p+1]);
         if (scale < 10)
     	    scale = 10;
@@ -577,7 +616,7 @@ void D_DoomMain (void)
         forwardmove[1] = forwardmove[1]*scale/100;
         sidemove[0] = sidemove[0]*scale/100;
     	sidemove[1] = sidemove[1]*scale/100;
-    }*/    
+    }    
    
     // init subsystems
     printf ("V_Init: allocate screens.\n");
@@ -609,19 +648,18 @@ void D_DoomMain (void)
     printf ("I_Init: Setting up machine state.\n");
     I_Init ();
 
-    printf ("D_CheckNetGame: Checking network game status.\n"); // tentar remover
+    printf ("D_CheckNetGame: Checking network game status.\n");
     D_CheckNetGame ();
 
-    printf ("S_Init: Setting up sound.\n");                     // tentar remover
-    S_Init (snd_SfxVolume /* *8 */, snd_MusicVolume /* *8*/ );
+    printf ("S_Init: Setting up sound.\n");
+    S_Init (snd_SfxVolume, snd_MusicVolume);
 
     printf ("HU_Init: Setting up heads up display.\n");
     HU_Init ();
 
     printf ("ST_Init: Init status bar.\n");
     ST_Init ();
-    
-    autostart = true;    
+        
     if ( gameaction != ga_loadgame )
     {
         if (autostart || netgame)        
@@ -630,5 +668,5 @@ void D_DoomMain (void)
             D_StartTitle ();                // start up intro loop
     }
 
-    D_DoomLoop ();  // never returns
+    D_DoomLoop ();
 }
