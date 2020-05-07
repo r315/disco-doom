@@ -25,14 +25,22 @@ static const char
 rcsid[] = "$Id: i_main.c,v 1.4 1997/02/03 22:45:10 b1 Exp $";
 
 
-#ifdef __WIN32__
-//FILE * __cdecl __iob_func(void) { FILE _iob[] = { *stdin, *stdout, *stderr };  return _iob; }
-#endif
-
 #include "doomdef.h"
-
 #include "m_argv.h"
 #include "d_main.h"
+#include "target.h"
+
+#ifdef __WIN32__
+FILE * __cdecl __iob_func(void) { FILE _iob[] = { *stdin, *stdout, *stderr };  return _iob; }
+#endif
+
+int T_GetTick(void){
+    return SDL_GetTicks();
+}
+
+void T_Delay(int ms){
+    SDL_Delay(ms);
+}
 
 int main( int argc, char** argv) 
 { 

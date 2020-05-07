@@ -222,3 +222,11 @@ void Error_Handler(void){
       asm("nop");
   }
 }
+
+int T_GetTick(void){
+    return HAL_GetTick();
+}
+
+void T_Delay(int ms){
+    HAL_Delay(ms);
+}

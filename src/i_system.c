@@ -36,7 +36,7 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 #include "d_net.h"
 #include "g_game.h"
 
-#include "platform.h"
+#include "target.h"
 
 #ifdef __GNUG__
 #pragma implementation "i_system.h"
@@ -95,7 +95,7 @@ byte* I_ZoneBase (int*	size)
 //
 int  I_GetTime (void)
 {
-	return (PLATFORM_GetTicks()*TICRATE) / 1000;
+	return (T_GetTick()*TICRATE) / 1000;
 }
 
 //
@@ -122,7 +122,7 @@ void I_Quit (void)
 
 void I_WaitVBL(int count)
 {
-    PLATFORM_Delay((count*1000)/70);
+    T_Delay((count*1000)/70);
 }
 
 void I_BeginRead(void)

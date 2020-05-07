@@ -26,7 +26,7 @@ static const char
 
 #include <stdlib.h>
 
-#include "platform.h"
+#include "target.h"
 
 #include "m_swap.h"
 #include "doomstat.h"
@@ -301,12 +301,13 @@ void I_FinishUpdate(void)
 			tics = 20;
 
 		for (i = 0; i < tics * 2; i += 2)
-			screens[0][(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0xff;
-		for (; i < 20 * 2; i += 2)
 			screens[0][(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0x0;
+		for (; i < 20 * 2; i += 2)
+			screens[0][(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0x00;
+		
+		updateFps();
 	}
 	
-	updateFps();
 
 	// scales the screen size before blitting it
 	if (SDL_MUSTLOCK(screen))
