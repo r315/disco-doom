@@ -386,14 +386,14 @@ int I_StartSound (int id, int vol, int sep, int pitch, int priority)
 	priority = 0;
 
 	// Debug.
-	fprintf(stderr, "starting sound %d ", id);
+	//fprintf(stderr, "starting sound %d ", id);
 
 	// Returns a handle (not used).
 	SDL_LockAudio();
 	id = addsfx(id, vol, steptable[pitch], sep);
 	SDL_UnlockAudio();
 
-	fprintf( stderr, "with handle %d\n", id );
+	//fprintf( stderr, "with handle %d\n", id );
 
 	return id;
 }
@@ -414,9 +414,9 @@ void I_StopSound(int handle)
 
 int I_SoundIsPlaying(int handle)
 {
-	fprintf(stderr, "Is sound for handle is %d playing\n", handle);
+	//fprintf(stderr, "Is sound for handle is %d playing\n", handle);
 	// Ouch.
-	return 0;// gametic < handle;
+	return gametic < handle;
 }
 
 

@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include "platform.h"
 #include "doomdef.h"
 #include "doomstat.h"
 #include "i_system.h"

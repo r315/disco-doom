@@ -584,7 +584,7 @@ int i;
 //    if (netgame)
 //	   D_ArbitrateNetStart ();
 
-    printf ("startskill %i  deathmatch: %i  startmap: %i  startepisode: %i\n",
+    printf ("\tstartskill %i  deathmatch: %i  startmap: %i  startepisode: %i\n",
 	   startskill, deathmatch, startmap, startepisode);
 	
     // read values out of doomcom

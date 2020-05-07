@@ -340,7 +340,7 @@ void I_SetMusicVolume(int volume)
 
 void I_StopSound(int handle)
 {
-    printf("%s handle: %d\n",__FUNCTION__, handle);
+    //printf("%s handle: %d\n",__FUNCTION__, handle);
 #ifndef NO_AUDIO
     AUDIO_Stop(&specs);
 #endif

@@ -142,7 +142,7 @@ void W_AddFile (char *filename)
     	printf (" couldn't open %s\n",filename);
     	return;
     }
-    printf (" adding %s..\n",filename);
+    printf ("\tadding %s..\n",filename);
    
 	// WAD file header
 	fread(&header,1,sizeof(header),handle);     
@@ -367,8 +367,6 @@ void W_ReadLump
 //
 void* W_CacheLumpNum(int lump, int tag)
 {
-    byte*	ptr;
-
     if ((unsigned)lump >= numlumps)
 	I_Error ("W_CacheLumpNum: %i >= numlumps",lump);
 		
@@ -377,7 +375,7 @@ void* W_CacheLumpNum(int lump, int tag)
 	// read the lump in
 	
 	//printf ("cache miss on lump %i\n",lump);
-	ptr = Z_Malloc (W_LumpLength (lump), tag, &lumpcache[lump]);
+    Z_Malloc (W_LumpLength (lump), tag, &lumpcache[lump]);
 	W_ReadLump (lump, lumpcache[lump]);
     }
     else

@@ -616,7 +616,7 @@ AM_Responder
 {
 
     int rc;
-    static int cheatstate=0;
+    //static int cheatstate=0;
     static int bigstate=0;
     static char buffer[20];
 
@@ -695,7 +695,7 @@ AM_Responder
 	    plr->message = AMSTR_MARKSCLEARED;
 	    break;
 	  default:
-	    cheatstate=0;
+	    //cheatstate=0;
 	    rc = false;
 	}
 	if (!deathmatch && cht_CheckCheat(&cheat_amap, ev->data1))
