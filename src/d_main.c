@@ -90,7 +90,7 @@ boolean nomonsters;     // checkparm of -nomonsters
 boolean respawnparm;	// checkparm of -respawn
 boolean fastparm;		// checkparm of -fast
 
-boolean drone;
+//boolean drone;
 
 boolean singletics = false; // debug flag to cancel adaptiveness
 
@@ -352,24 +352,20 @@ void D_Display (void)
 
 void D_DoomLoop (void)
 {		
-/*    if (M_CheckParm ("-debugfile"))
+#if 0
+	if (M_CheckParm ("-debugfile"))
     {
         char    filename[20];
         sprintf (filename,"debug%i.txt",consoleplayer);
         printf ("debug output to: %s\n",filename);
     	debugfile = fopen (filename,"w");
     }
-*/	
-    //I_InitGraphics ();
+#endif
 
     eventhead = eventtail = 0;
 
-
     while (1)
     {
-        // frame syncronous IO operations
-//		I_StartFrame ();                
-/*	
     	// process one or more tics
         if (singletics)
         {
@@ -386,11 +382,11 @@ void D_DoomLoop (void)
             break;
         }
         else
-*/      
-	    TryRunTics (); // will run at least one tic            
+		{
+			TryRunTics(); // will run at least one tic		
+		}
 		
-
-//		S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
+		S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
 
     	// Update display, next frame, with current state.
 	    D_Display ();
@@ -431,7 +427,6 @@ void D_AdvanceDemo (void)
 //
 // This cycles through the demo sequences.
 // FIXME - version dependend demo numbers?
-// chamada por d_main.c e d_net.c
  void D_DoAdvanceDemo (void)
 {
     players[consoleplayer].playerstate = PST_LIVE;  // not reborn
@@ -445,7 +440,7 @@ void D_AdvanceDemo (void)
     else
       demosequence = (demosequence+1)%6;
     
-    switch (demosequence)// normalemnte 0
+    switch (demosequence)
     {
         case 0:
             if ( gamemode == commercial )
