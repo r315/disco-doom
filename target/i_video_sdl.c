@@ -255,7 +255,7 @@ void I_UpdateNoBlit(void)
 	// what is this?
 }
 
-static printFps(char *txt) {
+static void printFps(char *txt) {
 	HUlib_clearTextLine(&h_fps);
 	while (*txt) {
 		HUlib_addCharToTextLine(&h_fps, *txt++);

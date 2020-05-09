@@ -31,13 +31,16 @@ endif
 # paths
 #######################################
 # Build path
-BUILD_DIR =build
+BUILD_DIR :=build
 TARGET_DIR =.
+
+# Environment variable can be used
 ifeq ($(shell uname -s), Linux)
 REPO_F769 =$(HOME)/STM32Cube/Repository/STM32Cube_FW_F7_V1.15.0
 else
-REPO_F769 =C:/Users/hmr/STM32Cube/Repository/STM32Cube_FW_F7_V1.16.0
+#REPO_F769 =C:/Users/user/STM32Cube/Repository/STM32Cube_FW_F7_V1.16.0
 endif
+
 BSP_DIR =bsp
 DOOM_SOURCES_PATH =$(TARGET_DIR)/../../src
 
