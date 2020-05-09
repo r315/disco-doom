@@ -1,0 +1,45 @@
+http://www.gamedev.net/community/forums/topic.asp?topic_id=169230
+
+
+Right, since I'm so nice (and, more importantly avoiding work  ), I got it to work.
+
+I did it at the command line, although you should be able to adapt it to the IDE. This is with Dev-C++ 4, using the default install that you get when you first install Dev-C++. (gcc version 2.95.2. Use gcc -v to find out the version, but it shouldn't be important).
+
+1) Tried
+
+gcc *.c -c -Ic:\dev-c++\include\SDL
+
+Works except for IPPORT_USERRESERVED in i_net.c
+
+I just copied the three lines from the BEOS section (it's in the code you posted) into the WIN32 section. I don't know if that is correct for the platform, but at least it compiles.
+
+The WIN32 section thus looks like:
+
+#ifdef __WIN32__
+#define Win32_Winsock
+#include <windows.h>
+#ifndef IPPORT_USERRESERVED
+#define IPPORT_USERRESERVED 5000
+#endif
+#else
+
+
+You get 2 warnings about incorrect parameters to sendto & recvfrom. I don't think thats important, although I didn't check.
+
+2) Now the linking.
+
+First tried
+
+gcc *.c -Ic:\dev-c++\include\SDL -mwindows -lsdlmain -lsdl -lwsock32
+
+That worked except for WinMain@16
+
+After a bit of searching, found that
+
+gcc *.c -Ic:\dev-c++\include\SDL -mwindows -lmingw32 -lsdlmain -lsdl -lwsock32
+
+builds the executable. It runs but I don't have the data files to try it out with.
+
+Do I get my 50 quid now?  
+
+EDIT: Oh yeah, you'll need to have SDL for mingw32 too, but I presume you've got that and dev-c++ correctly installed. 

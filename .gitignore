@@ -3,7 +3,6 @@
 vstudio/
 build/
 /data/
-doc/
 lib/
 src_ori
 WAD_Reader
