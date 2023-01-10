@@ -1,6 +1,7 @@
 # DOOM for discovery
 
 Doom for discovery is another port of the game doom to the STM32F769 discovery development kit.
+This still is a wip project, at this stage it runs but has many bugs
 
 
 ![In game](/doc/photo1.JPG)
@@ -13,16 +14,13 @@ Doom for discovery is another port of the game doom to the STM32F769 discovery d
 
 ### Requirements
 
-- STM32CubeMX or STM32CubeIDE
-- STM32Cube_FW_F7_V1.16.0 library
 - arm-none-eabi-gcc 9.2.1
 - openocd v0.10.0
 
-$make       build for x86
-
-- `$make disco`     Build for STM32F769I-DISCOVERY board
-- `$make disco  ARGS=flash-openocd`  Build and program STM32F769I-DISCOVERY board
-
+````
+$ cd target/disco
+$ make
+````
 ## Running
 
 Build and program the board with the above commands then copy a shareware doom1.wad file to sdcard and insert card on the board. After resetting the board the game should start and audio is available on the headset jack.
