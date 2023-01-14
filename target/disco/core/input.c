@@ -31,10 +31,12 @@ void INPUT_Init(void)
     // User push button
     BSP_PB_Init(BUTTON_WAKEUP, BUTTON_MODE_GPIO);
 
+#if ACCELEROMETER || IO_EXPANDER
     //I2C bus
     INPUT_I2C_Init();
 
     input_drv.init(&ext_i2cbus);
+#endif
 
     for (uint8_t i = 0; i < BTN_MAX; i++)
     {
@@ -59,9 +61,9 @@ void INPUT_Init(void)
 
 uint32_t INPUT_Read(uint32_t *dst, uint32_t size)
 {
+    uint32_t read = 0;    
 #ifdef IO_EXPANDER    
     uint8_t raw_data;
-    uint32_t read = 0;    
    
     input_drv.read((uint8_t*)&raw_data, 1);
 
@@ -74,10 +76,9 @@ uint32_t INPUT_Read(uint32_t *dst, uint32_t size)
     }
 
     return read;    
-#else
+#elif ACCELEROMETER
     int8_t raw_data[6], x, y;
     uint8_t buttons = 0;
-    uint32_t read = 0;
 
     //if(vc_getCharNonBlocking((char*)&key)){
     //    printf("new key %c\n", key);
@@ -113,6 +114,13 @@ uint32_t INPUT_Read(uint32_t *dst, uint32_t size)
         read = 1;
     }
     *dst = buttons;   
+    return read;
+#else
+    if (BSP_PB_GetState(BUTTON_WAKEUP) == GPIO_PIN_RESET)
+    {
+        *dst = BTN3_MASK;
+        read = 1; 
+    }
     return read;
 #endif
 }
@@ -175,12 +183,13 @@ int BUTTON_Read(void)
     uint32_t scanned;
     btn_nevents = 0;
     
-    INPUT_Read(&scanned, 1);
-    
-    for (uint8_t i = 0; i < BTN_MAX; i++, scanned >>= 1)
-    {
-        btn_nevents += btnState(inbtn + i, scanned & 1);        
+    if(INPUT_Read(&scanned, 1)){    
+        for (uint8_t i = 0; i < BTN_MAX; i++, scanned >>= 1)
+        {
+            btn_nevents += btnState(inbtn + i, scanned & 1);        
+        }
     }
+    
     return btn_nevents;
 }
 

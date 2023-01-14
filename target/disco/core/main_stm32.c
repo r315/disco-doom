@@ -248,7 +248,7 @@ static void disco_MpuConfig (void)
 
   /* Configure the MPU attributes for SDRAM */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-  MPU_InitStruct.BaseAddress = SDRAM_BASE_ADDR;
+  MPU_InitStruct.BaseAddress = SDRAM_DEVICE_ADDR;
   MPU_InitStruct.Size = MPU_REGION_SIZE_16MB;
   MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE; //MPU_ACCESS_NOT_BUFFERABLE;

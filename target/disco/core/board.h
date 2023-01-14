@@ -12,7 +12,7 @@ typedef struct _i2cbus_t{
     uint32_t   (*write)(uint8_t Addr, uint8_t *Buffer, uint16_t Length);
 }i2cbus_t;
 
-#define IO_EXPANDER
+//#define IO_EXPANDER
 //#define ACCELEROMETER
 
 #define HW_DBG_PIN_HIGH		HAL_GPIO_WritePin(DBG_PIN_PORT, DBG_PIN, GPIO_PIN_SET)
