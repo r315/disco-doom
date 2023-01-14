@@ -1160,8 +1160,10 @@ void G_DoLoadGame(void)
     // skip the description field
     memset(vcheck, 0, sizeof(vcheck));
     sprintf(vcheck, "version %i", VERSION_NUM);
+#if  VERSION_NUM_CHECK
     if (strcmp((char *)save_p, vcheck))
         return; // bad version
+#endif
     save_p += VERSIONSIZE;
 
     gameskill = *save_p++;
@@ -1510,12 +1512,17 @@ void G_DoPlayDemo(void)
 
     gameaction = ga_nothing;
     demobuffer = demo_p = W_CacheLumpName(defdemoname, PU_STATIC);
-    if (*demo_p++ != VERSION_NUM)
+
+    demo_p++;
+
+#if  VERSION_NUM_CHECK
+    if (*demo_p != VERSION_NUM)
     {
         fprintf(stderr, "Demo is from a different game version!\n");
         gameaction = ga_nothing;
         return;
     }
+#endif
 
     skill = *demo_p++;
     episode = *demo_p++;

@@ -279,6 +279,7 @@ typedef enum
 
 #define KEY_LALT	KEY_RALT
 
+//#define VERSION_NUM_CHECK 1
 
 
 // DOOM basic types (boolean),
