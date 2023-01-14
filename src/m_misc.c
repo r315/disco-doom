@@ -271,8 +271,8 @@ default_t	defaults[] =
 
 };
 
-int	numdefaults;
-char*	defaultfile;
+static int	    numdefaults;
+static char*	defaultfile;
 
 
 //
@@ -317,24 +317,25 @@ void M_LoadDefaults (void)
     FILE*	f;
     char	def[80];
     char	strparm[100];
-    char*	newstring;
+    char*	newstring = NULL;
     int		parm;
     boolean	isstring;
     
     // set everything to base values
     numdefaults = sizeof(defaults)/sizeof(defaults[0]);
-    for (i=0 ; i<numdefaults ; i++)
-	*defaults[i].location = defaults[i].defaultvalue;
+
+    for (i=0 ; i < numdefaults ; i++)
+	    *defaults[i].location = defaults[i].defaultvalue;
     
     // check for a custom default file
-    i = M_CheckParm ("-config");
-    if (i && i<myargc-1)
+    char *config_param = COM_GetParm ("-config");
+    if (config_param)
     {
-	defaultfile = myargv[i+1];
-	printf ("	default file: %s\n",defaultfile);
+	    defaultfile = config_param;
+	    printf ("	default file: %s\n",defaultfile);
     }
     else
-	defaultfile = basedefault;
+	    defaultfile = basedefault;
     
     // read the file in, overriding any set defaults
     f = fopen (defaultfile, "r");
@@ -358,14 +359,14 @@ void M_LoadDefaults (void)
 		    sscanf(strparm+2, "%x", &parm);
 		else
 		    sscanf(strparm, "%i", &parm);
+
 		for (i=0 ; i<numdefaults ; i++)
 		    if (!strcmp(def, defaults[i].name))
 		    {
 			if (!isstring)
 			    *defaults[i].location = parm;
 			else
-			    *defaults[i].location =
-				(int) newstring;
+			    *defaults[i].location = (int) newstring;
 			break;
 		    }
 	    }

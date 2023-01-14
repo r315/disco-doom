@@ -1250,20 +1250,18 @@ void P_SpawnSpecials (void)
     // See if -TIMER needs to be used.
     levelTimer = false;
 	
-    i = M_CheckParm("-avg");
-    if (i && deathmatch)
-    {
-	levelTimer = true;
-	levelTimeCount = 20 * 60 * 35;
+    i = COM_CheckParm("-avg");
+    if (i && deathmatch){
+		levelTimer = true;	
+		levelTimeCount = 20 * 60 * 35;
     }
 	
-    i = M_CheckParm("-timer");
-    if (i && deathmatch)
-    {
-	int	time;
-	time = atoi(myargv[i+1]) * 60 * 35;
-	levelTimer = true;
-	levelTimeCount = time;
+    char *timer_param = COM_CheckParm("-timer");
+    if (timer_param && deathmatch) {
+		int	time;
+		time = atoi(timer_param) * 60 * 35;
+		levelTimer = true;
+		levelTimeCount = time;
     }
     
     //	Init special SECTORs.

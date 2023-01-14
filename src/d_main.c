@@ -353,7 +353,7 @@ void D_Display (void)
 void D_DoomLoop (void)
 {
 #if 0
-	if (M_CheckParm ("-debugfile"))
+	if (COM_CheckParm ("-debugfile"))
     {
         char    filename[20];
         sprintf (filename,"debug%i.txt",consoleplayer);
@@ -575,12 +575,13 @@ void D_IDVersion (void)
 //
 void D_DoomMain (void)
 {
+    COM_Init(argc, argv);
 
-    D_IDVersion ();
-
-    setbuf (stdout, NULL);
-    modifiedgame = false;
-	
+    basedir = COM_GetParm("-basedir");
+    
+    if(!basedir){
+        basedir = "/";
+    }
 	// hacks ???
     nomonsters  = M_CheckParm("-nomonsters");
     respawnparm = M_CheckParm("-respawn");
@@ -598,19 +599,19 @@ void D_DoomMain (void)
 		 VERSION_NUM/100,VERSION_NUM%100);
     
 	/* turbo option */
-	int p = M_CheckParm("-turbo"); // -turbo <10-400>
-    if (p)
+	char *turbo = COM_GetParm("-turbo"); // -turbo <10-400>
+    if (turbo)
     {
-	   int     scale = 200;
+	   int     scale = atoi(turbo);;
 	   extern int forwardmove[2];
 	   extern int sidemove[2];
-	
-        if (p < myargc-1)
-            scale = atoi (myargv[p+1]);
+
         if (scale < 10)
     	    scale = 10;
+
         if (scale > 400)
             scale = 400;
+
         printf ("turbo scale: %i%%\n",scale);
         forwardmove[0] = forwardmove[0]*scale/100;
         forwardmove[1] = forwardmove[1]*scale/100;
@@ -619,45 +620,40 @@ void D_DoomMain (void)
     }    
    
     // init subsystems
-    printf ("V_Init: allocate screens.\n");
+    COM_Print ("V_Init: allocate screens.\n");
     V_Init ();
 
-    printf ("M_LoadDefaults: Load system defaults.\n");
+    COM_Print ("M_LoadDefaults: Load system defaults.\n");
     M_LoadDefaults ();              // load before initing other systems
 
-    printf ("Z_Init: Init zone memory allocation daemon. \n");
+    COM_Print ("Z_Init: Init zone memory allocation daemon. \n");
     Z_Init ();
 
-    printf ("W_Init: Init WADfiles.\n");    
-    W_AddFile(wadfilename);    
- 
-   	printf (
-        "========================================\n"
-	    "           Shareware only!\n"
-	    "========================================\n");    
+    COM_Print ("W_Init: Init WADfiles.\n");    
+    W_AddFile(wadfilename);
 
-    printf ("M_Init: Init miscellaneous info.\n");
+    COM_Print ("M_Init: Init miscellaneous info.\n");
     M_Init ();
 
-    printf ("R_Init: Init DOOM refresh daemon - ");
+    COM_Print ("R_Init: Init DOOM refresh daemon - ");
     R_Init ();
 
-    printf ("\nP_Init: Init Playloop state.\n");
+    COM_Print ("\nP_Init: Init Playloop state.\n");
     P_Init ();
 
-    printf ("I_Init: Setting up machine state.\n");
+    COM_Print ("I_Init: Setting up machine state.\n");
     I_Init ();
 
-    printf ("D_CheckNetGame: Checking network game status.\n");
+    COM_Print ("D_CheckNetGame: Checking network game status.\n");
     D_CheckNetGame ();
 
-    printf ("S_Init: Setting up sound.\n");
+    COM_Print ("S_Init: Setting up sound.\n");
     S_Init (snd_SfxVolume, snd_MusicVolume);
 
-    printf ("HU_Init: Setting up heads up display.\n");
+    COM_Print ("HU_Init: Setting up heads up display.\n");
     HU_Init ();
 
-    printf ("ST_Init: Init status bar.\n");
+    COM_Print ("ST_Init: Init status bar.\n");
     ST_Init ();
         
     if ( gameaction != ga_loadgame )

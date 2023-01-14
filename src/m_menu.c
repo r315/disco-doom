@@ -575,7 +575,7 @@ void M_LoadSelect(int choice)
 {
     char    name[256];
 	
-    if (M_CheckParm("-cdrom"))
+    if (COM_CheckParm("-cdrom"))
 	sprintf(name,"c:\\doomdata\\"SAVEGAMENAME"%d.dsg",choice);
     else
 	sprintf(name,SAVEGAMENAME"%d.dsg",choice);

@@ -1455,16 +1455,17 @@ void G_WriteDemoTiccmd(ticcmd_t *cmd)
 //
 void G_RecordDemo(char *name)
 {
-    int i;
-    int maxsize;
+    int maxsize = 0x20000;
 
     usergame = false;
     strcpy(demoname, name);
     strcat(demoname, ".lmp");
-    maxsize = 0x20000;
-    i = M_CheckParm("-maxdemo");
-    if (i && i < myargc - 1)
-        maxsize = atoi(myargv[i + 1]) * 1024;
+    
+    char *maxdemo_param = COM_GetParm("-maxdemo");
+
+    if (maxdemo_param)
+        maxsize = atoi(maxdemo_param) * 1024;
+
     demobuffer = Z_Malloc(maxsize, PU_STATIC, NULL);
     demoend = demobuffer + maxsize;
 
@@ -1548,8 +1549,8 @@ void G_DoPlayDemo(void)
 //
 void G_TimeDemo(char *name)
 {
-    nodrawers = M_CheckParm("-nodraw");
-    noblit = M_CheckParm("-noblit");
+    nodrawers = COM_CheckParm("-nodraw");
+    noblit = COM_CheckParm("-noblit");
     timingdemo = true;
     singletics = true;
 
