@@ -210,7 +210,10 @@ void W_Reload (void)
     lumpcount = LONG(header.numlumps);
     header.infotableofs = LONG(header.infotableofs);
     length = lumpcount*sizeof(filelump_t);
-	fileinfo = (filelump_t*)alloca(length);
+	fileinfo = (filelump_t*)malloc(length);    
+    if(!fileinfo)
+        I_Error ("W_Reload: mem allocation fail\n");
+
     fseek (handle, header.infotableofs, SEEK_SET);
     fread (fileinfo, 1, length, handle);
     
@@ -227,8 +230,7 @@ void W_Reload (void)
     }
 	
     fclose (handle);
-    
-    
+    free(fileinfo);    
 }
 
 //

@@ -27,17 +27,8 @@
 static const char
 rcsid[] = "$Id: r_data.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 
-#ifdef __BEOS__
-#ifdef __GNUC__
-extern void *alloca(int);
-#else
-#include <alloca.h>
-#endif
-#else  /* __BEOS__ */
-	#include <malloc.h>
-    #include <stdlib.h>
-#endif
-
+#include <malloc.h>
+#include <stdlib.h>
 
 #include "m_swap.h"
 
@@ -326,7 +317,11 @@ void R_GenerateLookup (int texnum)
     //  that are covered by more than one patch.
     // Fill in the lump / offset, so columns
     //  with only a single patch are all done.
-    patchcount = (byte *)alloca (texture->width);
+    patchcount = (byte *)malloc (texture->width);
+    if(!patchcount){
+        I_Error ("R_GenerateLookup: mem allocation fail\n");
+    }
+
     memset (patchcount, 0, texture->width);
     patch = texture->patches;
 		
@@ -357,8 +352,8 @@ void R_GenerateLookup (int texnum)
     {
 	if (!patchcount[x])
 	{
-	    printf ("R_GenerateLookup: column without a patch (%s)\n",
-		    texture->name);
+	    printf ("R_GenerateLookup: column without a patch (%s)\n", texture->name);
+        free(patchcount);
 	    return;
 	}
 	// I_Error ("R_GenerateLookup: column without a patch");
@@ -371,13 +366,13 @@ void R_GenerateLookup (int texnum)
 	    
 	    if (texturecompositesize[texnum] > 0x10000-texture->height)
 	    {
-		I_Error ("R_GenerateLookup: texture %i is >64k",
-			 texnum);
+		    I_Error ("R_GenerateLookup: texture %i is >64k", texnum);
 	    }
 	    
 	    texturecompositesize[texnum] += texture->height;
 	}
-    }	
+    }
+    free(patchcount);
 }
 
 
@@ -455,12 +450,17 @@ void R_InitTextures (void)
     names = W_CacheLumpName ("PNAMES", PU_STATIC);
     nummappatches = LONG ( *((int *)names) );
     name_p = names+4;
-    patchlookup = alloca (nummappatches*sizeof(*patchlookup));
+
+    patchlookup = (int*)malloc (nummappatches*sizeof(*patchlookup));
+    if(!patchlookup){
+        I_Error ("R_InitTextures: mem allocation fail \n");
+    }
     
     for (i=0 ; i<nummappatches ; i++){
 	   strncpy (name,name_p+i*8, 8);
 	   patchlookup[i] = W_CheckNumForName (name);
     }
+
     Z_Free (names);
     
     // Load the map texture definitions from textures.lmp.
@@ -586,6 +586,8 @@ void R_InitTextures (void)
     
     for (i=0 ; i<numtextures ; i++)
 	texturetranslation[i] = i;
+
+    free(patchlookup);
 }
 
 
@@ -774,7 +776,11 @@ void R_PrecacheLevel (void)
 	return;
     
     // Precache flats.
-    flatpresent = alloca(numflats);
+    flatpresent = (char*)malloc(numflats);
+    if(!flatpresent){
+        I_Error("R_PrecacheLevel: mem alloc fail\n");
+    }
+
     memset (flatpresent,0,numflats);	
 
     for (i=0 ; i<numsectors ; i++)
@@ -782,6 +788,8 @@ void R_PrecacheLevel (void)
 	flatpresent[sectors[i].floorpic] = 1;
 	flatpresent[sectors[i].ceilingpic] = 1;
     }
+
+    free(flatpresent);
 	
     flatmemory = 0;
 
@@ -796,7 +804,11 @@ void R_PrecacheLevel (void)
     }
     
     // Precache textures.
-    texturepresent = alloca(numtextures);
+    texturepresent = (char*)malloc (numtextures);
+    if(!texturepresent){
+        I_Error("R_PrecacheLevel: mem alloc fail\n");
+    }
+
     memset (texturepresent,0, numtextures);
 	
     for (i=0 ; i<numsides ; i++)
@@ -829,9 +841,14 @@ void R_PrecacheLevel (void)
 	    W_CacheLumpNum(lump , PU_CACHE);
 	}
     }
+
+    free(texturepresent);
     
     // Precache sprites.
-    spritepresent = alloca(numsprites);
+    spritepresent = (char*)malloc(numsprites);
+    if(!spritepresent){
+        I_Error("R_PrecacheLevel: mem alloc fail\n");
+    }
     memset (spritepresent,0, numsprites);
 	
     for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
@@ -857,6 +874,8 @@ void R_PrecacheLevel (void)
 	    }
 	}
     }
+
+    free(spritepresent);
 }
 
 
