@@ -138,6 +138,12 @@ gamestate_t wipegamestate = GS_DEMOSCREEN;
 extern boolean setsizeneeded;
 extern int             showMessages;
 
+const char *d_wadnames[] = {
+        "doom.wad",     // Registered
+        "doom1.wad",    // Shareware
+        "doomu.wad",    // Retail
+        "doom2.wad",    // Comercial
+};
 
 //
 // D-DoomLoop()
@@ -525,10 +531,10 @@ char *D_GetFilename(char *path)
 /**
 
 */
-int D_CheckWadFile(char *wadname) {
+static GameMode_t D_CheckWadFile(char *wadname) {
     
     if(wadname == NULL || *wadname == '\0'){
-        return 0;
+        return indetermined;
     }
     
 	// Test access to file    
@@ -536,13 +542,23 @@ int D_CheckWadFile(char *wadname) {
 		COM_Print("Using %s\n", wadname);
 		char *name = D_GetFilename(wadname);
         if(!strcmp(name, "doom1.wad")){
-            gamemode = shareware; 
-        }else{
-            gamemode = registered;
+            return shareware; 
         }
-		return 1;
+
+        if(!strcmp(name, "doom.wad")){
+            return registered; 
+        }
+
+        if(!strcmp(name, "doomu.wad")){
+            return retail; 
+        }
+
+        if(!strcmp(name, "doom2.wad")){
+            return commercial; 
+        }
 	}
-	return 0;
+
+	return indetermined;
 }
 
 //
@@ -551,26 +567,49 @@ int D_CheckWadFile(char *wadname) {
 // to determine whether registered/commercial features
 // should be executed (notably loading PWAD's).
 //
-void D_IDVersion (void)
+static GameMode_t D_IDVersion (void)
 {
-    char *wadnames[3] = {
-        NULL,
-        "doom1.wad",
-        "doom.wad"
-    };
-    
-    if(myargc > 1){
-        wadnames[0] = myargv[1];
+
+    wadfilename = (char*)calloc(1, MAX_PATH_SIZE);
+    GameMode_t gm;
+
+    if(!wadfilename){
+        // Fail t allocate
+        return indetermined;
     }
-
-	gamemode = indetermined;
-
-    for(int i = 0; i < 3; i++){
-        if (D_CheckWadFile(wadnames[i])) {
-		    return;   
+    
+    // check for given wad file
+    char *wadfile_param = COM_GetParm("-wadfile");
+    if(wadfile_param){   
+        sprintf(wadfilename, "%s/%s", basedir, wadfile_param);
+        gm = D_CheckWadFile(wadfilename);
+        if (gm != indetermined) {
+            return gm;   
         }
     }
-	printf("Game mode indeterminate.\n");
+
+    // Check if forced shareware
+    if (COM_CheckParm ("-shdev"))
+    {
+	    d_devparm = true;
+	    //D_AddFile (DEVDATA"doom1.wad");
+	    //D_AddFile (DEVMAPS"data_se/texture1.lmp");
+	    //D_AddFile (DEVMAPS"data_se/pnames.lmp");
+	    //strcpy (basedefault,DEVDATA"default.cfg");
+        sprintf(wadfilename, "%s/doom1.wad", basedir);
+	    return D_CheckWadFile(wadfilename);
+    }
+
+    // Check default wadfiles
+    for(int i = 0; i < sizeof(d_wadnames) / sizeof(char*); i++){
+        sprintf(wadfilename, "%s/%s", basedir, d_wadnames[i]);
+        gm = D_CheckWadFile(wadfilename);
+        if (gm != indetermined) {
+		    return gm;   
+        }
+    }
+
+    return indetermined;
 }
 
 //
@@ -586,14 +625,9 @@ void D_DoomMain (int argc, char **argv)
         basedir = "/";
     }
     
-	// hacks ???
-    nomonsters  = M_CheckParm("-nomonsters");
-    respawnparm = M_CheckParm("-respawn");
-    fastparm    = M_CheckParm("-fast");
-    devparm     = M_CheckParm("-devparm");  
-	autostart   = M_CheckParm("-autostart");
+    gamemode = D_IDVersion ();
 
-	// Version select
+    // Version select
     if(gamemode == indetermined){
         COM_Print("D_main: no wad file found");
         exit(-1);
@@ -607,6 +641,11 @@ void D_DoomMain (int argc, char **argv)
     fastparm    = COM_CheckParm("-fast");
     d_devparm   = COM_CheckParm("-devparm");  
 	autostart   = COM_CheckParm("-autostart");	
+
+    if(gamemode == shareware){
+        COM_Print ("DOOM Shareware Startup v%u.%u\n",
+		            VERSION_NUM/100,VERSION_NUM%100);
+    }
     
 	/* turbo option */
 	char *turbo = COM_GetParm("-turbo"); // -turbo <10-400>
