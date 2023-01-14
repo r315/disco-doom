@@ -1,4 +1,4 @@
-
+#include <errno.h>
 #include "board.h"
 #include "doomdef.h"
 #include "m_argv.h"
@@ -7,15 +7,13 @@
 #include "d_main.h"
 #include "fatfs.h"
 
-#include <errno.h>
-
-
 i2cbus_t ext_i2cbus = {
     .write = INPUT_I2C_Write,
     .read = INPUT_I2C_Read
 };
 
 static void SystemClock_Config(void);
+static void disco_MpuConfig (void);
 uint32_t memavail(void);
 FRESULT fatFsInit(void);
 void Serial_Init(void);
@@ -25,6 +23,7 @@ int main(void)
     char *arguments[] = {
         "disco_doom",
         "doom1.wad",
+        "-shdev"
         //"-autostart",
         //"-nomonsters"
     };
@@ -43,6 +42,8 @@ int main(void)
     printf("Memory region %08X:%08X\n", (int)SDRAM_DEVICE_ADDR, (int)(SDRAM_DEVICE_ADDR | SDRAM_DEVICE_SIZE));
     printf("Memory available: %d\n", (int)memavail());
 
+    disco_MpuConfig();
+
     BSP_LED_Init(LED1);
     BSP_LED_Init(LED2);
 
@@ -51,11 +52,8 @@ int main(void)
     }
 
     INPUT_Init();
-
-    myargv = arguments;
-    myargc = sizeof(arguments) / sizeof(char*); 
     
-    D_DoomMain();
+    D_DoomMain(sizeof(arguments) / sizeof(char*), arguments);
 
     FATFS_UnLinkDriver(SDPath);
 
@@ -228,7 +226,7 @@ FRESULT scanFiles (char* path)
 void Error_Handler(void){
   //printf("%s, %s\n",__FILE__, __FUNCTION__);
   while(1){
-      asm("nop");
+      //asm("nop");
   }
 }
 
@@ -238,4 +236,33 @@ int T_GetTick(void){
 
 void T_Delay(int ms){
     HAL_Delay(ms);
+}
+
+
+static void disco_MpuConfig (void) 
+{
+  MPU_Region_InitTypeDef MPU_InitStruct;
+
+  /* Disable the MPU */
+  HAL_MPU_Disable();
+
+  /* Configure the MPU attributes for SDRAM */
+  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+  MPU_InitStruct.BaseAddress = SDRAM_BASE_ADDR;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_16MB;
+  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE; //MPU_ACCESS_NOT_BUFFERABLE;
+  MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE; //MPU_ACCESS_NOT_CACHEABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE; //MPU_ACCESS_NOT_SHAREABLE;
+  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
+  MPU_InitStruct.SubRegionDisable = 0x00;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  /* Enable the MPU */
+  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+  /* Enable div zero hard fault */
+  SCB->CCR |= 0x10;
 }

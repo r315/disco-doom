@@ -8,7 +8,7 @@ TARGET_DIR =disco
 DEBUG = 1
 
 ifeq ($(DEBUG), 1)
-DEBUG_FLAGS =-g3 -gdwarf-2
+DEBUG_FLAGS =-g -gdwarf-2
 OPT =-Og
 else
 OPT =-O2
@@ -163,16 +163,15 @@ C_DEFS =  \
 # C Include paths
 C_INC =$(addprefix -I, $(C_INCLUDES))
 # compile gcc flags
-CFLAGS = $(MCU) $(C_DEFS) $(C_INC) $(OPT) -Wall -fdata-sections -ffunction-sections -Wno-unused-const-variable
-CFLAGS +=$(DEBUG_FLAGS)
+CFLAGS = $(MCU) $(DEBUG_FLAGS) $(OPT) -std=c11 -Wall -fdata-sections -ffunction-sections -Wno-unused-const-variable $(C_DEFS) $(C_INC)
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 # Generate dependency information
 #CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
 # libraries
-LIBS = -lc -lm -lnosys 
+LIBS =#-lc -lm -lnosys
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,--gc-sections
+LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,--gc-sections
 
 #######################################
 # Rules

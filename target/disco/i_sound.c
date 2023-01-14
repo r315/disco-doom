@@ -69,12 +69,13 @@ int	channelids[NUM_CHANNELS];
 int	steptable[256];
 // Pitch to stepping lookup, unused.
 int	steptable[256];
-// Volume lookups.
-int	*vol_lookup;
 // Hardware left and right channel volume lookup.
 int *channelleftvol_lookup[NUM_CHANNELS];
 int *channelrightvol_lookup[NUM_CHANNELS];
 #endif
+
+// Volume lookups.
+int	*vol_lookup;
 
 #ifndef NO_AUDIO
 //

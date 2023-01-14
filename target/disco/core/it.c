@@ -23,6 +23,18 @@
 #include "main.h"
 #include "stm32f7xx_it.h"
 
+
+typedef struct {
+    uint32_t r0;
+    uint32_t r1;
+    uint32_t r2;
+    uint32_t r3;
+    uint32_t r12;
+    uint32_t lr;
+    uint32_t pc;
+    uint32_t psr;
+}stackframe_t;
+
 /** @addtogroup STM32F7xx_HAL_Examples
   * @{
   */
@@ -46,153 +58,6 @@ extern SD_HandleTypeDef uSdHandle;
 /******************************************************************************/
 
 /**
-  * @brief   This function handles NMI exception.
-  * @param  None
-  * @retval None
-  */
-void NMI_Handler(void)
-{
-}
-
-#if 0
-void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
-{
-/* These are volatile to try and prevent the compiler/linker optimising them
-away as the variables never actually get used.  If the debugger won't show the
-values of the variables, make them global my moving their declaration outside
-of this function. */
-volatile uint32_t r0;
-volatile uint32_t r1;
-volatile uint32_t r2;
-volatile uint32_t r3;
-volatile uint32_t r12;
-volatile uint32_t lr; /* Link register. */
-volatile uint32_t pc; /* Program counter. */
-volatile uint32_t psr;/* Program status register. */
-
-    r0 = pulFaultStackAddress[ 0 ];
-    r1 = pulFaultStackAddress[ 1 ];
-    r2 = pulFaultStackAddress[ 2 ];
-    r3 = pulFaultStackAddress[ 3 ];
-
-    r12 = pulFaultStackAddress[ 4 ];
-    lr = pulFaultStackAddress[ 5 ];
-    pc = pulFaultStackAddress[ 6 ];
-    psr = pulFaultStackAddress[ 7 ];
-
-    /* When the following line is hit, the variables contain the register values. */
-    for( ;; );
-}
-
-/**
-  * @brief  This function handles Hard Fault exception.
-  * @param  None
-  * @retval None
-  */
-__attribute__( ( naked ) ) void HardFault_Handler(void)
-{
-  while(1){
-    
-  }
-    asm volatile
-    (
-        " tst lr, #4                                                \n"
-        " ite eq                                                    \n"
-        " mrseq r0, msp                                             \n"
-        " mrsne r0, psp                                             \n"
-        " ldr r1, [r0, #24]                                         \n"
-        " ldr r2, handler2_address_const                            \n"
-        " bx r2                                                     \n"
-        " b .                                                       \n"
-        " handler2_address_const: .word prvGetRegistersFromStack    \n"
-    );
-}
-#else
-__attribute__( ( naked ) ) void HardFault_Handler(void){
-  asm volatile
-    (       
-        " b .                                                       \n"
-    );
-}
-#endif
-
-/**
-  * @brief  This function handles Memory Manage exception.
-  * @param  None
-  * @retval None
-  */
-void MemManage_Handler(void)
-{
-  /* Go to infinite loop when Memory Manage exception occurs */
-  while (1)
-  {
-  }
-}
-
-/**
-  * @brief  This function handles Bus Fault exception.
-  * @param  None
-  * @retval None
-  */
-void BusFault_Handler(void)
-{
-    /* Go to infinite loop when Bus Fault exception occurs */
-    while (1)
-    {
-    }
-}
-
-/**
-  * @brief  This function handles Usage Fault exception.
-  * @param  None
-  * @retval None
-  */
-void UsageFault_Handler(void)
-{
-    /* Go to infinite loop when Usage Fault exception occurs */
-    while (1)
-    {
-    }
-}
-
-/**
-  * @brief  This function handles SVCall exception.
-  * @param  None
-  * @retval None
-  */
-void SVC_Handler(void)
-{
-}
-
-/**
-  * @brief  This function handles Debug Monitor exception.
-  * @param  None
-  * @retval None
-  */
-void DebugMon_Handler(void)
-{
-}
-
-
-/**
-  * @brief   This function system window watchdog exception.
-  * @param  None
-  * @retval None
-  */
-void WWDG_IRQHandler(void)
-{
-}
-
-/**
-  * @brief  This function handles PendSVC exception.
-  * @param  None
-  * @retval None
-  */
-void PendSV_Handler(void)
-{
-}
-
-/**
   * @brief  This function handles SysTick Handler.
   * @param  None
   * @retval None
@@ -200,6 +65,70 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
     HAL_IncTick();
+}
+
+void EXTI0_IRQHandler (void)
+{
+    if(__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_0) == SET)
+    {
+        if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET){
+            //Key_Event(0x1b, false);
+        }else{
+            //Key_Event(0x1b, true);
+        }
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0);
+    }
+}
+
+/*
+void LTDC_IRQHandler(void)
+{
+	HAL_LTDC_IRQHandler(&hltdc_discovery);
+}
+*/ 
+void MemManage_Handler(void){
+    __asm volatile(
+        "bkpt #01 \n"
+        "b . \n"
+    );   
+}
+
+void BusFault_Handler(void){
+    __asm volatile(
+        "bkpt #01 \n"
+        "b . \n"
+    );   
+}
+
+void UsageFault_Handler(void){
+    __asm volatile(
+        "bkpt #01 \n"
+        "b . \n"
+    );   
+}
+
+typedef void(*vector_t)(void);
+
+void Fault_Handler(void)
+{
+    volatile uint8_t isr_number = (SCB->ICSR & 255) - 16;
+    // See position number on Table 46 from RM0410
+    UNUSED(isr_number);
+
+    __asm volatile(
+        "bkpt #01 \n"
+        "b . \n"
+    );
+}
+
+void Stack_Dump(stackframe_t *stack){
+    GPIOJ->MODER = (1 << 26);
+    HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_SET);
+
+    __asm volatile(
+        "bkpt #01 \n"
+        "b . \n"
+    );
 }
 
 /******************************************************************************/

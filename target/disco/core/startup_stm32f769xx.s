@@ -14,29 +14,13 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2016 STMicroelectronics</center></h2>
+  * <h2><center>&copy; Copyright (c) 2016 STMicroelectronics.
+  * All rights reserved.</center></h2>
   *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
   *
   ******************************************************************************
   */
@@ -48,6 +32,7 @@
 
 .global  g_pfnVectors
 .global  Default_Handler
+.global  UsageFault_Handler
 
 /* start address for the initialization values of the .data section. 
 defined in linker script */
@@ -108,7 +93,7 @@ LoopFillZerobss:
 /* Call the clock system intitialization function.*/
   bl  SystemInit   
 /* Call static constructors */
-    bl __libc_init_array
+  /* bl __libc_init_array */
 /* Call the application's entry point.*/
   bl  main
   bx  lr    
@@ -121,11 +106,24 @@ LoopFillZerobss:
  * @param  None     
  * @retval None       
 */
-    .section  .text.Default_Handler,"ax",%progbits
+    .section  .text.Interrupt_Handlers, "ax", %progbits
 Default_Handler:
+  b Fault_Handler
+  bkpt #01
 Infinite_Loop:
   b  Infinite_Loop
-  .size  Default_Handler, .-Default_Handler
+
+HardFault_Handler:
+  tst lr, #4
+  ite eq
+  mrseq r0, msp
+  mrsne r0, psp
+  b Stack_Dump
+  bkpt #01
+  b .
+
+.size  Default_Handler, .-HardFault_Handler
+
 /******************************************************************************
 *
 * The minimal vector table for a Cortex M7. Note that the proper constructs
@@ -280,7 +278,7 @@ g_pfnVectors:
    .thumb_set NMI_Handler,Default_Handler
   
    .weak      HardFault_Handler
-   .thumb_set HardFault_Handler,Default_Handler
+   .thumb_set HardFault_Handler,HardFault_Handler
   
    .weak      MemManage_Handler
    .thumb_set MemManage_Handler,Default_Handler
@@ -304,7 +302,7 @@ g_pfnVectors:
    .thumb_set SysTick_Handler,Default_Handler              
   
    .weak      WWDG_IRQHandler                   
-   .thumb_set WWDG_IRQHandler,Default_Handler      
+   .thumb_set WWDG_IRQHandler,Default_Handler
                   
    .weak      PVD_IRQHandler      
    .thumb_set PVD_IRQHandler,Default_Handler
@@ -631,7 +629,10 @@ g_pfnVectors:
    .thumb_set JPEG_IRQHandler,Default_Handler
 
    .weak      MDIOS_IRQHandler            
-   .thumb_set MDIOS_IRQHandler,Default_Handler   
+   .thumb_set MDIOS_IRQHandler,Default_Handler
+
+   .weak      Stack_Dump
+   .weak      Fault_Handler
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/        
  
