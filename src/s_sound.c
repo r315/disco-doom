@@ -251,11 +251,7 @@ void S_Start(void)
 
 
 
-void
-S_StartSoundAtVolume
-( void*		origin_p,
-  int		sfx_id,
-  int		volume )
+static void S_StartSoundAtVolume (void*	origin_p, int sfx_id, int volume)
 {
 
   int		rc;
@@ -394,10 +390,7 @@ S_StartSoundAtVolume
 				       priority);
 }	
 
-void
-S_StartSound
-( void*		origin,
-  int		sfx_id )
+void S_StartSound (void* origin, int sfx_id )
 {
 #ifdef SAWDEBUG
     // if (sfx_id == sfx_sawful)
@@ -646,24 +639,20 @@ void S_StartMusic(int m_id)
     S_ChangeMusic(m_id, false);
 }
 
-void
-S_ChangeMusic
-( int			musicnum,
-  int			looping )
+void S_ChangeMusic ( int musicnum, int looping )
 {
     musicinfo_t*	music;
     char		namebuf[9];
 
-    if ( (musicnum <= mus_None)
-	 || (musicnum >= NUMMUSIC) )
-    {
-	I_Error("Bad music number %d", musicnum);
+    if ( (musicnum <= mus_None) || (musicnum >= NUMMUSIC) ) {
+		I_Error("Bad music number %d", musicnum);
+		return;
     }
-    else
+    
 	music = &S_music[musicnum];
 
     if (mus_playing == music)
-	return;
+		return;
 
     // shutdown old music
     S_StopMusic();

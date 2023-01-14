@@ -30,11 +30,13 @@ static const char rcsid[] = "$Id: d_main.c,v 1.8 1997/02/03 22:45:09 b1 Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 
-extern int access(char *file, int mode);
-
 #define	BGCOLOR		7
 #define	FGCOLOR		8
 #define R_OK        4
+
+#define MAX_PATH_SIZE   64
+
+extern int access(char *file, int mode);
 
 #if 0
 static int access(char *file, int mode)
@@ -85,7 +87,7 @@ static int access(char *file, int mode)
 #include "d_main.h"
 
 
-boolean devparm;		// started game with -devparm
+boolean d_devparm;		// started game with -devparm
 boolean nomonsters;     // checkparm of -nomonsters
 boolean respawnparm;	// checkparm of -respawn
 boolean fastparm;		// checkparm of -fast
@@ -106,7 +108,8 @@ int startmap;
 boolean autostart;
 
 FILE*	debugfile;
-char *wadfilename;
+static char *wadfilename;
+static char *basedir;
 
 boolean advancedemo;
 
@@ -126,9 +129,15 @@ int eventtail;
 //
 //  DEMO LOOP
 //
-int  demosequence;
-int  pagetic;
-char *pagename;
+static int  d_demosequence;
+static int  d_pagetic;
+static char *d_pagename;
+
+// wipegamestate can be set to -1 to force a wipe on the next draw
+gamestate_t wipegamestate = GS_DEMOSCREEN;
+extern boolean setsizeneeded;
+extern int             showMessages;
+
 
 //
 // D-DoomLoop()
@@ -143,8 +152,7 @@ void D_DoomLoop (void);
 void D_CheckNetGame (void);
 void D_ProcessEvents (void);
 void G_BuildTiccmd (ticcmd_t* cmd);
-void D_DoAdvanceDemo (void);
-
+void R_ExecuteSetViewSize (void);
 
 //==============================================================================
 // D_PostEvent
@@ -182,12 +190,6 @@ void D_ProcessEvents (void)
 // D_Display
 //  draw current display, possibly wiping it from the previous
 //
-
-// wipegamestate can be set to -1 to force a wipe on the next draw
-gamestate_t wipegamestate = GS_DEMOSCREEN;
-extern boolean setsizeneeded;
-extern int             showMessages;
-void R_ExecuteSetViewSize (void);
 
 void D_Display (void)
 {
@@ -399,7 +401,7 @@ void D_DoomLoop (void)
 //
 void D_PageTicker (void)
 {
-    if (--pagetic < 0)
+    if (--d_pagetic < 0)
 	   D_AdvanceDemo ();
 }
 
@@ -410,7 +412,7 @@ void D_PageTicker (void)
 //
 void D_PageDrawer (void)
 {
-    V_DrawPatch (0,0, 0, W_CacheLumpName(pagename, PU_CACHE));
+    V_DrawPatch (0,0, 0, W_CacheLumpName(d_pagename, PU_CACHE));
 }
 
 
@@ -427,7 +429,7 @@ void D_AdvanceDemo (void)
 //
 // This cycles through the demo sequences.
 // FIXME - version dependend demo numbers?
- void D_DoAdvanceDemo (void)
+void D_DoAdvanceDemo (void)
 {
     players[consoleplayer].playerstate = PST_LIVE;  // not reborn
     advancedemo = false;
@@ -436,20 +438,20 @@ void D_AdvanceDemo (void)
     gameaction = ga_nothing;
 
     if ( gamemode == retail )
-      demosequence = (demosequence+1)%7;
+      d_demosequence = (d_demosequence+1)%7;
     else
-      demosequence = (demosequence+1)%6;
+      d_demosequence = (d_demosequence+1)%6;
     
-    switch (demosequence)
+    switch (d_demosequence)
     {
 		case 0:
             if ( gamemode == commercial )
-                pagetic = 35 * 11;
+                d_pagetic = 35 * 11;
         	else
-                pagetic = 170;
+                d_pagetic = 170;
                 
             gamestate = GS_DEMOSCREEN;
-			pagename = "TITLEPIC";
+			d_pagename = "TITLEPIC";
             if ( gamemode == commercial )
                 S_StartMusic(mus_dm2ttl);
         	else
@@ -459,9 +461,9 @@ void D_AdvanceDemo (void)
         case 1:	G_DeferedPlayDemo ("demo1");	break;
       
         case 2:
-            pagetic = 200;
+            d_pagetic = 200;
         	gamestate = GS_DEMOSCREEN;
-        	pagename = "CREDIT";
+        	d_pagename = "CREDIT";
         	break;
         	
         case 3:	G_DeferedPlayDemo ("demo2");	break;
@@ -469,17 +471,19 @@ void D_AdvanceDemo (void)
         case 4:	gamestate = GS_DEMOSCREEN;
             if ( gamemode == commercial)
         	{
-	            pagetic = 35 * 11;
-                pagename = "TITLEPIC";
+	            d_pagetic = 35 * 11;
+                d_pagename = "TITLEPIC";
 	            S_StartMusic(mus_dm2ttl);
             }
             else
             {
-                pagetic = 200;
+                d_pagetic = 200;
                 if ( gamemode == retail )
-                    pagename = "CREDIT";
-        	    else
-	                pagename = "HELP2";
+                    d_pagename = "CREDIT";
+        	    else if(gamemode == registered)
+	                d_pagename = "HELP1";
+				else if (gamemode == shareware)
+					d_pagename = "HELP2";
 	       }
            break;
            
@@ -498,7 +502,7 @@ void D_AdvanceDemo (void)
 void D_StartTitle (void)
 {
     gameaction = ga_nothing;
-    demosequence = -1;
+    d_demosequence = -1;
     D_AdvanceDemo ();
 }
 
@@ -529,8 +533,7 @@ int D_CheckWadFile(char *wadname) {
     
 	// Test access to file    
 	if (!access(wadname, R_OK)) {
-		printf("using '%s'\n", wadname);
-		wadfilename = wadname;
+		COM_Print("Using %s\n", wadname);
 		char *name = D_GetFilename(wadname);
         if(!strcmp(name, "doom1.wad")){
             gamemode = shareware; 
@@ -573,7 +576,7 @@ void D_IDVersion (void)
 //
 // D_DoomMain
 //
-void D_DoomMain (void)
+void D_DoomMain (int argc, char **argv)
 {
     COM_Init(argc, argv);
 
@@ -582,6 +585,7 @@ void D_DoomMain (void)
     if(!basedir){
         basedir = "/";
     }
+    
 	// hacks ???
     nomonsters  = M_CheckParm("-nomonsters");
     respawnparm = M_CheckParm("-respawn");
@@ -591,12 +595,18 @@ void D_DoomMain (void)
 
 	// Version select
     if(gamemode == indetermined){
-        I_Error("D_main: no wad file found");
+        COM_Print("D_main: no wad file found");
         exit(-1);
     }
 
-    printf ("DOOM Shareware Startup v%u.%u\n",		
-		 VERSION_NUM/100,VERSION_NUM%100);
+    modifiedgame = ga_nothing;
+	
+	// hacks ???
+    nomonsters  = COM_CheckParm("-nomonsters");
+    respawnparm = COM_CheckParm("-respawn");
+    fastparm    = COM_CheckParm("-fast");
+    d_devparm   = COM_CheckParm("-devparm");  
+	autostart   = COM_CheckParm("-autostart");	
     
 	/* turbo option */
 	char *turbo = COM_GetParm("-turbo"); // -turbo <10-400>

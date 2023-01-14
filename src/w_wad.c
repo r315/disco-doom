@@ -25,7 +25,6 @@
 static const char
 rcsid[] = "$Id: w_wad.c,v 1.5 1997/02/03 16:47:57 b1 Exp $";
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -36,10 +35,6 @@ rcsid[] = "$Id: w_wad.c,v 1.5 1997/02/03 16:47:57 b1 Exp $";
 #include "doomtype.h"
 #include "i_system.h"
 #include "z_zone.h"
-
-#ifdef __GNUG__
-#pragma implementation "w_wad.h"
-#endif
 #include "w_wad.h"
 
 //
@@ -47,14 +42,15 @@ rcsid[] = "$Id: w_wad.c,v 1.5 1997/02/03 16:47:57 b1 Exp $";
 //
 
 // Location of each lump on disk.
-lumpinfo_t* lumpinfo;		
-int         numlumps;
+lumpinfo_t*     lumpinfo;		
+static int      numlumps;
 
-int   reloadlump;
-char* reloadname;
+static int      reloadlump;
+static char*    reloadname;
 
-void**  lumpcache;
-
+static void**   lumpcache;
+static int		info[2500][10];
+static int		profilecount;
 
 #if defined(linux) || defined(__BEOS__) || defined(__SVR4)
 void strupr (char* s)
@@ -147,7 +143,6 @@ void W_AddFile (char *filename)
 	// WAD file header
 	fread(&header,1,sizeof(header),handle);     
 
-    //doom1.wad tem 1264 lumps, sizeof(filelump_t) = 16        	
 	numlumps = header.numlumps;
 	length   = numlumps * sizeof(filelump_t);	
 	fileinfo = malloc (length);	
@@ -159,7 +154,7 @@ void W_AddFile (char *filename)
     if (!lumpinfo)
 	   I_Error ("Couldn't allocate lumpinfo");
 	   
-    tmplumpinfo = lumpinfo; // copia o endresso de inicio de lumpinfo	   	   
+    tmplumpinfo = lumpinfo;
 	
     storehandle = reloadname ? -1 : (int)handle;    
 
@@ -197,19 +192,19 @@ void W_AddFile (char *filename)
 //
 void W_Reload (void)
 {
-    wadinfo_t		header;
+    wadinfo_t	header;
     int			lumpcount;
-    lumpinfo_t*		lump_p;
-    unsigned		i;
+    lumpinfo_t*	lump_p;
+    unsigned	i;
     FILE		*handle;
     int			length;
-    filelump_t*		fileinfo;
+    filelump_t*	fileinfo;
 	
     if (!reloadname)
 	return;
 		
     if ( (handle = fopen (reloadname,"rb")) == NULL)
-	I_Error ("W_Reload: couldn't open %s",reloadname);
+	    I_Error ("W_Reload: couldn't open %s",reloadname);
 
     fread (&header, 1, sizeof(header), handle);
     lumpcount = LONG(header.numlumps);
@@ -224,11 +219,11 @@ void W_Reload (void)
 	
     for (i=reloadlump ; i<reloadlump+lumpcount ; i++,lump_p++, fileinfo++)
     {
-	if (lumpcache[i])
-	    Z_Free (lumpcache[i]);
+	    if (lumpcache[i])
+	        Z_Free (lumpcache[i]);
 
-	lump_p->position = LONG(fileinfo->filepos);
-	lump_p->size = LONG(fileinfo->size);
+	    lump_p->position = LONG(fileinfo->filepos);
+	    lump_p->size = LONG(fileinfo->size);
     }
 	
     fclose (handle);
@@ -398,9 +393,6 @@ void* W_CacheLumpName(char*	name,int tag)
 //
 // W_Profile
 //
-int		info[2500][10];
-int		profilecount;
-
 void W_Profile (void)
 {
     int		i;

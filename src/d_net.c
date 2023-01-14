@@ -77,7 +77,6 @@ int		maxsend;	// BACKUPTICS/(2*ticdup)-1
 
 void D_ProcessEvents (void); 
 void G_BuildTiccmd (ticcmd_t *cmd); 
-void D_DoAdvanceDemo (void);
  
 boolean		reboundpacket;
 doomdata_t	reboundstore;

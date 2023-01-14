@@ -506,7 +506,7 @@ boolean G_Responder(event_t *ev)
     if (gamestate == GS_LEVEL)
     {
 #if 0 
-	if (devparm && ev->type == ev_keydown && ev->data1 == ';') 
+	if (d_devparm && ev->type == ev_keydown && ev->data1 == ';') 
 	{ 
 	    G_DeathMatchSpawnPlayer (0); 
 	    return true; 
@@ -948,7 +948,6 @@ int cpars[32] =
 // G_DoCompleted
 //
 boolean secretexit;
-extern char *pagename;
 
 void G_ExitLevel(void)
 {
@@ -1220,7 +1219,7 @@ void G_DoSaveGame(void)
     int length;
     int i;
 
-    if (M_CheckParm("-cdrom"))
+    if (COM_CheckParm("-cdrom"))
         sprintf(name, "c:\\doomdata\\" SAVEGAMENAME "%d.dsg", savegameslot);
     else
         sprintf(name, SAVEGAMENAME "%d.dsg", savegameslot);
