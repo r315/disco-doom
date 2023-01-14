@@ -431,7 +431,7 @@ int I_SoundIsPlaying(int handle)
 //
 // This function currently supports only 16bit.
 //
-void I_UpdateSound(void *unused, Uint8 *stream, int len)
+void I_UpdateSound(void *unused, uint8_t *stream, int len)
 {
 	// Mix current sound data.
 	// Data, from raw sound, for right and left.

@@ -180,7 +180,7 @@ void I_ShutdownGraphics(void)
 /* This processes SDL events */
 void I_GetEvent(SDL_Event *Event)
 {
-	Uint8 buttonstate;
+	uint8_t buttonstate;
 	event_t event;
 
 	switch (Event->type)
@@ -260,7 +260,7 @@ void I_FinishUpdate(void)
 	int i;
 #if 0
 	// draws little dots on the bottom of the screen
-	if (devparm)
+	if (d_devparm)
 	{
 
 		i = I_GetTime();
@@ -313,7 +313,7 @@ void I_FinishUpdate(void)
 		for (i = 0; i < 2; i++)
 		{
 			olineptrs[i] =
-				(unsigned int *)&((Uint8 *)screen->pixels)[i * screen->pitch];
+				(unsigned int *)&((uint8_t *)screen->pixels)[i * screen->pitch];
 		}
 
 		y = SCREENHEIGHT;
@@ -353,7 +353,7 @@ void I_FinishUpdate(void)
 		for (i = 0; i < 3; i++)
 		{
 			olineptrs[i] =
-				(unsigned int *)&((Uint8 *)screen->pixels)[i * screen->pitch];
+				(unsigned int *)&((uint8_t *)screen->pixels)[i * screen->pitch];
 		}
 
 		y = SCREENHEIGHT;
@@ -435,7 +435,7 @@ void I_InitGraphics(void)
 
 	static int firsttime = 1;
 	Uint16 video_w, video_h, w, h;
-	Uint8 video_bpp;
+	uint8_t video_bpp;
 	Uint32 video_flags;
 
 	if (!firsttime)
@@ -448,13 +448,13 @@ void I_InitGraphics(void)
 
 	video_flags = (SDL_SWSURFACE); // | SDL_HWPALETTE);
 
-	//if (!!M_CheckParm("-fullscreen"))
+	//if (!!COM_CheckParm("-fullscreen"))
 	//	video_flags |= SDL_FULLSCREEN;
 
-	if (M_CheckParm("-2"))
+	if (COM_CheckParm("-2"))
 		multiply = 2;
 
-	if (M_CheckParm("-3"))
+	if (COM_CheckParm("-3"))
 		multiply = 3;
 
 	video_w = w = SCREENWIDTH * multiply;

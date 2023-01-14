@@ -44,10 +44,6 @@ void T_Delay(int ms){
 
 int main( int argc, char** argv) 
 { 
-    myargc = argc; 
-    myargv = argv; 
- 
-    D_DoomMain (); 
-
+    D_DoomMain (argc, argv); 
     return 0;
 } 
