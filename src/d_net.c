@@ -33,6 +33,7 @@ static const char rcsid[] = "$Id: d_net.c,v 1.3 1997/02/03 22:01:47 b1 Exp $";
 #include "g_game.h"
 #include "doomdef.h"
 #include "doomstat.h"
+#include "d_main.h"
 
 #define	NCMD_EXIT		0x80000000
 #define	NCMD_RETRANSMIT		0x40000000
@@ -456,12 +457,13 @@ void CheckAbort (void)
 	I_StartTic (); 
 	
     I_StartTic ();
-    for ( ; eventtail != eventhead 
-	      ; eventtail = (++eventtail)&(MAXEVENTS-1) ) 
+    for ( ; eventtail != eventhead; ) 
     { 
-	ev = &events[eventtail]; 
-	if (ev->type == ev_keydown && ev->data1 == KEY_ESCAPE)
-	    I_Error ("Network game synchronization aborted.");
+		ev = &events[eventtail++]; 
+		if (ev->type == ev_keydown && ev->data1 == KEY_ESCAPE){
+	    	I_Error ("Network game synchronization aborted.");
+		}
+		eventtail = eventtail & (MAXEVENTS-1);
     } 
 }
 

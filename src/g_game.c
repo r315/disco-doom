@@ -31,7 +31,7 @@ static const char
 
 #include "z_zone.h"
 #include "f_finale.h"
-#include "m_argv.h"
+#include "common.h"
 #include "m_misc.h"
 #include "m_menu.h"
 #include "m_random.h"
@@ -432,7 +432,7 @@ void G_DoLoadLevel(void)
 
     // DOOM determines the sky texture to be used
     // depending on the current episode, and the game version.
-    if ((gamemode == commercial) || (gamemode == pack_tnt) || (gamemode == pack_plut))
+    if ((gamemode == commercial))
     {
         skytexture = R_TextureNumForName("SKY3");
         if (gamemap < 12)

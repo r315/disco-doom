@@ -47,7 +47,7 @@ rcsid[] = "$Id: m_menu.c,v 1.7 1997/02/03 22:45:10 b1 Exp $";
 
 #include "g_game.h"
 
-#include "m_argv.h"
+#include "common.h"
 
 #include "s_sound.h"
 

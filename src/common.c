@@ -85,7 +85,7 @@ char *COM_GetParm (char *name)
     return NULL;
 }
 
-int COM_Print (const char* fmt, ...)
+void COM_Print (const char* fmt, ...)
 {
     va_list	argptr;
     va_start (argptr, fmt);

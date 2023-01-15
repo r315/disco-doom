@@ -37,7 +37,7 @@ extern int access(char *file, int mode);
 #include "z_zone.h"
 
 #include "m_swap.h"
-#include "m_argv.h"
+#include "common.h"
 
 #include "w_wad.h"
 

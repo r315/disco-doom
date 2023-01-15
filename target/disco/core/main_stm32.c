@@ -1,7 +1,7 @@
 #include <errno.h>
 #include "board.h"
 #include "doomdef.h"
-#include "m_argv.h"
+#include "common.h"
 #include "d_main.h"
 #include "i_video.h"
 #include "d_main.h"

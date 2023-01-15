@@ -41,23 +41,10 @@ typedef enum
   registered,	// DOOM 1 registered, E3, M27
   commercial,	// DOOM 2 retail, E1 M34
   // DOOM 2 german edition not handled
-  retail,	// DOOM 1 retail, E4, M36
+  retail,	    // DOOM 1 retail, E4, M36
   indetermined	// Well, no IWAD found.
   
 } GameMode_t;
-
-
-// Mission packs - might be useful for TC stuff?
-typedef enum
-{
-  doom,		// DOOM 1
-  doom2,	// DOOM 2
-  pack_tnt,	// TNT mission pack
-  pack_plut,	// Plutonia pack
-  none
-
-} GameMission_t;
-
 
 // Identify language to use, software localization.
 typedef enum

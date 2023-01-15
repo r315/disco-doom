@@ -27,9 +27,9 @@ void COM_Init(int argc, char **argv);
 // Returns the position of the given parameter
 // in the arg list (0 if not found).
 int COM_CheckParm (char* check);
-char *COM_GetParm(char *idx);
+char *COM_GetParm(char *name);
 
-int COM_Print(const char* fmt, ...);
+void COM_Print(const char* fmt, ...);
 void COM_Error (char *error, ...);
 #endif
 //-----------------------------------------------------------------------------

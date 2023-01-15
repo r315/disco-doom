@@ -66,7 +66,7 @@ static int access(char *file, int mode)
 #include "f_finale.h"
 #include "f_wipe.h"
 
-#include "m_argv.h"
+#include "common.h"
 #include "m_misc.h"
 #include "m_menu.h"
 
@@ -166,8 +166,8 @@ void R_ExecuteSetViewSize (void);
 //
 void D_PostEvent (event_t* ev)
 {
-    events[eventhead] = *ev;
-    eventhead = (++eventhead)&(MAXEVENTS-1);
+    events[eventhead++] = *ev;
+    eventhead = eventhead&(MAXEVENTS-1);
 }
 
 
@@ -183,12 +183,13 @@ void D_ProcessEvents (void)
     if ( ( gamemode == commercial ) && (W_CheckNumForName("map01")<0) )
       return;
 	
-    for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) )
+    for ( ; eventtail != eventhead; )
     {
-        ev = &events[eventtail];
+        ev = &events[eventtail++];
         if (M_Responder (ev))
             continue;               // menu ate the event
         G_Responder (ev);
+        eventtail = eventtail & (MAXEVENTS-1);
     }
 }
 

@@ -31,6 +31,7 @@ rcsid[] = "$Id: w_wad.c,v 1.5 1997/02/03 16:47:57 b1 Exp $";
 #include <ctype.h>
 #include <malloc.h>
 
+#include "common.h"
 #include "m_swap.h"
 #include "doomtype.h"
 #include "i_system.h"
@@ -42,17 +43,17 @@ rcsid[] = "$Id: w_wad.c,v 1.5 1997/02/03 16:47:57 b1 Exp $";
 //
 
 // Location of each lump on disk.
-lumpinfo_t*     lumpinfo;		
+lumpinfo_t*     lumpinfo;
 static int      numlumps;
 
 static int      reloadlump;
 static char*    reloadname;
 
 static void**   lumpcache;
-static int		info[2500][10];
-static int		profilecount;
+//static int		profilecount;
+//static int		info[2500][10];
 
-#if defined(linux) || defined(__BEOS__) || defined(__SVR4)
+#if !defined(WIN32)
 void strupr (char* s)
 {
     while (*s) { *s = toupper(*s); s++; }
@@ -129,36 +130,42 @@ void W_AddFile (char *filename)
     unsigned	i;
     int			length;
     int			storehandle;
-    wadinfo_t	header;
+    wadinfo_t	wadinfo;
     filelump_t*	fileinfo;
     lumpinfo_t* tmplumpinfo;    
     FILE	    *handle;       
     		
     if ( (handle = fopen (filename,"rb")) == NULL){
-    	printf (" couldn't open %s\n",filename);
+    	COM_Print ("W_AddFile: couldn't open %s\n",filename);
     	return;
     }
-    printf ("\tadding %s..\n",filename);
+
+    COM_Print ("\tW_AddFile: adding %s..\n",filename);
    
 	// WAD file header
-	fread(&header,1,sizeof(header),handle);     
+	fread(&wadinfo, 1, sizeof(wadinfo_t), handle);     
 
-	numlumps = header.numlumps;
-	length   = numlumps * sizeof(filelump_t);	
-	fileinfo = malloc (length);	
-	fseek (handle, header.infotableofs, SEEK_SET);
+	numlumps = wadinfo.numlumps;
+	length   = wadinfo.numlumps * sizeof(filelump_t);	
+	fileinfo = malloc (length);
+    if(!fileinfo){
+        I_Error ("W_AddFile: Couldn't allocate fileinfo");
+    }
+
+	fseek (handle, wadinfo.infotableofs, SEEK_SET);
 	fread (fileinfo, 1, length, handle);	        
  
     // allocate lumpinfo
-    lumpinfo = malloc(numlumps*sizeof(lumpinfo_t));    
-    if (!lumpinfo)
-	   I_Error ("Couldn't allocate lumpinfo");
+    lumpinfo = malloc(wadinfo.numlumps * sizeof(lumpinfo_t));    
+    if (!lumpinfo){
+	   I_Error ("W_AddFile: Couldn't allocate lumpinfo");
+    }
 	   
     tmplumpinfo = lumpinfo;
 	
     storehandle = reloadname ? -1 : (int)handle;    
 
-    for (i=0 ; i<numlumps ; i++,tmplumpinfo++, fileinfo++){
+    for (i=0; i < wadinfo.numlumps; i++,tmplumpinfo++, fileinfo++){
         tmplumpinfo->handle   = storehandle;
         tmplumpinfo->position = fileinfo->filepos;
         tmplumpinfo->size     = fileinfo->size;
@@ -168,18 +175,19 @@ void W_AddFile (char *filename)
     if (reloadname)
 	   fclose (handle);
 	   
-    if (!numlumps)	
-        I_Error ("W_InitFiles: no files found");
+    if (!wadinfo.numlumps)	
+        I_Error ("W_AddFile: no files found");
     
     // set up caching
-    length = numlumps * sizeof(*lumpcache);
+    length = wadinfo.numlumps * sizeof(*lumpcache);
         
     lumpcache = malloc (length);
     
-    if (!lumpcache)	
-        I_Error ("Couldn't allocate lumpcache");
+    if (!lumpcache){
+        I_Error ("W_AddFile: Couldn't allocate lumpcache");
+    }
         
-    memset (lumpcache,0,length);
+    memset (lumpcache, 0, length);
     
 //    for(i=0;i<numlumps;i++)printf("lump name[%u] %s\n",i,lumpinfo[i].name);
 
@@ -394,7 +402,8 @@ void* W_CacheLumpName(char*	name,int tag)
 
 //
 // W_Profile
-//
+// 
+/*
 void W_Profile (void)
 {
     int		i;
@@ -449,5 +458,6 @@ void W_Profile (void)
     }
     fclose (f);
 }
+*/
 
 
