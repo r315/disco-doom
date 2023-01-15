@@ -274,10 +274,7 @@ P_GiveCard
 //
 // P_GivePower
 //
-boolean
-P_GivePower
-( player_t*	player,
-  int /*powertype_t*/	power )
+boolean P_GivePower (player_t* player, int power)
 {
     if (power == pw_invulnerability)
     {

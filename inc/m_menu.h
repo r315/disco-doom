@@ -56,9 +56,9 @@ void M_StartControlPanel (void);
 
 
 
-extern boolean	    inhelpscreens;
+extern boolean 	    inhelpscreens;
 extern int          showMessages;
-extern boolean	    menuactive;	// Menu overlayed?
+extern boolean 	    menuactive;	// Menu overlayed?
 extern int          mouseSensitivity;
 #endif    
 //-----------------------------------------------------------------------------

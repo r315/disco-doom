@@ -25,7 +25,7 @@
 
 #include "doomdef.h"
 
-boolean	P_GivePower(player_t*, int);
+boolean P_GivePower(player_t*, int);
 
 // LUT of ammunition limits for each kind.
 // This doubles with BackPack powerup item.

@@ -603,9 +603,7 @@ void AM_maxOutWindowScale(void)
 //
 // Handle events (user inputs) in automap mode
 //
-boolean
-AM_Responder
-( event_t*	ev )
+boolean AM_Responder (event_t* ev)
 {
 
     int rc;
@@ -836,26 +834,18 @@ void AM_clearFB(int color)
 // faster reject and precalculated slopes.  If the speed is needed,
 // use a hash algorithm to handle  the common cases.
 //
-boolean
-AM_clipMline
-( mline_t*	ml,
-  fline_t*	fl )
+boolean AM_clipMline (mline_t* ml, fline_t* fl)
 {
-    enum
-    {
-	LEFT	=1,
-	RIGHT	=2,
-	BOTTOM	=4,
-	TOP	=8
+    enum {
+		LEFT	=1,
+		RIGHT	=2,
+		BOTTOM	=4,
+		TOP	=8
     };
-
     
     register int outcode1 = 0;
     register int outcode2 = 0;
     register int outside;
-    
-
-    
 
     fpoint_t	tmp;
     int		dx;

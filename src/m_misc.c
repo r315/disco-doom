@@ -96,11 +96,7 @@ M_DrawText
 #define O_BINARY 0
 #endif
 
-boolean
-M_WriteFile
-( char const*	name,
-  void*		source,
-  int		length )
+boolean M_WriteFile (char const* name, void* source, int length)
 {
     FILE       *handle;
     int		count;

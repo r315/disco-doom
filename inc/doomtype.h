@@ -27,13 +27,13 @@
 
 typedef unsigned char byte;
 typedef signed char sbyte;
-/* Fixed to use builtin bool type with C++. */
+/* Fixed to use builtin boolean type with C++. */
 #ifdef __cplusplus
-	typedef bool boolean;
+typedef boolean boolean;
 #else
 #define false 0
 #define true  1
-typedef unsigned int boolean;
+typedef unsigned char boolean;
 #endif
 
 // Predefined with some OS.

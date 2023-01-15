@@ -81,7 +81,7 @@ char*	finaleflat;
 
 void	F_StartCast (void);
 void	F_CastTicker (void);
-boolean F_CastResponder (event_t *ev);
+boolean	F_CastResponder (event_t *ev);
 void	F_CastDrawer (void);
 
 //

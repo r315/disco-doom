@@ -66,10 +66,7 @@ HUlib_initTextLine
     HUlib_clearTextLine(t);
 }
 
-boolean
-HUlib_addCharToTextLine
-( hu_textline_t*	t,
-  char			ch )
+boolean HUlib_addCharToTextLine ( hu_textline_t* t, char ch)
 {
 
     if (t->len == HU_MAXLINELENGTH)
@@ -97,12 +94,8 @@ boolean HUlib_delCharFromTextLine(hu_textline_t* t)
 
 }
 
-void
-HUlib_drawTextLine
-( hu_textline_t*	l,
-  boolean		drawcursor )
+void HUlib_drawTextLine (hu_textline_t* l, boolean drawcursor)
 {
-
     int			i;
     int			w;
     int			x;
@@ -173,8 +166,7 @@ void HUlib_eraseTextLine(hu_textline_t* l)
 
 }
 
-void
-HUlib_initSText
+void HUlib_initSText
 ( hu_stext_t*	s,
   int		x,
   int		y,
@@ -314,12 +306,8 @@ HUlib_addPrefixToIText
 
 // wrapper function for handling general keyed input.
 // returns true if it ate the key
-boolean
-HUlib_keyInIText
-( hu_itext_t*	it,
-  unsigned char ch )
+boolean HUlib_keyInIText (hu_itext_t* it, unsigned char ch)
 {
-
     if (ch >= ' ' && ch <= '_') 
   	HUlib_addCharToTextLine(&it->l, (char) ch);
     else 
@@ -330,7 +318,6 @@ HUlib_keyInIText
 		return false; // did not eat key
 
     return true; // ate the key
-
 }
 
 void HUlib_drawIText(hu_itext_t* it)
