@@ -94,7 +94,7 @@ static int  d_pagetic;
 static char *d_pagename;
 
 static char *wadfilename;
-static char *basedir;
+char        *basedir;       // game dir
 
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t wipegamestate = GS_DEMOSCREEN;
@@ -505,9 +505,9 @@ static GameMode_t D_CheckWadFile(char *wadname) {
     }
     
 	// Test access to file    
-	if (!access(wadname, R_OK)) {
-		COM_Print("Using %s\n", wadname);
+	if (!access(wadname, R_OK)) {		
 		char *name = D_GetFilename(wadname);
+        
         if(!strcmp(name, "doom1.wad")){
             return shareware; 
         }
@@ -636,13 +636,13 @@ void D_DoomMain (int argc, char **argv)
     COM_Print ("V_Init: allocate screens.\n");
     V_Init ();
 
-    COM_Print ("M_LoadDefaults: Load system defaults.\n");
-    M_LoadDefaults ();              // load before initing other systems
+    COM_Print ("M_LoadDefaults: Loading system defaults.\n");
+    M_LoadDefaults ();
 
     COM_Print ("Z_Init: Init zone memory allocation daemon. \n");
     Z_Init ();
 
-    COM_Print ("W_Init: Init WADfiles.\n");    
+    COM_Print ("W_AddFile: adding %s.\n", wadfilename);
     W_AddFile(wadfilename);
 
     COM_Print ("M_Init: Init miscellaneous info.\n");

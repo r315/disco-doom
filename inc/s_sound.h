@@ -98,7 +98,8 @@ extern int snd_SfxDevice;
 // Config file? Same disclaimer as above.
 extern int snd_DesiredMusicDevice;
 extern int snd_DesiredSfxDevice;
-
+// machine-independent sound params
+extern int numChannels;
 #endif
 //-----------------------------------------------------------------------------
 //

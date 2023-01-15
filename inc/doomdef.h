@@ -69,9 +69,6 @@
 #define SCREENHEIGHT 200
 //(int)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
 
-
-
-
 // The maximum number of players, multiplayer/networking.
 #define MAXPLAYERS		4
 
@@ -132,6 +129,7 @@
 
 #define VERSION_NUM_CHECK 0
 
+#define DEFAULT_FILE    "default.cfg"
 //
 // Global parameters/defines.
 //

@@ -22,13 +22,13 @@
 #define __HU_STUFF_H__
 
 #include "d_event.h"
-
+#include "r_defs.h"
 
 //
 // Globally visible constants.
 //
 #define HU_FONTSTART	'!'	// the first font characters
-#define HU_FONTEND	'_'	// the last font characters
+#define HU_FONTEND	    '_'	// the last font characters
 
 // Calculate # of glyphs in font.
 #define HU_FONTSIZE	(HU_FONTEND - HU_FONTSTART + 1)	
@@ -49,15 +49,19 @@
 
 void HU_Init(void);
 void HU_Start(void);
-
-boolean HU_Responder(event_t* ev);
-
 void HU_Ticker(void);
 void HU_Drawer(void);
 char HU_dequeueChatChar(void);
 void HU_Erase(void);
+boolean HU_Responder(event_t* ev);
 
-
+//
+// M_DrawText
+// Returns the final X coordinate
+// HU_Init must have been called to init the font
+//
+extern patch_t*		hu_font[HU_FONTSIZE];
+extern char*        chat_macros[];
 #endif
 //-----------------------------------------------------------------------------
 //
