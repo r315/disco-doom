@@ -105,6 +105,8 @@ typedef enum
 // The maximum number of players, multiplayer/networking.
 #define MAXPLAYERS		4
 
+#define MAX_DM_STARTS   10
+
 // State updates, number of tics / second.
 #define TICRATE		35
 
@@ -225,9 +227,6 @@ typedef enum
     IRONTICS	= (60*TICRATE)
     
 } powerduration_t;
-
-
-
 
 //
 // DOOM keyboard definition.

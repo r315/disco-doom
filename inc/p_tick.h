@@ -34,7 +34,8 @@
 // Carries out all thinking of monsters and players.
 void P_Ticker (void);
 
-
+// Timer, for scores.
+extern int      leveltime;	// tics in game play for par
 
 #endif
 //-----------------------------------------------------------------------------

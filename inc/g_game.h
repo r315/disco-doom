@@ -25,8 +25,9 @@
 
 #include "doomdef.h"
 #include "d_event.h"
-
-
+#include "d_ticcmd.h"
+#include "m_fixed.h"
+#include "d_player.h"
 
 //
 // GAME
@@ -70,7 +71,66 @@ boolean G_Responder (event_t*	ev);
 
 void G_ScreenShot (void);
 
+void G_BuildTiccmd (ticcmd_t* cmd);
 
+extern gameaction_t     gameaction;
+extern fixed_t          forwardmove[2];
+extern fixed_t          sidemove[2];
+extern skill_t          gameskill;
+extern int              gameepisode;
+extern int		        gamemap;
+// Nightmare mode flag, single player.
+extern  boolean         respawnmonsters;
+// Netgame? Only true if >1 player.
+extern  boolean	        netgame;
+// Flag: true only if started as net deathmatch.
+// An enum might handle altdeath/cooperative better.
+extern  boolean	        deathmatch;	
+extern  boolean	        paused;		// Game Pause?
+extern  boolean		    viewactive;
+extern  boolean		    nodrawers;
+
+// Player taking events, and displaying.
+extern int              consoleplayer;	
+extern int              displayplayer;
+
+
+// -------------------------------------
+// Scores, rating.
+// Statistics on a given map, for intermission.
+//
+extern int              totalkills;
+extern int              totalitems;
+extern int              totalsecret;
+
+// --------------------------------------
+// DEMO playback/recording related stuff.
+// No demo, there is a human player in charge?
+// Disable save/end game?
+extern boolean          usergame;
+
+extern boolean          demoplayback;
+extern boolean          demorecording;
+
+
+// Quit after playing a demo from cmdline.
+extern boolean          singledemo;	
+
+extern gamestate_t      gamestate;
+
+extern int              gametic;
+
+// Bookkeeping on players - state.
+extern player_t         players[MAXPLAYERS];
+// Alive? Disconnected?
+extern boolean          playeringame[MAXPLAYERS];
+
+// Intermission stats.
+// Parameters for world map / intermission.
+extern wbstartstruct_t		wminfo;	
+// if true, load all graphics at level load
+extern boolean          precache;
+extern int              bodyqueslot;
 #endif
 //-----------------------------------------------------------------------------
 //

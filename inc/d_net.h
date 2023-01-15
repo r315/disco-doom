@@ -25,12 +25,6 @@
 
 #include "d_player.h"
 
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-
 //
 // Network play related stuff.
 // There is a data struct that stores network
@@ -52,7 +46,6 @@ typedef enum
 {
     CMD_SEND	= 1,
     CMD_GET	= 2
-
 } command_t;
 
 
@@ -138,7 +131,15 @@ void D_QuitNetGame (void);
 //? how many ticks to run?
 void TryRunTics (void);
 
+void D_CheckNetGame (void);
 
+extern doomcom_t*       doomcom;
+
+// This points inside doomcom.
+extern doomdata_t*      netbuffer;	
+extern int              maketic;
+extern ticcmd_t         netcmds[MAXPLAYERS][BACKUPTICS];
+extern int              ticdup;
 #endif
 
 //-----------------------------------------------------------------------------

@@ -139,6 +139,7 @@ CC = $(PREFIX)gcc
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
+NM = $(PREFIX)nm
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -163,7 +164,8 @@ C_DEFS =  \
 # C Include paths
 C_INC =$(addprefix -I, $(C_INCLUDES))
 # compile gcc flags
-CFLAGS = $(MCU) $(DEBUG_FLAGS) $(OPT) -std=c11 -Wall -fdata-sections -ffunction-sections -Wno-unused-const-variable $(C_DEFS) $(C_INC)
+CFLAGS = $(MCU) $(DEBUG_FLAGS) $(OPT) -std=c11 -Wall -fdata-sections -ffunction-sections -Wno-unused-const-variable -fstack-usage
+CFLAGS +=$(C_DEFS) $(C_INC)
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 # Generate dependency information
 #CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
@@ -186,6 +188,15 @@ aslist: $(BUILD_DIR)/$(TARGET).elf
 	@$(OBJDUMP) -D $< > $(BUILD_DIR)/$(TARGET).lst
 test:
 	 @echo $(CFLAGS)
+
+bss-usage: $(EXEC)
+	$(VERBOSE)$(NM) $< > $(BUILD_DIR)/bss.bu -S --size-sort
+
+stack-usage: $(EXEC)
+	@echo "" > $(BUILD_DIR)/stack.su
+	@for file in $(BUILD_DIR)/*.su ; do cat $${file} >> $(BUILD_DIR)/stack.su.tmp; done
+	@sort $(BUILD_DIR)/stack.su.tmp -n -k2 | column -t > $(BUILD_DIR)/stack.su
+	@rm -f $(BUILD_DIR)/stack.su.tmp
 #######################################
 # Compile objects
 #######################################

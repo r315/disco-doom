@@ -27,14 +27,11 @@ static const char
 #include <stdlib.h>
 
 #include "platform.h"
-
 #include "m_swap.h"
-#include "doomstat.h"
 #include "i_system.h"
 #include "v_video.h"
 #include "common.h"
 #include "d_main.h"
-
 #include "doomdef.h"
 
 //SDL_Surface *screen;

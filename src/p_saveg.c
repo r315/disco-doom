@@ -27,9 +27,7 @@ rcsid[] = "$Id: p_tick.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 #include "i_system.h"
 #include "z_zone.h"
 #include "p_local.h"
-
-// State.
-#include "doomstat.h"
+#include "g_game.h"
 #include "r_state.h"
 
 byte*		save_p;

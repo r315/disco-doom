@@ -24,11 +24,7 @@
 #define __I_SOUND__
 
 #include "doomdef.h"
-
-#include "doomstat.h"
 #include "sounds.h"
-
-
 
 // Init at program start...
 void I_InitSound();

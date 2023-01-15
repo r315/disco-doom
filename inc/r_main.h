@@ -42,8 +42,10 @@ extern int		viewwidth;
 extern int		viewheight;
 extern int		viewwindowx;
 extern int		viewwindowy;
-
-
+extern int		scaledviewwidth;
+// This one is related to the 3-screen display mode.
+// ANG90 = left side, ANG270 = right
+extern int      viewangleoffset;
 
 extern int		centerx;
 extern int		centery;
@@ -164,6 +166,9 @@ void R_Init (void);
 // Called by M_Responder.
 void R_SetViewSize (int blocks, int detail);
 
+void R_ExecuteSetViewSize (void);
+
+extern boolean      setsizeneeded;
 #endif
 //-----------------------------------------------------------------------------
 //

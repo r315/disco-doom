@@ -209,7 +209,7 @@ void W_Reload (void)
     filelump_t*	fileinfo;
 	
     if (!reloadname)
-	return;
+	    return;
 		
     if ( (handle = fopen (reloadname,"rb")) == NULL)
 	    I_Error ("W_Reload: couldn't open %s",reloadname);
@@ -323,9 +323,7 @@ int W_LumpLength (int lump)
 // Loads the lump into the given buffer,
 //  which must be >= W_LumpLength().
 //
-void W_ReadLump
-( int		lump,
-  void*		dest )
+void W_ReadLump (int lump, void* dest)
 {
     int		c;
     lumpinfo_t*	l;
@@ -363,9 +361,6 @@ void W_ReadLump
 		
     // ??? I_EndRead ();
 }
-
-
-
 
 //
 // W_CacheLumpNum

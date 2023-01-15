@@ -24,21 +24,16 @@
 static const char
 rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 
-
-#ifdef __GNUG__
-#pragma implementation "doomstat.h"
-#endif
 #include "doomstat.h"
 
-
 // Game Mode - identify IWAD as shareware, retail etc.
-GameMode_t gamemode;
-
-// Language.
-Language_t   language = english;
-
+GameMode_t  gamemode;
 // Set if homebrew PWAD stuff has been added.
-boolean	modifiedgame;
+boolean	    modifiedgame;
+// Language.
+Language_t  language = english;
+
+
 
 
 

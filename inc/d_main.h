@@ -26,28 +26,43 @@
 #define __D_MAIN__
 
 #include "d_event.h"
+#include "doomdef.h"
 
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-//
-// Not a globally visible function, just included for source reference,
-// calls all startup code, parses command line options.
-// If not overrided by user input, calls N_AdvanceDemo.
-//
 void D_DoomMain (int argc, char **argv);
-
 // Called by IO functions when input is detected.
 void D_PostEvent (event_t* ev);
-
-//
-// BASE LEVEL
-//
 void D_PageTicker (void);
 void D_PageDrawer (void);
 void D_StartTitle (void);
 void D_AdvanceDemo (void);
 void D_DoAdvanceDemo (void);
+void D_ProcessEvents (void);
+int access(char *file, int mode);
 
+// ------------------------
+// Command line parameters.
+//
+extern  boolean	    nomonsters;	    // checkparm of -nomonsters
+extern  boolean	    respawnparm;	// checkparm of -respawn
+extern  boolean	    fastparm;	    // checkparm of -fast
+extern  boolean	    d_devparm;	    // DEBUG: launched with -devparm
+
+//?
+// debug flag to cancel adaptiveness
+extern  boolean     singletics;	
+
+// Defaults for menu, methinks.
+extern  skill_t     startskill;
+extern  int         startepisode;
+extern	int		    startmap;
+extern  boolean		autostart;
+
+// File handling stuff.
+extern  FILE*		debugfile;
+
+extern	boolean	    advancedemo;
+
+// wipegamestate can be set to -1
+//  to force a wipe on the next draw
+extern  gamestate_t wipegamestate;
 #endif

@@ -29,33 +29,23 @@ rcsid[] = "$Id: m_menu.c,v 1.7 1997/02/03 22:45:10 b1 Exp $";
 #include <ctype.h>
 
 #include "m_swap.h"
-#include "doomdef.h"
+#include "doomstat.h"
 #include "dstrings.h"
-
 #include "d_main.h"
-
 #include "i_system.h"
 #include "i_video.h"
 #include "z_zone.h"
 #include "v_video.h"
 #include "w_wad.h"
-
+#include "am_map.h"
 #include "r_local.h"
-
-
 #include "hu_stuff.h"
-
 #include "g_game.h"
-
 #include "common.h"
-
 #include "s_sound.h"
-
-#include "doomstat.h"
 
 // Data.
 #include "sounds.h"
-
 #include "m_menu.h"
 
 

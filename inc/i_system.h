@@ -39,14 +39,11 @@ void I_Init (void);
 // for the zone management.
 byte*	I_ZoneBase (int *size);
 
-
-// Called by D_DoomLoop,
 // returns current time in tics.
 int I_GetTime (void);
 
 
 //
-// Called by D_DoomLoop,
 // called before processing any tics in a frame
 // (just after displaying a frame).
 // Time consuming syncronous operations
@@ -57,7 +54,6 @@ int I_GetTime (void);
 
 
 //
-// Called by D_DoomLoop,
 // called before processing each tic in a frame.
 // Quick syncronous operations are performed here.
 // Can call D_PostEvent.

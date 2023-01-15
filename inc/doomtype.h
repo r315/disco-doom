@@ -25,27 +25,16 @@
 #define __DOOMTYPE__
 
 
-#ifndef __BYTEBOOL__
-#define __BYTEBOOL__
 typedef unsigned char byte;
 typedef signed char sbyte;
 /* Fixed to use builtin bool type with C++. */
 #ifdef __cplusplus
 	typedef bool boolean;
 #else
-	#ifdef __BEOS__	/* boolean is a builtin type for MWCC */
-		#define boolean D_BOOL
-		#undef false
-		#define false D_false
-		#undef true
-		#define true D_true
-	#endif
-#endif
 #define false 0
-#define true 1
+#define true  1
 typedef unsigned int boolean;
 #endif
-
 
 // Predefined with some OS.
 #ifdef LINUX

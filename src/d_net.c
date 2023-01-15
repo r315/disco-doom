@@ -26,20 +26,21 @@
 static const char rcsid[] = "$Id: d_net.c,v 1.3 1997/02/03 22:01:47 b1 Exp $";
 
 #include <stdlib.h>
+
 #include "m_menu.h"
 #include "i_system.h"
 #include "i_video.h"
 #include "i_net.h"
 #include "g_game.h"
 #include "doomdef.h"
-#include "doomstat.h"
 #include "d_main.h"
+#include "d_net.h"
 
-#define	NCMD_EXIT		0x80000000
-#define	NCMD_RETRANSMIT		0x40000000
-#define	NCMD_SETUP		0x20000000
-#define	NCMD_KILL		0x10000000	// kill game
-#define	NCMD_CHECKSUM	 	0x0fffffff
+#define	NCMD_EXIT         0x80000000
+#define	NCMD_RETRANSMIT	  0x40000000
+#define	NCMD_SETUP		  0x20000000
+#define	NCMD_KILL		  0x10000000	// kill game
+#define	NCMD_CHECKSUM     0x0fffffff
 
  
 doomcom_t*	doomcom;	
@@ -58,10 +59,10 @@ doomdata_t*	netbuffer;		// points inside doomcom
 #define	RESENDCOUNT	10
 #define	PL_DRONE	0x80	// bit flag in doomdata->player
 
-ticcmd_t	localcmds[BACKUPTICS];
+static ticcmd_t	localcmds[BACKUPTICS];
 
 ticcmd_t        netcmds[MAXPLAYERS][BACKUPTICS];
-int         	nettics[MAXNETNODES];
+static int         	nettics[MAXNETNODES];
 boolean		nodeingame[MAXNETNODES];		// set false as nodes leave game
 boolean		remoteresend[MAXNETNODES];		// set when local needs tics
 int		resendto[MAXNETNODES];			// set when remote needs tics
@@ -75,9 +76,6 @@ int		skiptics;
 int		ticdup;		
 int		maxsend;	// BACKUPTICS/(2*ticdup)-1
 
-
-void D_ProcessEvents (void); 
-void G_BuildTiccmd (ticcmd_t *cmd); 
  
 boolean		reboundpacket;
 doomdata_t	reboundstore;
@@ -548,8 +546,6 @@ void D_ArbitrateNetStart (void)
 // D_CheckNetGame
 // Works out player numbers among the net participants
 //
-extern	int			viewangleoffset;
-
 void D_CheckNetGame (void)
 {
 int i;
@@ -639,8 +635,6 @@ int	frametics[4];
 int	frameon;
 int	frameskip[4];
 int	oldnettics;
-
-extern	boolean	advancedemo;
 
 void TryRunTics (void)
 {

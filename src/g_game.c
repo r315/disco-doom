@@ -27,8 +27,6 @@ static const char
 #include <stdlib.h>
 
 #include "doomdef.h"
-#include "doomstat.h"
-
 #include "z_zone.h"
 #include "f_finale.h"
 #include "common.h"
@@ -36,36 +34,26 @@ static const char
 #include "m_menu.h"
 #include "m_random.h"
 #include "i_system.h"
-
 #include "p_setup.h"
 #include "p_saveg.h"
 #include "p_tick.h"
-
 #include "d_main.h"
-
 #include "wi_stuff.h"
 #include "hu_stuff.h"
 #include "st_stuff.h"
 #include "am_map.h"
-
-// Needs access to LFB.
 #include "v_video.h"
-
 #include "w_wad.h"
-
+#include "p_inter.h"
 #include "p_local.h"
-
 #include "s_sound.h"
-
-// Data.
 #include "dstrings.h"
 #include "sounds.h"
-
-// SKY handling - still the wrong place.
 #include "r_data.h"
 #include "r_sky.h"
-
+#include "d_net.h"
 #include "g_game.h"
+#include "doomstat.h"
 
 #define SAVEGAMESIZE 0x2c000
 #define SAVESTRINGSIZE 24
@@ -114,7 +102,7 @@ player_t players[MAXPLAYERS];
 int consoleplayer; // player taking events and displaying
 int displayplayer; // view being displayed
 int gametic;
-int levelstarttic;                       // gametic at level start
+static int levelstarttic;                       // gametic at level start
 int totalkills, totalitems, totalsecret; // for intermission
 
 char demoname[32];
@@ -1133,9 +1121,6 @@ void G_DoWorldDone(void)
 // G_InitFromSavegame
 // Can be called by the startup code or the menu task.
 //
-extern boolean setsizeneeded;
-void R_ExecuteSetViewSize(void);
-
 char savename[256];
 
 void G_LoadGame(char *name)

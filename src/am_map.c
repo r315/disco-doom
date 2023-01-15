@@ -25,27 +25,21 @@ static const char rcsid[] = "$Id: am_map.c,v 1.4 1997/02/03 21:24:33 b1 Exp $";
 
 #include <stdio.h>
 
-
+#include "m_fixed.h"
 #include "z_zone.h"
 #include "doomdef.h"
 #include "st_stuff.h"
 #include "p_local.h"
 #include "w_wad.h"
-
+#include "d_player.h"
 #include "m_cheat.h"
 #include "i_system.h"
-
-// Needs access to LFB.
+#include "p_mobj.h"
 #include "v_video.h"
-
-// State.
-#include "doomstat.h"
 #include "r_state.h"
-
-// Data.
 #include "dstrings.h"
-
 #include "am_map.h"
+#include "g_game.h"
 
 
 // For use if I do walls with outsides/insides
@@ -289,7 +283,6 @@ static cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
 
 static boolean stopped = true;
 
-extern boolean viewactive;
 //extern byte screens[][SCREENWIDTH*SCREENHEIGHT];
 
 

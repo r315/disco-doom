@@ -33,6 +33,7 @@ static const char
 #include "i_system.h"
 #include "i_sound.h"
 #include "w_wad.h"
+#include "g_game.h"
 
 #define NUM_CHANNELS    8
 #define SAMPLERATE      11025 // Hz

@@ -27,14 +27,10 @@ rcsid[] = "$Id: p_ceilng.c,v 1.4 1997/02/03 16:47:53 b1 Exp $";
 #include "z_zone.h"
 #include "doomdef.h"
 #include "p_local.h"
-
+#include "p_tick.h"
 #include "s_sound.h"
-
-// State.
-#include "doomstat.h"
 #include "r_state.h"
-
-// Data.
+#include "g_game.h"
 #include "sounds.h"
 
 //

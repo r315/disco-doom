@@ -36,8 +36,9 @@ rcsid[] = "$Id: i_unix.c,v 1.5 1997/02/03 22:45:10 b1 Exp $";
 #include "common.h"
 #include "m_misc.h"
 #include "w_wad.h"
-
 #include "doomdef.h"
+#include "s_sound.h"
+#include "g_game.h"
 
 
 // The number of internal mixing channels,

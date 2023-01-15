@@ -30,21 +30,14 @@ rcsid[] = "$Id: p_enemy.c,v 1.5 1997/02/03 22:45:11 b1 Exp $";
 
 #include "m_random.h"
 #include "i_system.h"
-
 #include "doomdef.h"
 #include "p_local.h"
-
 #include "s_sound.h"
-
 #include "g_game.h"
-
-// State.
-#include "doomstat.h"
 #include "r_state.h"
-
-// Data.
 #include "sounds.h"
-
+#include "d_main.h"
+#include "doomstat.h"
 
 
 

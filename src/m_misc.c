@@ -30,31 +30,22 @@ rcsid[] = "$Id: m_misc.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 #include <stdlib.h>
 #include <ctype.h>
 
-extern int access(char *file, int mode);
-
 #include "doomdef.h"
-
+#include "g_game.h"
 #include "z_zone.h"
-
 #include "m_swap.h"
 #include "common.h"
-
 #include "w_wad.h"
-
 #include "i_system.h"
 #include "i_video.h"
 #include "v_video.h"
-
 #include "hu_stuff.h"
-
-// State.
-#include "doomstat.h"
-
-// Data.
 #include "dstrings.h"
-
 #include "m_misc.h"
+#include "s_sound.h"
+#include "d_main.h"
 
+static char basedefault[1024];
 //
 // M_DrawText
 // Returns the final X coordinate
@@ -188,7 +179,6 @@ extern int	joybuse;
 extern int	joybspeed;
 
 extern int	viewwidth;
-extern int	viewheight;
 
 extern int	mouseSensitivity;
 extern int	showMessages;

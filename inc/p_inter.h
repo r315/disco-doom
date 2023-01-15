@@ -23,15 +23,14 @@
 #ifndef __P_INTER__
 #define __P_INTER__
 
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
+#include "doomdef.h"
 
 boolean	P_GivePower(player_t*, int);
 
-
+// LUT of ammunition limits for each kind.
+// This doubles with BackPack powerup item.
+extern int      maxammo[NUMAMMO];
+extern int		clipammo[NUMAMMO];
 
 #endif
 //-----------------------------------------------------------------------------

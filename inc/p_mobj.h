@@ -39,14 +39,6 @@
 // Needs precompiled tables/data structures.
 #include "info.h"
 
-
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-
-
 //
 // NOTES: mobj_t
 //
@@ -210,18 +202,18 @@ typedef struct mobj_s
     thinker_t		thinker;
 
     // Info for drawing: position.
-    fixed_t		x;
-    fixed_t		y;
-    fixed_t		z;
+    fixed_t		    x;
+    fixed_t		    y;
+    fixed_t		    z;
 
     // More list: links in sector (if needed)
     struct mobj_s*	snext;
     struct mobj_s*	sprev;
 
     //More drawing info: to determine current sprite.
-    angle_t		angle;	// orientation
+    angle_t		    angle;	// orientation
     spritenum_t		sprite;	// used to find patch_t and flip value
-    int			frame;	// might be ORed with FF_FULLBRIGHT
+    int			    frame;	// might be ORed with FF_FULLBRIGHT
 
     // Interaction info, by BLOCKMAP.
     // Links in blocks (if needed).
@@ -231,32 +223,32 @@ typedef struct mobj_s
     struct subsector_s*	subsector;
 
     // The closest interval over all contacted Sectors.
-    fixed_t		floorz;
-    fixed_t		ceilingz;
+    fixed_t		    floorz;
+    fixed_t		    ceilingz;
 
     // For movement checking.
-    fixed_t		radius;
-    fixed_t		height;	
+    fixed_t		    radius;
+    fixed_t		    height;	
 
     // Momentums, used to update position.
-    fixed_t		momx;
-    fixed_t		momy;
-    fixed_t		momz;
+    fixed_t		    momx;
+    fixed_t		    momy;
+    fixed_t		    momz;
 
     // If == validcount, already checked.
-    int			validcount;
+    int			    validcount;
 
     mobjtype_t		type;
     mobjinfo_t*		info;	// &mobjinfo[mobj->type]
     
-    int			tics;	// state tic counter
+    int			    tics;	// state tic counter
     state_t*		state;
-    int			flags;
-    int			health;
+    int			    flags;
+    int			    health;
 
     // Movement direction, movement generation (zig-zagging).
-    int			movedir;	// 0-7
-    int			movecount;	// when 0, select a new dir
+    int			    movedir;	// 0-7
+    int			    movecount;	// when 0, select a new dir
 
     // Thing being chased/attacked (or NULL),
     // also the originator for missiles.
@@ -264,25 +256,24 @@ typedef struct mobj_s
 
     // Reaction time: if non 0, don't attack yet.
     // Used by player to freeze a bit after teleporting.
-    int			reactiontime;   
+    int			    reactiontime;   
 
     // If >0, the target will be chased
     // no matter what (even if shot)
-    int			threshold;
+    int			    threshold;
 
     // Additional info record for player avatars only.
     // Only valid if type == MT_PLAYER
     struct player_s*	player;
 
     // Player number last looked for.
-    int			lastlook;	
+    int			    lastlook;	
 
     // For nightmare respawn.
     mapthing_t		spawnpoint;	
 
     // Thing being chased/attacked for tracers.
-    struct mobj_s*	tracer;	
-    
+    struct mobj_s*	tracer; 
 } mobj_t;
 
 

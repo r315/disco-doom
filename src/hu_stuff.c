@@ -25,23 +25,17 @@ rcsid[] = "$Id: hu_stuff.c,v 1.4 1997/02/03 16:47:52 b1 Exp $";
 
 #include <ctype.h>
 
-#include "doomdef.h"
-
+#include "doomstat.h"
 #include "z_zone.h"
-
 #include "m_swap.h"
-
 #include "hu_stuff.h"
 #include "hu_lib.h"
 #include "w_wad.h"
-
 #include "s_sound.h"
-
-#include "doomstat.h"
-
-// Data.
+#include "am_map.h"
 #include "dstrings.h"
 #include "sounds.h"
+#include "g_game.h"
 
 //
 // Locally used constants, shortcuts.
@@ -103,7 +97,6 @@ static hu_stext_t	w_message;
 static int		message_counter;
 
 extern int		showMessages;
-extern boolean		automapactive;
 
 static boolean		headsupactive = false;
 

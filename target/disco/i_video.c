@@ -1,10 +1,9 @@
 #include <stdlib.h>
+
 #include "doomdef.h"
-#include "doomstat.h"
 #include "i_system.h"
 #include "v_video.h"
 #include "d_main.h"
-
 #include "board.h"
 
 //#define NO_VIDEO

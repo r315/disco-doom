@@ -29,7 +29,6 @@ static const char
 #include "target.h"
 
 #include "m_swap.h"
-#include "doomstat.h"
 #include "i_system.h"
 #include "v_video.h"
 #include "common.h"

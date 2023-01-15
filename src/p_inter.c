@@ -27,30 +27,18 @@ rcsid[] = "$Id: p_inter.c,v 1.4 1997/02/03 22:45:11 b1 Exp $";
 
 
 // Data.
-#include "doomdef.h"
+#include "doomstat.h"
 #include "dstrings.h"
 #include "sounds.h"
-
-#include "doomstat.h"
-
 #include "m_random.h"
 #include "i_system.h"
-
 #include "am_map.h"
-
 #include "p_local.h"
-
 #include "s_sound.h"
-
-#ifdef __GNUG__
-#pragma implementation "p_inter.h"
-#endif
 #include "p_inter.h"
-
+#include "g_game.h"
 
 #define BONUSADD	6
-
-
 
 
 // a weapon is found with two clip loads,

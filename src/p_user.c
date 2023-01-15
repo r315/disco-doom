@@ -27,15 +27,10 @@
 static const char
 rcsid[] = "$Id: p_user.c,v 1.3 1997/01/28 22:08:29 b1 Exp $";
 
-
-#include "doomdef.h"
-#include "d_event.h"
-
-#include "p_local.h"
-
 #include "doomstat.h"
-
-
+#include "d_event.h"
+#include "p_local.h"
+#include "p_tick.h"
 
 // Index of the special effects (INVUL inverse) map.
 #define INVERSECOLORMAP		32

@@ -23,11 +23,7 @@
 #ifndef __P_SETUP__
 #define __P_SETUP__
 
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
+#include "doomdata.h"
 
 // NOT called by W_Ticker. Fixme.
 void
@@ -39,6 +35,13 @@ P_SetupLevel
 
 // Called by startup code.
 void P_Init (void);
+
+// Player spawn spots for deathmatch.
+extern  mapthing_t*	    deathmatch_p;
+extern  mapthing_t      deathmatchstarts[MAX_DM_STARTS];
+
+// Player spawn spots.
+extern  mapthing_t      playerstarts[MAXPLAYERS];
 
 #endif
 //-----------------------------------------------------------------------------

@@ -35,10 +35,10 @@ rcsid[] = "$Id: hu_lib.c,v 1.3 1997/01/26 07:44:58 b1 Exp $";
 #include "r_local.h"
 #include "r_draw.h"
 
+#include "am_map.h"
+
 // boolean : whether the screen is always erased
 #define noterased viewwindowx
-
-extern boolean	automapactive;	// in AM_map.c
 
 void HUlib_init(void)
 {

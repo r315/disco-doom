@@ -27,18 +27,17 @@ rcsid[] = "$Id: p_mobj.c,v 1.5 1997/02/03 22:45:12 b1 Exp $";
 #include "i_system.h"
 #include "z_zone.h"
 #include "m_random.h"
-
 #include "doomdef.h"
 #include "p_local.h"
 #include "sounds.h"
-
 #include "st_stuff.h"
 #include "hu_stuff.h"
-
 #include "s_sound.h"
-
-#include "doomstat.h"
-
+#include "d_main.h"
+#include "g_game.h"
+#include "r_sky.h"
+#include "p_tick.h"
+#include "p_setup.h"
 
 void G_PlayerReborn (int player);
 void P_SpawnMapThing (mapthing_t*	mthing);

@@ -22,6 +22,8 @@
 #ifndef __AMMAP_H__
 #define __AMMAP_H__
 
+#include "d_event.h"
+
 // Used by ST StatusBar stuff.
 #define AM_MSGHEADER (('a'<<24)+('m'<<16))
 #define AM_MSGENTERED (AM_MSGHEADER | ('e'<<8))
@@ -42,7 +44,7 @@ void AM_Drawer (void);
 // if the level is completed while it is up.
 void AM_Stop (void);
 
-
+extern  boolean automapactive;	// In AutoMap mode?
 
 #endif
 //-----------------------------------------------------------------------------

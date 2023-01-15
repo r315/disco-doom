@@ -65,13 +65,6 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 #include "d_event.h"
 #include "d_net.h"
 #include "common.h"
-
-#include "doomstat.h"
-
-#ifdef __GNUG__
-	#pragma implementation "i_net.h"
-#endif
-
 #include "i_net.h"
 
 // For some odd reason...

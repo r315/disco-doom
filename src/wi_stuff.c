@@ -27,29 +27,17 @@ rcsid[] = "$Id: wi_stuff.c,v 1.7 1997/02/03 22:45:13 b1 Exp $";
 #include <stdio.h>
 
 #include "m_swap.h"
-
 #include "z_zone.h"
-
 #include "m_random.h"
-
 #include "i_system.h"
-
 #include "w_wad.h"
-
 #include "g_game.h"
-
 #include "r_local.h"
 #include "s_sound.h"
-
-#include "doomstat.h"
-
-// Data.
 #include "sounds.h"
-
-// Needs access to LFB.
 #include "v_video.h"
-
 #include "wi_stuff.h"
+#include "doomstat.h"
 
 //
 // Data needed to add patches to full screen intermission pics.

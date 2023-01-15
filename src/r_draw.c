@@ -27,23 +27,13 @@
 static const char
 rcsid[] = "$Id: r_draw.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 
-
-#include "doomdef.h"
-
+#include "doomstat.h"
 #include "i_system.h"
 #include "z_zone.h"
 #include "w_wad.h"
-
 #include "r_local.h"
-
-// Needs access to LFB (guess what).
 #include "v_video.h"
 
-// State.
-#include "doomstat.h"
-
-
-// ?
 #define MAXWIDTH			1120
 #define MAXHEIGHT			832
 
