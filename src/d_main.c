@@ -611,7 +611,7 @@ void D_DoomMain (int argc, char **argv)
 
     if(gamemode == shareware){
         COM_Print ("DOOM Shareware Startup v%u.%u\n",
-		            VERSION_NUM/100,VERSION_NUM%100);
+		            VERSION_NUM/100, VERSION_NUM%100);
     }
     
 	/* turbo option */
@@ -642,7 +642,7 @@ void D_DoomMain (int argc, char **argv)
     COM_Print ("Z_Init: Init zone memory allocation daemon. \n");
     Z_Init ();
 
-    COM_Print ("W_AddFile: adding %s.\n", wadfilename);
+    COM_Print ("W_Init: Init wadfiles.\n");
     W_AddFile(wadfilename);
 
     COM_Print ("M_Init: Init miscellaneous info.\n");

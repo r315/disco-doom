@@ -62,6 +62,7 @@ boolean HU_Responder(event_t* ev);
 //
 extern patch_t*		hu_font[HU_FONTSIZE];
 extern char*        chat_macros[];
+extern char*	    mapnames[];
 #endif
 //-----------------------------------------------------------------------------
 //

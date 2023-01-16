@@ -139,6 +139,8 @@ void W_AddFile (char *filename)
     	COM_Print ("W_AddFile: couldn't open %s\n",filename);
     	return;
     }
+
+    COM_Print ("\tAdding %s..\n",filename);
    
 	// WAD file header
 	fread(&wadinfo, 1, sizeof(wadinfo_t), handle);     
