@@ -1498,16 +1498,16 @@ void G_DoPlayDemo(void)
     gameaction = ga_nothing;
     demobuffer = demo_p = W_CacheLumpName(defdemoname, PU_STATIC);
 
-    demo_p++;
-
 #if  VERSION_NUM_CHECK
     if (*demo_p != VERSION_NUM)
     {
-        fprintf(stderr, "Demo is from a different game version!\n");
+        fprintf(stderr, "Demo is from a different game version! expected: %d got: %d\n", VERSION_NUM, *demo_p); 
         gameaction = ga_nothing;
         return;
     }
 #endif
+
+    demo_p++;
 
     skill = *demo_p++;
     episode = *demo_p++;

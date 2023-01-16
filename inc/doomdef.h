@@ -127,7 +127,7 @@
 
 #define KEY_LALT	KEY_RALT
 
-#define VERSION_NUM_CHECK 0
+#define VERSION_NUM_CHECK 1
 
 #define DEFAULT_FILE    "default.cfg"
 //
