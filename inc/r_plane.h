@@ -25,11 +25,7 @@
 
 
 #include "r_data.h"
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
+#include "doomdef.h"
 
 // Visplane related.
 extern  short*		lastopening;
