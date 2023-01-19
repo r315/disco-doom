@@ -105,6 +105,8 @@ static default_t defaults[] =
         {"key_left", &key_left, KEY_LEFTARROW},
         {"key_up", &key_up, KEY_UPARROW},
         {"key_down", &key_down, KEY_DOWNARROW},
+        {"key_forward", &key_forward, 'w'},
+        {"key_backward", &key_backward, 's'},
         {"key_strafeleft", &key_strafeleft, 'a'},
         {"key_straferight", &key_straferight, 'd'},
 

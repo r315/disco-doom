@@ -127,9 +127,11 @@ byte *savebuffer;
 //
 int key_right;
 int key_left;
-
 int key_up;
 int key_down;
+
+int key_forward;
+int key_backward;
 int key_strafeleft;
 int key_straferight;
 int key_fire;
@@ -273,16 +275,18 @@ void G_BuildTiccmd(ticcmd_t *cmd)
             cmd->angleturn += angleturn[tspeed];
     }
 	
-    if (gamekeydown[key_up])
+    if (gamekeydown[key_up] || gamekeydown[key_forward])
     {
         // fprintf(stderr, "up\n");
         forward += forwardmove[speed];
     }
-    if (gamekeydown[key_down])
+
+    if (gamekeydown[key_down] || gamekeydown[key_backward])
     {
         // fprintf(stderr, "down\n");
         forward -= forwardmove[speed];
     }
+    
     if (joyymove < 0)
         forward += forwardmove[speed];
     if (joyymove > 0)

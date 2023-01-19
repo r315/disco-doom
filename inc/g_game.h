@@ -136,6 +136,8 @@ extern int	key_right;
 extern int	key_left;
 extern int	key_up;
 extern int	key_down;
+extern int  key_forward;
+extern int  key_backward;
 extern int	key_strafeleft;
 extern int	key_straferight;
 extern int	key_fire;
