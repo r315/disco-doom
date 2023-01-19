@@ -267,7 +267,6 @@ static void D_Display (void)
 	       R_DrawViewBorder ();    // erase old menu stuff
 	       borderdrawcount--;
 	    }
-
     }
 
     menuactivestate = menuactive;
@@ -633,6 +632,9 @@ void D_DoomMain (int argc, char **argv)
     }    
    
     // init subsystems
+	COM_Print("I_Init: Setting up system state.\n");
+	I_Init();
+
     COM_Print ("V_Init: allocate screens.\n");
     V_Init ();
 
@@ -653,15 +655,18 @@ void D_DoomMain (int argc, char **argv)
 
     COM_Print ("\nP_Init: Init Playloop state.\n");
     P_Init ();
-
-    COM_Print ("I_Init: Setting up machine state.\n");
-    I_Init ();
-
-    COM_Print ("D_CheckNetGame: Checking network game status.\n");
+    
+	COM_Print ("D_CheckNetGame: Checking network game status.\n");
     D_CheckNetGame ();
 
     COM_Print ("S_Init: Setting up sound.\n");
     S_Init (snd_SfxVolume, snd_MusicVolume);
+
+    COM_Print("I_InitSound: Setting audio driver\n");
+	I_InitSound();
+
+    COM_Print("I_InitGraphics: Setting graphics driver\n");
+	I_InitGraphics();
 
     COM_Print ("HU_Init: Setting up heads up display.\n");
     HU_Init ();

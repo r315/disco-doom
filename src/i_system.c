@@ -32,19 +32,13 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 #include "m_misc.h"
 #include "i_video.h"
 #include "i_sound.h"
-
 #include "d_net.h"
 #include "g_game.h"
-
 #include "target.h"
-
-#ifdef __GNUG__
-#pragma implementation "i_system.h"
-#endif
 #include "i_system.h"
 
-int	mb_used = 6;
-
+static int  bytes_in_use;
+static ticcmd_t	emptycmd;
 
 int I_strncasecmp(char *str1, char *str2, int len)
 {
@@ -59,35 +53,30 @@ int I_strncasecmp(char *str1, char *str2, int len)
 	return(0);
 }
 
-void
-I_Tactile
-( int	on,
-  int	off,
-  int	total )
-{
-  // UNUSED.
-  on = off = total = 0;
-}
-
-ticcmd_t	emptycmd;
-ticcmd_t*	I_BaseTiccmd(void)
+ticcmd_t* I_BaseTiccmd(void)
 {
     return &emptycmd;
 }
 
-
 int  I_GetHeapSize (void)
 {
-    return mb_used*1024*1024;
+    return bytes_in_use;
 }
 
-byte* I_ZoneBase (int*	size)
+byte* I_ZoneBase (int* size)
 {
-    *size = mb_used*1024*1024;
-    return (byte *) malloc (*size);
+    byte *zone;
+
+    zone = (byte*)malloc (bytes_in_use);
+    
+    if(!zone){
+        I_Error("I_ZoneBase: malloc fail");
+    }
+
+    *size = bytes_in_use;
+    
+    return zone;
 }
-
-
 
 //
 // I_GetTime
@@ -102,9 +91,8 @@ int  I_GetTime (void)
 // I_Init
 //
 void I_Init (void)
-{        
-    I_InitSound();
-	I_InitGraphics();
+{  
+    bytes_in_use = 4 *1024 * 1024;
 }
 
 //
@@ -133,12 +121,15 @@ void I_EndRead(void)
 {
 }
 
-byte*	I_AllocLow(int length)
+byte* I_AllocLow(int length)
 {
     byte*	mem;
-        
     mem = (byte *)malloc (length);
-    memset (mem,0,length);
+    if(!mem){
+        I_Error("I_AllocLow: malloc fail");
+    }
+
+    memset (mem, 0, length);
     return mem;
 }
 

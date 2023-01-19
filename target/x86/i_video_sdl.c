@@ -509,23 +509,27 @@ void I_InitGraphics(void)
 		break;
 	default:;
 	}
+	
 	if (multiply > 3)
 	{
 		I_Error("Smallest available mode (%dx%d) is too large!",
 				video_w, video_h);
 	}
+
 	screen = SDL_SetVideoMode(video_w, video_h, 8, video_flags);
 	if (screen == NULL)
 	{
 		I_Error("Could not set %dx%d video mode: %s", video_w, video_h,
 				SDL_GetError());
 	}
+
 	SDL_ShowCursor(0);
 	SDL_WM_SetCaption("SDL DOOM! v1.10", "doom");
 
 	/* Set up the screen displays */
 	w = SCREENWIDTH * multiply;
 	h = SCREENHEIGHT * multiply;
+
 	if (multiply == 1 && !SDL_MUSTLOCK(screen))
 	{
 		screens[0] = (unsigned char *)screen->pixels;
