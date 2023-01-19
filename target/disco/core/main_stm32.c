@@ -23,7 +23,8 @@ int main(void)
     char *arguments[] = {
         "disco_doom",
         "doom1.wad",
-        "-shdev"
+        "-shdev",
+        "-devparm"
         //"-autostart",
         //"-nomonsters"
     };

@@ -33,7 +33,7 @@ typedef boolean boolean;
 #else
 #define false 0
 #define true  1
-typedef unsigned char boolean;
+typedef unsigned int boolean;
 #endif
 
 // Predefined with some OS.

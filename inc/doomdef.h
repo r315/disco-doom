@@ -58,16 +58,14 @@
 //  scaling e.g. to 2. Drawing of status bar,
 //  menues etc. is tied to the scale implied
 //  by the graphics.
-#define	SCREEN_MUL		1
-#define	INV_ASPECT_RATIO	0.625 // 0.75, ideally
+#define	SCREEN_MUL			1
+#define	INV_ASPECT_RATIO	16 //0.625f, 0.75, ideally
 
 // Defines suck. C sucks.
 // C++ might sucks for OOP, but it sure is a better C.
 // So there.
-#define SCREENWIDTH  320
-//SCREEN_MUL*BASE_WIDTH //320
-#define SCREENHEIGHT 200
-//(int)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
+#define SCREENWIDTH  (SCREEN_MUL * BASE_WIDTH)
+#define SCREENHEIGHT (SCREENWIDTH * 10 / INV_ASPECT_RATIO)
 
 // The maximum number of players, multiplayer/networking.
 #define MAXPLAYERS		4

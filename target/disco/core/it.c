@@ -143,24 +143,20 @@ void Stack_Dump(stackframe_t *stack){
   * @param  None
   * @retval None
   */
-void LTDC_IRQHandler(void)
-{
-    HAL_LTDC_IRQHandler(&hltdc_discovery);
-}
 
 void SDMMC2_IRQHandler(void)
 {
-    HAL_SD_IRQHandler(&uSdHandle);
+    //HAL_SD_IRQHandler(&uSdHandle);
 }
 
 void DMA2_Stream0_IRQHandler(void)
 {
-    HAL_DMA_IRQHandler(uSdHandle.hdmarx);
+    //AL_DMA_IRQHandler(uSdHandle.hdmarx);
 }
 
 void DMA2_Stream5_IRQHandler(void)
 {
-    HAL_DMA_IRQHandler(uSdHandle.hdmatx);
+    //HAL_DMA_IRQHandler(uSdHandle.hdmatx);
 }
 
 void DMA2_Stream6_IRQHandler(void)

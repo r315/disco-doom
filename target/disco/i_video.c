@@ -5,73 +5,70 @@
 #include "v_video.h"
 #include "d_main.h"
 #include "board.h"
+#include "hu_lib.h"
+#include "hu_stuff.h"
 
-//#define NO_VIDEO
-#define DOUBLE_SCREEN 1
-//#define ROTATION_180 1
+#define VIDEO_ENABLED       1
+#define DOUBLE_SCREEN       1
+#define VIDEO_PALETTE_DMA   0
+#define VIDEO_DMA           1
+#define VIDEO_DRAW_PALETTE  1
+#define VIDEO_LAYER_WINDOW	0
 
-#ifndef NO_VIDEO
-typedef struct __attribute__((__packed__)){
-    byte b;    
-    byte g;
-    byte r;
-    byte alpha;
-}palette_t;
+#define VIDEO_LAYER			DMA2D_FOREGROUND_LAYER
+#define VIDEO_LAYER_BASE    LCD_FG_BASE_ADDR
 
-static DMA2D_HandleTypeDef  hdma2d;
-static uint32_t forground_clut[256];
-#ifdef DOUBLE_SCREEN
-#define FRAME_OFFSET ( ((400 - SCREENWIDTH) + ((240 - SCREENHEIGHT) * 800)) * 4)
-uint8_t *dfb;
-#endif
-//
-//  LoadPalette
-//
-void LoadPalette(uint32_t *clut)
-{   
-    DMA2D_CLUTCfgTypeDef CLUTCfg;
-
-    hdma2d.Instance = DMA2D;   
-    
-    /*##-1- Configure the DMA2D Mode, Color Mode and output offset #############*/ 
-    hdma2d.Init.Mode          = DMA2D_M2M_PFC;
-    hdma2d.Init.ColorMode     = DMA2D_OUTPUT_ARGB8888;
-#ifdef DOUBLE_SCREEN
-    hdma2d.Init.OutputOffset  = BSP_LCD_GetXSize() - (SCREENWIDTH<<1);
+#if DOUBLE_SCREEN
+#define CANVAS_WIDTH        (SCREENWIDTH * 2)
+#define CANVAS_HEIGHT       (SCREENHEIGHT * 2)
 #else
-    hdma2d.Init.OutputOffset  = BSP_LCD_GetXSize() - SCREENWIDTH; // Offset added to the end of each line
+#define CANVAS_WIDTH        SCREENWIDTH
+#define CANVAS_HEIGHT       SCREENHEIGHT
 #endif
-    hdma2d.Init.AlphaInverted = DMA2D_REGULAR_ALPHA;  /* No Output Alpha Inversion*/  
-    hdma2d.Init.RedBlueSwap   = DMA2D_RB_REGULAR;     /* No Output Red & Blue swap */  
 
-    /*##-2- DMA2D Callbacks Configuration ######################################*/
-    hdma2d.XferCpltCallback  = NULL;
+#if VIDEO_LAYER_WINDOW
+#define VIDEO_WINDOW		VIDEO_LAYER_BASE
+#else
+#define VIDEO_WINDOW		(VIDEO_LAYER_BASE + ( (((800 - CANVAS_WIDTH)/2) + ((480 - CANVAS_HEIGHT) * 400)) * 4))
+#endif
 
-    /*##-3- Foreground Configuration ###########################################*/
-    hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].AlphaMode      = DMA2D_REPLACE_ALPHA;
-    hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].InputAlpha     = 0xFF; /* Opaque */
-    hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].InputColorMode = DMA2D_INPUT_L8;
-    hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].InputOffset    = 0;
-    hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].AlphaInverted  = DMA2D_REGULAR_ALPHA; /* No ForeGround Alpha inversion */  
-    hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].RedBlueSwap    = DMA2D_RB_REGULAR;    /* No ForeGround Red/Blue swap */ 
-   
-    /* DMA2D Initialization */
-    if(HAL_DMA2D_Init(&hdma2d) == HAL_OK) 
-    {
-        if(HAL_DMA2D_ConfigLayer(&hdma2d, DMA2D_FOREGROUND_LAYER) == HAL_OK) 
-        {
-            /* Load DMA2D Foreground CLUT */
-            CLUTCfg.CLUTColorMode = DMA2D_CCM_ARGB8888;     
-            CLUTCfg.pCLUT = clut;
-            CLUTCfg.Size = 255;
+#define DMA2D_CR_M2M (0 << 16)
+#define DMA2D_CR_M2M_PFC (1 << 16)
+#define DMA2D_CR_M2M_BLEND (2 << 16)
+#define DMA2D_CR_R2M (3 << 16)
+#define DMA2D_FGPFCCR_SET_ALPHA(a) ((a << 24) | (1 << 16))
+#define DMA2D_FGPFCCR_SET_CS(cs) ((cs) << 8)	// CLUT size
+#define DMA2D_FGPFCCR_SET_CM(cm) ((cm) << 0)  // Input Color mode
+#define DMA2D_OPFCCR_SET_CM(cm) ((cm) << 0)	// Output Color mode
+#define DMA2D_NLR_PLNL(pl, nl) (((pl) << 16) | nl)
 
-            if(HAL_DMA2D_CLUTLoad(&hdma2d, CLUTCfg, DMA2D_FOREGROUND_LAYER) == HAL_OK){
-                HAL_DMA2D_PollForTransfer(&hdma2d, 100);  
-            }            
-        }
-    }   
+#define LCD_BACKGROUND_COLOR    0xFF484848
+
+static byte	*screen_buffer;
+static hu_textline_t	h_fps;
+
+#if DOUBLE_SCREEN
+static uint8_t *dfb;
+#endif
+
+static void LCD_ConfigVideoDma(uint32_t src, uint16_t w, uint16_t h)
+{
+    DMA2D->CR = DMA2D_CR_M2M_PFC;
+    DMA2D->FGMAR = src;
+    DMA2D->FGOR = 0;
+    DMA2D->FGPFCCR = DMA2D_FGPFCCR_SET_ALPHA(0xFF) |        // Replace alpha 
+                     DMA2D_FGPFCCR_SET_CS(256 - 1) |        // CLUT Size
+                     DMA2D_FGPFCCR_SET_CM(DMA2D_INPUT_L8) | // Input color format
+                     DMA2D_FGPFCCR_CCM;                     // RGB CLUT Mode
+    DMA2D->OPFCCR = DMA2D_OPFCCR_SET_CM(DMA2D_OUTPUT_ARGB8888) |
+                    //DMA2D_OPFCCR_RBS |                    // Swap Red Blue
+                    0;
+    DMA2D->OMAR = (uint32_t)VIDEO_WINDOW;                   // Absolute memory address 
+    DMA2D->OOR = BSP_LCD_GetXSize() - w;                    // Add offset to start of next line
+    DMA2D->NLR = DMA2D_NLR_PLNL(w, h);
+
+    LTDC->BCCR = LCD_BACKGROUND_COLOR;
 }
-#endif
 
 /**
  * Game API
@@ -81,12 +78,13 @@ void LoadPalette(uint32_t *clut)
 //
 void I_ShutdownGraphics(void)
 { 
+#if DOUBLE_SCREEN
     if(dfb != NULL){
         free(dfb);
     }
-
-    if(screens[0] != NULL){
-        free(screens[0]);
+#endif
+    if(screen_buffer != NULL){
+        free(screen_buffer);
     }   
 }
 
@@ -133,54 +131,50 @@ void I_UpdateNoBlit(void)
 //
 void I_FinishUpdate(void)
 {
-#ifndef NO_VIDEO
-static uint32_t fps_tick = 0;
-static int fps = 0;
-char tmp[5];
+#ifdef VIDEO_ENABLED
 
-    if(fps_tick < HAL_GetTick()){
-        sprintf(tmp, "%d", fps);
-        BSP_LCD_DisplayStringAtLine(0, (uint8_t*)tmp); 
-        fps = 0;
-        fps_tick = HAL_GetTick() + 1000;
-    }else{
-        fps++;
+    if(d_devparm){
+        static uint32_t fps_tick = 0;
+        static int fps = 0;
+        static char txt[5];
+
+        if(fps_tick < HAL_GetTick()){
+            sprintf(txt, "%d", fps);
+            //BSP_LCD_DisplayStringAtLine(0, (uint8_t*)txt); 
+            fps = 0;
+            fps_tick = HAL_GetTick() + 1000;
+        }else{
+            fps++;
+        }
+
+        HUlib_clearTextLine(&h_fps);
+        char *ptxt = txt;
+
+        while (*ptxt) {
+            HUlib_addCharToTextLine(&h_fps, *ptxt++);
+        }
+        HUlib_drawTextLine(&h_fps, false);
     }
 
-#ifdef DOUBLE_SCREEN   
-    uint8_t *fb = screens[0];
+#if DOUBLE_SCREEN   
+    uint8_t *fb = screen_buffer;
     // Double the size
-#ifndef ROTATION_180
-    for(int i = 0; i < SCREENHEIGHT<<1; i+=2){
-        for(int j = 0; j < SCREENWIDTH<<1; j+=2, fb++){
-#else
-    for(int i = (SCREENHEIGHT<<1) - 2; i >= 0 ; i -= 2){
-        for(int j = (SCREENWIDTH<<1) - 2; j >= 0 ; j -= 2, fb++){
-#endif
+    for(int i = 0; i < CANVAS_HEIGHT; i+=2){
+        for(int j = 0; j < CANVAS_WIDTH; j+=2, fb++){
             uint8_t idx = *fb;
-            dfb[(i*SCREENWIDTH<<1) + j] = idx;
-            dfb[(i*SCREENWIDTH<<1) + j + 1] = idx;
-            dfb[((i+1)*SCREENWIDTH<<1) + j] = idx;
-            dfb[((i+1)*SCREENWIDTH<<1) + j + 1] = idx;
+            dfb[(i*CANVAS_WIDTH) + j] = idx;
+            dfb[(i*CANVAS_WIDTH) + j + 1] = idx;
+            dfb[((i+1)*CANVAS_WIDTH) + j] = idx;
+            dfb[((i+1)*CANVAS_WIDTH) + j + 1] = idx;
         }
     }
-    
-
-    //CopyBuffer((uint32_t *)LCD_FB_START_ADDRESS, (uint32_t *)screens[0], 400 - 160, 240 - 100, 320, 200);
-    if (HAL_DMA2D_Start(&hdma2d, (uint32_t)dfb, LCD_FB_START_ADDRESS + FRAME_OFFSET, SCREENWIDTH<<1, SCREENHEIGHT<<1) == HAL_OK)
-    {
-        /* Polling For DMA transfer */  
-        HAL_DMA2D_PollForTransfer(&hdma2d, 100);               
-    }
-#else
-    #define FRAME_OFFSET ( ((800 - SCREENWIDTH)/2 + ((480 - SCREENHEIGHT) * 400)) * 4)
-    if (HAL_DMA2D_Start(&hdma2d, (uint32_t)screens[0], LCD_FB_START_ADDRESS + FRAME_OFFSET, SCREENWIDTH, SCREENHEIGHT) == HAL_OK)
-    {
-        /* Polling For DMA transfer */  
-        HAL_DMA2D_PollForTransfer(&hdma2d, 100);               
-    }
 #endif /* DOUBLE_SCREEN */
-#endif /* NO_VIDEO */
+
+    DMA2D->CR |= DMA2D_CR_START;
+    do{
+
+    }while(DMA2D->CR & DMA2D_CR_START);
+#endif /* VIDEO_ENABLED */
 }
 
 //
@@ -188,7 +182,7 @@ char tmp[5];
 //
 void I_ReadScreen(byte *scr)
 {
-    memcpy(scr, screens[0], SCREENWIDTH * SCREENHEIGHT);
+    memcpy(scr, screen_buffer, SCREENWIDTH * SCREENHEIGHT);
 }
 
 //
@@ -196,24 +190,40 @@ void I_ReadScreen(byte *scr)
 //
 void I_SetPalette(byte *palette)
 {
-#ifndef NO_VIDEO
-  palette_t *pClut = (palette_t*)forground_clut;
-  byte brightness = 50;
+#ifdef VIDEO_ENABLED
+    #if VIDEO_PALETTE_DMA
 
-    for (uint32_t i = 0; i < 256; ++i, ++pClut)
-    {
-        pClut->r = gammatable[usegamma][*palette++];
-        pClut->g = gammatable[usegamma][*palette++];
-        pClut->b = gammatable[usegamma][*palette++];
-        pClut->alpha = 0xFF;
-
-        pClut->r = (pClut->r + brightness) < 256 ? pClut->r + brightness : 255;
-        pClut->g = (pClut->g + brightness) < 256 ? pClut->g + brightness : 255;
-        pClut->b = (pClut->b + brightness) < 256 ? pClut->b + brightness : 255;
+    #else
+    //byte brightness = 1;
+    // Write palette directly to DMA2D foreground CLUT
+    for (uint32_t i = 0; i < 256; ++i){
+        #if 0
+        uint8_t r = *palette++;
+        uint8_t g = *palette++;
+        uint8_t b = *palette++;
+        #else
+        uint8_t r = gammatable[usegamma][*palette++];
+        uint8_t g = gammatable[usegamma][*palette++];
+        uint8_t b = gammatable[usegamma][*palette++];
+        
+        //r = (r + brightness) < 256 ? r + brightness : 255;
+        //g = (g + brightness) < 256 ? g + brightness : 255;
+        //b = (b + brightness) < 256 ? b + brightness : 255;
+        #endif
+        ((uint32_t*)DMA2D->FGCLUT)[i] = (r << 16) | (g << 8) | (b << 0);		
     }
-    
-    LoadPalette(forground_clut);
-#endif
+    #endif /* VIDEO_PALETTE_DMA */
+
+    #if VIDEO_DRAW_PALETTE
+    // Draw 3x3 px squares on bottom of display
+    for(int l = 0; l < 3; l++){
+        uint32_t *pdst = (uint32_t*)(VIDEO_LAYER_BASE + ((479 - l) * 800 * 4));
+        for(int i = 0; i < 256 * 3; i++){
+            pdst[i] = ((uint32_t*)DMA2D->FGCLUT)[i/3] | 0xFF000000;
+        }
+    }
+    #endif /* VIDEO_DRAW_PALETTE */
+#endif /* VIDEO_DISABLED */
 }
 
 //
@@ -221,29 +231,49 @@ void I_SetPalette(byte *palette)
 //
 void I_InitGraphics(void)
 {
-#ifndef NO_VIDEO    
+    if(screens[0] != NULL){
+        screen_buffer = screens[0];
+    }else{
+        screen_buffer = (byte*)malloc(SCREENWIDTH * SCREENHEIGHT);
+
+        if (screen_buffer == NULL)
+            I_Error("Couldn't allocate screen memory");        
+        
+        screens[0] = (byte*)screen_buffer;
+    }
+
+    #if DOUBLE_SCREEN
+        dfb = malloc(CANVAS_WIDTH * CANVAS_HEIGHT);
+        if (dfb == NULL)
+            I_Error("Couldn't allocate double screen buffer");
+    #endif
+
+    HUlib_initTextLine(&h_fps, 10, 10, hu_font, HU_FONTSTART);
+
+#ifdef VIDEO_ENABLED    
     OnError_Handler(BSP_LCD_Init() != LCD_OK);
 
-    BSP_LCD_LayerDefaultInit(DMA2D_FOREGROUND_LAYER, LCD_FB_START_ADDRESS);     
-    BSP_LCD_SelectLayer(DMA2D_FOREGROUND_LAYER);
+    BSP_LCD_LayerDefaultInit(VIDEO_LAYER, VIDEO_LAYER_BASE);
+    BSP_LCD_SetColorKeying(VIDEO_LAYER, LCD_COLOR_MAGENTA);  // For controls transparencies
 
-    BSP_LCD_Clear(LCD_COLOR_BLACK);
+    memset((uint8_t*)LCD_FB_BASE_ADDR, 0, LCD_FB_SIZE);
+
+    //BSP_LCD_Clear(LCD_BACKGROUND_COLOR);
+
+    //BSP_LCD_SetFont(&Font16);
+    //BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+    //BSP_LCD_SetBackColor(LCD_COLOR_BLACK);
+
+    BSP_LCD_SelectLayer(VIDEO_LAYER);
+
+    #if DOUBLE_SCREEN
+    LCD_ConfigVideoDma((uint32_t)dfb, CANVAS_WIDTH, CANVAS_HEIGHT);
+    #else
+    LCD_ConfigVideoDma((uint32_t)screen_buffer, CANVAS_WIDTH, CANVAS_HEIGHT);
+    #endif
 
     BSP_LED_On(LED2);
-
-    BSP_LCD_SetFont(&Font16);
-    BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-    BSP_LCD_SetBackColor(LCD_COLOR_BLACK);
-
 #endif
-    screens[0] = (unsigned char *)malloc(SCREENWIDTH * SCREENHEIGHT);
-
-    if (screens[0] == NULL)
-        I_Error("Couldn't allocate screen memory");
-
-    #ifdef DOUBLE_SCREEN
-        dfb = malloc(SCREENWIDTH * SCREENHEIGHT * 4);
-    #endif
 }
 
 
