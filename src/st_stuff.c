@@ -262,20 +262,19 @@ cheatseq_t cheat_mypos = {cheat_mypos_seq, 0};
 //
 static void ST_refreshBackground(void)
 {
-
 	if (st_statusbaron)
 	{
-		V_DrawPatch(ST_X, 0, BG, sbar);
+		V_DrawPatch(ST_X, 0, BG, sbar); // copy background to ST buffer
 
 		if (netgame)
 			V_DrawPatch(ST_FX, 0, BG, faceback);
 
-		V_CopyRect(ST_X, 0, BG, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y, FG);
+		V_CopyRect(ST_X, 0, BG, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y, FG); // copy ST background to foreground video buffer
 	}
 }
 
 // Respond to keyboard input events,
-//  intercept cheats.
+// intercept cheats.
 boolean ST_Responder(event_t *ev)
 {
 	int i;
@@ -940,7 +939,7 @@ static void ST_loadData(void)
 	lu_palette = W_GetNumForName("PLAYPAL");
 	ST_loadGraphics();
 }
-
+/*
 static void ST_unloadGraphics(void)
 {
 
@@ -975,12 +974,7 @@ static void ST_unloadGraphics(void)
 	// Note: nobody ain't seen no unloading
 	//   of stminus yet. Dude.
 }
-
-static void ST_unloadData(void)
-{
-	ST_unloadGraphics();
-}
-
+*/
 static void ST_initData(void)
 {
 
@@ -1008,7 +1002,7 @@ static void ST_initData(void)
 	for (i = 0; i < 3; i++)
 		keyboxes[i] = -1;
 
-	STlib_init();
+	STlib_init(ST_Y);
 }
 
 static void ST_createWidgets(void)
@@ -1195,5 +1189,5 @@ void ST_Init(void)
 {
 	veryfirsttime = 0;
 	ST_loadData();
-	screens[4] = (byte *)Z_Malloc(ST_WIDTH * ST_HEIGHT, PU_STATIC, 0);
+	screens[BG] = (byte *)Z_Malloc(ST_WIDTH * ST_HEIGHT, PU_STATIC, 0);
 }
