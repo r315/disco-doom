@@ -54,7 +54,11 @@
 #include <sys/times.h>
 #include <sys/unistd.h>
 
+#include "board.h"
+
 #include "fatfs.h"
+
+#define MAX_FILES 1
 
 /* Variables */
 //#undef errno
@@ -64,33 +68,38 @@ extern int __io_getchar(void) __attribute__((weak));
 
 char *__env[1] = {0};
 char **environ = __env;
-static char *heap_end = NULL;
+static uint8_t *heap_end = NULL;
 
-#define MAX_FILES 1
 static FIL files[MAX_FILES];
 static FIL *openfiles[MAX_FILES];
 extern UART_HandleTypeDef huart1;
 
 
-/* Functions */
+/**
+ * System calls redirection
+ * 
+ * 
+ */
 uint32_t memavail(void){
-	return (SDRAM_DEVICE_ADDR + SDRAM_DEVICE_SIZE) - (uint32_t)heap_end;
+	return (heap_end == NULL)? 0 : (int)((SDRAM_BASE_ADDR + MAX_HEAP_SIZE) - (uint32_t)heap_end);
 }
 
 caddr_t _sbrk(int incr)
 {	
-	char *prev_heap_end;
+	uint8_t *prev_heap_end;	
 
-	if (heap_end == 0)
-	{
-		heap_end = (char *)SDRAM_DEVICE_ADDR + (SDRAM_DEVICE_SIZE >> 1);
+	// Init heap to base memory
+	if (heap_end == NULL){
+		heap_end = (uint8_t*)SDRAM_BASE_ADDR;
+	}
+
+	if(incr == 0){
+		return (caddr_t)heap_end;
 	}
 
 	prev_heap_end = heap_end;
-	if ((uint32_t)(heap_end + incr) > (SDRAM_DEVICE_ADDR + SDRAM_DEVICE_SIZE))
-	{
-		//		write(1, "Heap and stack collision\n", 25);
-		//		abort();
+
+	if ((uint32_t)(heap_end + incr) >= (SDRAM_BASE_ADDR + MAX_HEAP_SIZE)){
 		errno = ENOMEM;
 		return (caddr_t)-1;
 	}
