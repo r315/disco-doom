@@ -285,8 +285,10 @@ typedef enum
     sfx_skesit,
     sfx_skeatk,
     sfx_radio,
-    NUMSFX
+    NUM_SFX
 } sfxenum_t;
+
+#define NUM_SFX_CHANNELS		8
 
 #endif
 //-----------------------------------------------------------------------------

@@ -3,112 +3,45 @@
 #include "audio.h"
 #include "wm8994.h"
 
-static audiospec_t *audio;
-static AUDIO_DrvTypeDef *drv;
+#define AUDIO_DYNAMIC_BUFFER 1
+
+#define AUDIO_BUFFER_DOUBLE 2 // 1: single buffer, 2: double buffer
+
+#if !AUDIO_DYNAMIC_BUFFER
+#define AUDIO_SAMPLES       512
+#define AUDIO_CHANNELS      2
+#define AUDIO_BUFFER_SIZE   (AUDIO_SAMPLES * AUDIO_CHANNELS * AUDIO_BUFFER_DOUBLE)
+
+static uint16_t          audio_buffer[AUDIO_BUFFER_SIZE];
+#endif
+
+static audiospec_t       *audio_specs;
+static AUDIO_DrvTypeDef  *codec;
 static DMA_HandleTypeDef hSaiDma;
+static SAI_HandleTypeDef hSai;
 
-static SAI_HandleTypeDef SaiHandle;
 
-uint16_t audio_buffer[AUDIO_MAX_BUFF_SIZE];
-
-void AUDIO_Play(audiospec_t *spec)
+void AUDIO_Start(audiospec_t *spec)
 {
-    if (spec->playing)
-    {
-        return;
+    if(spec->buf != NULL && spec->callback != NULL){
+        audio_specs = spec;
+        HAL_SAI_Transmit_DMA(&hSai, (uint8_t *)spec->buf, spec->size * spec->channels * AUDIO_BUFFER_DOUBLE);
     }
-
-    if (HAL_SAI_Transmit_DMA(&SaiHandle, (uint8_t *)spec->buf, spec->size) != HAL_OK)
-    {
-        Error_Handler();
-    }
-
-    spec->playing = 1;
 }
 
 void AUDIO_Stop(audiospec_t *spec)
 {
-    HAL_SAI_DMAStop(&SaiHandle);
-    spec->playing = 0;
+    HAL_SAI_DMAStop(&hSai);
+#if AUDIO_DYNAMIC_BUFFER
+    if(spec->buf){
+        free(spec->buf);
+    }
+#endif
 }
 
 void AUDIO_SetVolume(int vol)
 {
-    //drv->SetVolume(AUDIO_I2C_ADDRESS, vol);
-}
-
-/**
-  * @brief  Playback initialization
-  * @param  None
-  * @retval None
-  */
-static void AUD_HW_Init(audiospec_t *spec)
-{
-    RCC_PeriphCLKInitTypeDef RCC_PeriphCLKInitStruct;
-
-    RCC_PeriphCLKInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SAI1;
-    RCC_PeriphCLKInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLI2S;
-
-    if ((spec->freq == AUDIO_FREQUENCY_11K) || (spec->freq == AUDIO_FREQUENCY_22K) || (spec->freq == AUDIO_FREQUENCY_44K))
-    {
-        /* PLLI2S_VCO: VCO_429M 
-        SAI_CLK(first level) = PLLSAI_VCO/PLLSAIQ = 429/2 = 214.5 Mhz
-        SAI_CLK_x = SAI_CLK(first level)/PLLSAIDIVQ = 214.5/19 = 11.289 Mhz */
-        RCC_PeriphCLKInitStruct.PLLI2S.PLLI2SN = 429;
-        RCC_PeriphCLKInitStruct.PLLI2S.PLLI2SQ = 2;
-        RCC_PeriphCLKInitStruct.PLLI2SDivQ = 19;
-    }
-    else
-    { /* AUDIO_FREQUENCY_8K, AUDIO_FREQUENCY_16K, AUDIO_FREQUENCY_48K, AUDIO_FREQUENCY_96K */
-         /* PLLSAI_VCO: VCO_344M 
-        SAI_CLK(first level) = PLLSAI_VCO/PLLSAIQ = 344/7 = 49.142 Mhz 
-        SAI_CLK_x = SAI_CLK(first level)/PLLSAIDIVQ = 49.142/1 = 49.142 Mhz */
-        RCC_PeriphCLKInitStruct.PLLI2S.PLLI2SN = 344;
-        RCC_PeriphCLKInitStruct.PLLI2S.PLLI2SQ = 7;
-        RCC_PeriphCLKInitStruct.PLLI2SDivQ = 1;
-    }
-
-    if (HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInitStruct) != HAL_OK)
-    {
-        Error_Handler();
-    }
-
-    /* Initialize SAI */
-    __HAL_SAI_RESET_HANDLE_STATE(&SaiHandle);
-
-    SaiHandle.Instance = AUDIO_SAIx;
-
-    __HAL_SAI_DISABLE(&SaiHandle);
-
-    SaiHandle.Init.AudioFrequency = spec->freq;
-    SaiHandle.Init.AudioMode = SAI_MODEMASTER_TX;
-    SaiHandle.Init.Synchro = SAI_ASYNCHRONOUS;
-    SaiHandle.Init.OutputDrive = SAI_OUTPUTDRIVE_ENABLE;
-    SaiHandle.Init.NoDivider = SAI_MASTERDIVIDER_ENABLE;
-    SaiHandle.Init.FIFOThreshold = SAI_FIFOTHRESHOLD_1QF;
-    SaiHandle.Init.Protocol = SAI_FREE_PROTOCOL;
-    SaiHandle.Init.DataSize = SAI_DATASIZE_16;
-    SaiHandle.Init.FirstBit = SAI_FIRSTBIT_MSB;
-    SaiHandle.Init.ClockStrobing = SAI_CLOCKSTROBING_FALLINGEDGE;
-
-    SaiHandle.FrameInit.FrameLength = 32;
-    SaiHandle.FrameInit.ActiveFrameLength = 16;
-    SaiHandle.FrameInit.FSDefinition = SAI_FS_CHANNEL_IDENTIFICATION;
-    SaiHandle.FrameInit.FSPolarity = SAI_FS_ACTIVE_LOW;
-    SaiHandle.FrameInit.FSOffset = SAI_FS_BEFOREFIRSTBIT;
-
-    SaiHandle.SlotInit.FirstBitOffset = 0;
-    SaiHandle.SlotInit.SlotSize = SAI_SLOTSIZE_DATASIZE;
-    SaiHandle.SlotInit.SlotNumber = 2;
-    SaiHandle.SlotInit.SlotActive = (SAI_SLOTACTIVE_0 | SAI_SLOTACTIVE_1);
-
-    if (HAL_OK != HAL_SAI_Init(&SaiHandle))
-    {
-        Error_Handler();
-    }
-
-    /* Enable SAI to generate clock used by audio driver */
-    __HAL_SAI_ENABLE(&SaiHandle);
+    //codec->SetVolume(AUDIO_I2C_ADDRESS, vol);
 }
 
 /**
@@ -124,11 +57,16 @@ void HAL_SAI_MspInit(SAI_HandleTypeDef *hsai)
     /* Enable SAI1 clock */
     __HAL_RCC_SAI1_CLK_ENABLE();
 
-    /* Configure GPIOs used for SAI1 */
-    AUDIO_SAIx_MCLK_ENABLE();
-    AUDIO_SAIx_SCK_ENABLE();
-    AUDIO_SAIx_FS_ENABLE();
-    AUDIO_SAIx_SD_ENABLE();
+    /* Configure GPIOs
+	 * PE3    SAI1_B SD		DI
+	 * PE4    SAI1_A FS		LRCLK
+	 * PE5	  DAI1_A SCK	BCLK
+	 * PE6	  SAI1_A SD		DO
+	 * PG7	  SAI1_A MCLK	MCLK
+	 * PJ12	  Codec INT
+	 * */
+   	__HAL_RCC_GPIOG_CLK_ENABLE();
+	__HAL_RCC_GPIOE_CLK_ENABLE();
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_NOPULL;
@@ -147,10 +85,7 @@ void HAL_SAI_MspInit(SAI_HandleTypeDef *hsai)
     GPIO_Init.Pin = AUDIO_SAIx_MCLK_PIN;
     HAL_GPIO_Init(AUDIO_SAIx_MCLK_GPIO_PORT, &GPIO_Init);
 
-    /* Configure DMA used for SAI2 */
-    __HAL_RCC_DMA2_CLK_ENABLE();
-
-    if (hsai->Instance == AUDIO_SAIx)
+	if (hsai->Instance == AUDIO_SAIx)
     {
         hSaiDma.Init.Channel = DMA_CHANNEL_10;
         hSaiDma.Init.Direction = DMA_MEMORY_TO_PERIPH;
@@ -175,41 +110,83 @@ void HAL_SAI_MspInit(SAI_HandleTypeDef *hsai)
         HAL_DMA_DeInit(&hSaiDma);
 
         /* Configure the DMA Stream */
-        if (HAL_OK != HAL_DMA_Init(&hSaiDma))
-        {
-            Error_Handler();
-        }
+        OnError_Handler(HAL_DMA_Init(&hSaiDma) != HAL_OK);
+    	
+		HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0x01, 0);
+    	HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
+    }
+}
+
+static void AUDIO_Init_LL(audiospec_t *spec, SAI_HandleTypeDef *handle, DMA_HandleTypeDef *hdma)
+{
+    /* Configure I2S PLL */
+    RCC_PeriphCLKInitTypeDef RCC_PeriphCLKInitStruct = {0};
+
+	RCC_PeriphCLKInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SAI1;
+	RCC_PeriphCLKInitStruct.Sai1ClockSelection   = RCC_SAI1CLKSOURCE_PLLI2S;
+
+    if ((spec->freq == AUDIO_FREQUENCY_11K) || (spec->freq == AUDIO_FREQUENCY_22K) || (spec->freq == AUDIO_FREQUENCY_44K)){
+        /* PLLI2S_VCO: VCO_429M 
+        SAI_CLK(first level) = PLLSAI_VCO/PLLSAIQ = 429/2 = 214.5 Mhz
+        SAI_CLK_x = SAI_CLK(first level)/PLLSAIDIVQ = 214.5/19 = 11.289 Mhz */
+        RCC_PeriphCLKInitStruct.PLLI2S.PLLI2SN = 429;
+        RCC_PeriphCLKInitStruct.PLLI2S.PLLI2SQ = 2;
+        RCC_PeriphCLKInitStruct.PLLI2SDivQ = 19;
+    } else { /* AUDIO_FREQUENCY_8K, AUDIO_FREQUENCY_16K, AUDIO_FREQUENCY_48K, AUDIO_FREQUENCY_96K */
+        /* PLLSAI_VCO: VCO_344M 
+        SAI_CLK(first level) = PLLSAI_VCO/PLLSAIQ = 344/7 = 49.142 Mhz 
+        SAI_CLK_x = SAI_CLK(first level)/PLLSAIDIVQ = 49.142/1 = 49.142 Mhz */
+        RCC_PeriphCLKInitStruct.PLLI2S.PLLI2SN = 344;
+        RCC_PeriphCLKInitStruct.PLLI2S.PLLI2SQ = 7;
+        RCC_PeriphCLKInitStruct.PLLI2SDivQ = 1;
     }
 
-    HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 10, 9);
-    HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
-}
+    OnError_Handler(HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInitStruct) != HAL_OK);
 
-/**
-  * @brief Tx Transfer completed callbacks.
-  * @param  hsai : pointer to a SAI_HandleTypeDef structure that contains
-  *                the configuration information for SAI module.
-  * @retval None
-  */
-void HAL_SAI_TxCpltCallback(SAI_HandleTypeDef *hsai)
-{
-    audio->callback(audio->buf + (audio->size >> 1), audio->size >> 1);
-}
+    /* Initialize SAI for I2S mode */
+    __HAL_SAI_RESET_HANDLE_STATE(handle);
 
-/**
-  * @brief Tx Transfer Half completed callbacks
-  * @param  hsai : pointer to a SAI_HandleTypeDef structure that contains
-  *                the configuration information for SAI module.
-  * @retval None
-  */
-void HAL_SAI_TxHalfCpltCallback(SAI_HandleTypeDef *hsai)
-{
-    audio->callback(audio->buf, audio->size >> 1);
-}
+    handle->Instance = AUDIO_SAIx;
 
-void DMA2_Stream6_IRQHandler(void)
-{ 
-    HAL_DMA_IRQHandler(SaiHandle.hdmatx);  
+    __HAL_SAI_DISABLE(handle);
+
+    handle->Init.AudioFrequency = spec->freq;
+    handle->Init.AudioMode      = SAI_MODEMASTER_TX;
+    handle->Init.Synchro        = SAI_ASYNCHRONOUS;
+    handle->Init.OutputDrive    = SAI_OUTPUTDRIVE_ENABLE;
+    handle->Init.NoDivider      = SAI_MASTERDIVIDER_ENABLE;
+    handle->Init.FIFOThreshold  = SAI_FIFOTHRESHOLD_1QF;
+    handle->Init.Protocol       = SAI_FREE_PROTOCOL;
+    handle->Init.DataSize       = SAI_DATASIZE_16;            // only 16 bits inside slot are data
+    handle->Init.FirstBit       = SAI_FIRSTBIT_MSB;
+    handle->Init.ClockStrobing  = SAI_CLOCKSTROBING_FALLINGEDGE;
+
+    handle->FrameInit.FrameLength       = 32;                 // Frame size = 32 BCLK
+    handle->FrameInit.ActiveFrameLength = 16;                 // FS is active half time
+    handle->FrameInit.FSDefinition      = SAI_FS_CHANNEL_IDENTIFICATION;
+    handle->FrameInit.FSPolarity        = SAI_FS_ACTIVE_LOW;
+    handle->FrameInit.FSOffset          = SAI_FS_BEFOREFIRSTBIT;
+
+    handle->SlotInit.FirstBitOffset = 0;                      // First bit on second rising edge BLCK following FS transition
+    handle->SlotInit.SlotSize       = SAI_SLOTSIZE_DATASIZE;  // Size of each slot
+    handle->SlotInit.SlotNumber     = spec->channels;         // One slot per channel
+    handle->SlotInit.SlotActive     = (spec->channels == 2) ? (SAI_SLOTACTIVE_0 | SAI_SLOTACTIVE_1) : SAI_SLOTACTIVE_0;
+
+    OnError_Handler(HAL_SAI_Init(handle) != HAL_OK);
+
+	/* Enable SAI to generate clock used by audio driver */
+   	__HAL_SAI_ENABLE(handle);
+
+	/* Initialize audio codec */
+	codec = AUDIO_Get_Driver();
+
+    OnError_Handler(codec->ReadID(AUDIO_I2C_ADDRESS) != WM8994_ID);
+
+    codec->Reset(AUDIO_I2C_ADDRESS);
+
+    OnError_Handler(codec->Init(AUDIO_I2C_ADDRESS, OUTPUT_DEVICE_AUTO, spec->volume, spec->freq) != 0);
+    /* Start the playback */
+    OnError_Handler(codec->Play(AUDIO_I2C_ADDRESS, NULL, 0) != 0);
 }
 
 /**
@@ -219,28 +196,49 @@ void DMA2_Stream6_IRQHandler(void)
  */
 void AUDIO_Init(audiospec_t *spec)
 {
-    audio = spec;
-    drv = AUDIO_Get_Driver();
+
+#if AUDIO_DYNAMIC_BUFFER
+    spec->buf = (uint16_t*)calloc(AUDIO_BUFFER_DOUBLE, spec->size * spec->channels * sizeof(uint16_t));
+    OnError_Handler(spec->buf == NULL);
+#else
+    spec->size = AUDIO_SAMPLES;
+    spec->channels = AUDIO_CHANNELS;
     spec->buf = audio_buffer;
+#endif
 
-    AUD_HW_Init(audio);
-    /* Initialize audio driver */
-    if (drv->ReadID(AUDIO_I2C_ADDRESS) != WM8994_ID)
-    {
-        Error_Handler();
+    AUDIO_Init_LL(spec, &hSai, &hSaiDma);
+    AUDIO_Start(spec);
+
+#if AUDIO_DEBUG_MODE
+    GPIOC->MODER = (5 << 12);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+#endif
+}
+
+void DMA2_Stream6_IRQHandler(void)
+{ 
+    DMA_HandleTypeDef *hdma = &hSaiDma;
+    uint32_t tmpisr = DMA2->HISR;
+    int nsamples = audio_specs->size * audio_specs->channels;
+
+    if (tmpisr & ((DMA_FLAG_TEIF0_4 | DMA_FLAG_FEIF0_4 | DMA_FLAG_DMEIF0_4) << hdma->StreamIndex)){
+        //regs->LIFCR = (tmpisr & (DMA_FLAG_TEIF0_4 | DMA_FLAG_FEIF0_4 | DMA_FLAG_DMEIF0_4)) << hdma->StreamIndex;
     }
-    drv->Reset(AUDIO_I2C_ADDRESS);
 
-    if (drv->Init(AUDIO_I2C_ADDRESS, OUTPUT_DEVICE_HEADPHONE, DEFAULT_VOLUME, audio->freq) != 0 || audio->callback == NULL)
-    {
-        Error_Handler();
+    if (tmpisr & (DMA_FLAG_HTIF0_4 << hdma->StreamIndex)){
+        DMA2->HIFCR = DMA_FLAG_HTIF0_4 << hdma->StreamIndex;
+        audio_specs->callback(audio_specs->buf, nsamples);
+        #if AUDIO_DEBUG_MODE
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
+        #endif
     }
 
-    spec->playing = 0;
-
-    /* Start the playback */
-    if (drv->Play(AUDIO_I2C_ADDRESS, NULL, 0) != 0)
-    {
-        Error_Handler();
+    if (tmpisr & (DMA_FLAG_TCIF0_4 << hdma->StreamIndex)){
+        DMA2->HIFCR = DMA_FLAG_TCIF0_4 << hdma->StreamIndex;
+        audio_specs->callback(audio_specs->buf + nsamples, nsamples);
+        #if AUDIO_DEBUG_MODE
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+        #endif
     }
 }

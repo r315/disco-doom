@@ -81,9 +81,10 @@ void I_PlaySong(int handle, int looping);
 void I_StopSong(int handle);
 // See above (register), then think backwards
 void I_UnRegisterSong(int handle);
-
-//void I_UpdateSound(void *stream, int len);
-
+// Update audio driver buffers
+void I_UpdateSound();
+// For setting audio driver volume
+void I_SetVolume(int volume);
 #endif
 //-----------------------------------------------------------------------------
 //

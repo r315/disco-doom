@@ -183,7 +183,7 @@ void S_Init
   mus_paused = 0;
 
   // Note that sounds have not been cached (yet).
-  for (i=1 ; i<NUMSFX ; i++)
+  for (i=1 ; i<NUM_SFX ; i++)
     S_sfx[i].lumpnum = S_sfx[i].usefulness = -1;
 }
 
@@ -275,7 +275,7 @@ static void S_StartSoundAtVolume (void*	origin_p, int sfx_id, int volume)
   	   sfx_id, S_sfx[sfx_id].name );*/
   
   // check for bogus sound #
-  if (sfx_id < 1 || sfx_id > NUMSFX)
+  if (sfx_id < 1 || sfx_id > NUM_SFX)
     I_Error("Bad sfx #: %d", sfx_id);
   
   sfx = &S_sfx[sfx_id];
@@ -517,7 +517,7 @@ void S_UpdateSounds(void* listener_p)
     // DOS 8bit remains. 
     /*if (gametic > nextcleanup)
     {
-	for (i=1 ; i<NUMSFX ; i++)
+	for (i=1 ; i<NUM_SFX ; i++)
 	{
 	    if (S_sfx[i].usefulness < 1
 		&& S_sfx[i].usefulness > -1)
@@ -592,6 +592,8 @@ void S_UpdateSounds(void* listener_p)
     //      && !I_QrySongPlaying(mus_playing->handle)
     //      && !mus_paused )
     // S_StopMusic();
+
+    I_UpdateSound ();
 }
 
 
@@ -617,7 +619,7 @@ void S_SetSfxVolume(int volume)
 	I_Error("Attempt to set sfx volume at %d", volume);
 
     snd_SfxVolume = volume;
-
+    I_SetVolume(snd_SfxVolume);
 }
 
 //

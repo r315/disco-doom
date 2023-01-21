@@ -9,6 +9,9 @@
 #include "hu_stuff.h"
 
 #define VIDEO_ENABLED       1
+
+#if VIDEO_ENABLED
+
 #define DOUBLE_SCREEN       1
 #define VIDEO_PALETTE_DMA   0
 #define VIDEO_DMA           1
@@ -44,13 +47,16 @@
 
 #define LCD_BACKGROUND_COLOR    0xFF484848
 
-static byte	*screen_buffer;
-static hu_textline_t	h_fps;
-
 #if DOUBLE_SCREEN
 static uint8_t *dfb;
 #endif
 
+#endif
+
+static hu_textline_t	h_fps;
+static byte	*screen_buffer;
+
+#if VIDEO_ENABLED
 static void LCD_ConfigVideoDma(uint32_t src, uint16_t w, uint16_t h)
 {
     DMA2D->CR = DMA2D_CR_M2M_PFC;
@@ -69,7 +75,7 @@ static void LCD_ConfigVideoDma(uint32_t src, uint16_t w, uint16_t h)
 
     LTDC->BCCR = LCD_BACKGROUND_COLOR;
 }
-
+#endif
 /**
  * Public API
  */
@@ -84,9 +90,10 @@ void I_ShutdownGraphics(void)
         free(dfb);
     }
 #endif
-    if(screen_buffer != NULL){
-        free(screen_buffer);
-    }   
+    // FIX: free only if was allocated by this module
+    //if(screen_buffer != NULL){
+    //    free(screen_buffer);
+    //}   
 }
 
 //
@@ -132,7 +139,7 @@ void I_UpdateNoBlit(void)
 //
 void I_FinishUpdate(void)
 {
-#ifdef VIDEO_ENABLED
+#if VIDEO_ENABLED
 
     if(d_devparm){
         static uint32_t fps_tick = 0;
@@ -181,9 +188,9 @@ void I_FinishUpdate(void)
 //
 // I_ReadScreen
 //
-void I_ReadScreen(byte *scr)
+void I_ReadScreen(byte *dst)
 {
-    memcpy(scr, screen_buffer, SCREENWIDTH * SCREENHEIGHT);
+    memcpy(dst, screen_buffer, SCREENWIDTH * SCREENHEIGHT);
 }
 
 //
@@ -191,7 +198,7 @@ void I_ReadScreen(byte *scr)
 //
 void I_SetPalette(byte *palette)
 {
-#ifdef VIDEO_ENABLED
+#if VIDEO_ENABLED
     #if VIDEO_PALETTE_DMA
 
     #else
@@ -251,7 +258,7 @@ void I_InitGraphics(void)
 
     HUlib_initTextLine(&h_fps, 10, 10, hu_font, HU_FONTSTART);
 
-#ifdef VIDEO_ENABLED    
+#if VIDEO_ENABLED    
     OnError_Handler(BSP_LCD_Init() != LCD_OK);
 
     BSP_LCD_LayerDefaultInit(VIDEO_LAYER, VIDEO_LAYER_BASE);
