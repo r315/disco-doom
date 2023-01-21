@@ -124,7 +124,7 @@ ASM_SOURCES = $(BSP_PATH)/core/startup_stm32f769xx.s
 LDSCRIPT = $(BSP_PATH)/core/STM32F769NIHx_FLASH.ld
 
 C_INCLUDES =$(BSP_INCLUDE_PATHS) $(DOOM_INCLUDES_PATHS)
-C_SOURCES =$(DOOM_SOURCES) $(BSP_C_SOURCES) 
+C_SOURCES =$(BSP_C_SOURCES) $(DOOM_SOURCES)
 #######################################
 # binaries
 #######################################
