@@ -36,14 +36,16 @@ int main(void)
 
     SystemClock_Config();
 
+    BSP_SDRAM_Init();
+
+    disco_MpuConfig();
+
     Serial_Init();
     printf("\e[2J\r");
     printf("\nCPU Clock: %dMHz \n", (int)(SystemCoreClock/1000000));
 
     printf("Memory region %08X:%08X\n", (int)SDRAM_DEVICE_ADDR, (int)(SDRAM_DEVICE_ADDR | SDRAM_DEVICE_SIZE));
     printf("Memory available: %d\n", (int)memavail());
-
-    disco_MpuConfig();
 
     BSP_LED_Init(LED1);
     BSP_LED_Init(LED2);
@@ -107,7 +109,6 @@ static void SystemClock_Config(void)
 {
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
-    HAL_StatusTypeDef ret = HAL_OK;
 
     /* Enable HSE Oscillator and activate PLL with HSE as source */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
@@ -117,28 +118,14 @@ static void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLM = 25;
     RCC_OscInitStruct.PLL.PLLN = 400;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-    RCC_OscInitStruct.PLL.PLLQ = 9;
+    RCC_OscInitStruct.PLL.PLLQ = 8;
     RCC_OscInitStruct.PLL.PLLR = 7;
 
-    ret = HAL_RCC_OscConfig(&RCC_OscInitStruct);
-    if (ret != HAL_OK)
-    {
-        while (1)
-        {
-            ;
-        }
-    }
-
+    OnError_Handler(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK);
+    
     /* Activate the OverDrive to reach the 216 MHz Frequency */
-    ret = HAL_PWREx_EnableOverDrive();
-    if (ret != HAL_OK)
-    {
-        while (1)
-        {
-            ;
-        }
-    }
-
+    OnError_Handler(HAL_PWREx_EnableOverDrive() != HAL_OK);
+    
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 clocks dividers */
     RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -146,14 +133,7 @@ static void SystemClock_Config(void)
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-    ret = HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7);
-    if (ret != HAL_OK)
-    {
-        while (1)
-        {
-            ;
-        }
-    }
+     OnError_Handler(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_6) != HAL_OK);
 }
 
 /**

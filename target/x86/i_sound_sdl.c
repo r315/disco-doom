@@ -104,7 +104,7 @@ int*		channelrightvol_lookup[NUM_CHANNELS];
 // This function loads the sound data from the WAD lump,
 //  for single sound.
 //
-void *getsfx (char *sfxname, int *len)
+static void *getsfx (char *sfxname, int *len)
 {
 	unsigned char*      sfx;
 	unsigned char*      paddedsfx;
@@ -304,7 +304,7 @@ int addsfx (int sfxid, int volume, int step, int seperation)
 // version.
 // See soundserver initdata().
 //
-void I_SetChannels()
+static void I_SetChannels()
 {
 	// Init internal lookups (raw data, mixing buffer, channels).
 	// This function sets up internal lookups used during
@@ -354,18 +354,6 @@ void I_SetMusicVolume(int volume)
 	snd_MusicVolume = volume;
 	// Now set volume on output device.
 	// Whatever( snd_MusciVolume );
-}
-
-
-//
-// Retrieve the raw data lump index
-//  for a given SFX name.
-//
-int I_GetSfxLumpNum(sfxinfo_t* sfx)
-{
-	char namebuf[9];
-	sprintf(namebuf, "ds%s", sfx->name);
-	return W_GetNumForName(namebuf);
 }
 
 //
@@ -537,54 +525,9 @@ void I_UpdateSoundParams (int handle, int vol, int sep, int	pitch)
 }
 
 
-void I_ShutdownSound(void)
+void I_PreCacheSounds(void)
 {
-	SDL_CloseAudio();
-}
-
-
-void I_InitSound()
-{
-	SDL_AudioSpec wanted;
-	int i;
-
-	// Secure and configure sound device first.
-	fprintf(stderr, "I_InitSound: ");
-
-	// Open the audio device
-	wanted.freq = SAMPLERATE;
-	if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-		wanted.format = AUDIO_S16MSB;
-	}
-	else {
-		wanted.format = AUDIO_S16LSB;
-	}
-	wanted.channels = 2;
-	wanted.samples = SAMPLECOUNT;
-	wanted.callback = I_UpdateSound;
-
-	fprintf(stderr, "Audio specs: \n"
-		"\tFrequency: %d\n"
-		"\tFormat: %d\n"
-		"\tChannels: %d\n"
-		"\tSamples: %d\n",
-		wanted.freq,
-		wanted.format,
-		wanted.channels,
-		wanted.samples);
-
-	if (SDL_OpenAudio(&wanted, NULL) < 0) {
-		fprintf(stderr, "couldn't open audio with desired format\n");
-		return;
-	}
-	SAMPLECOUNT = wanted.samples;
-	fprintf(stderr, " configured audio device with %d samples/slice\n", SAMPLECOUNT);
-
-
-	// Initialize external data (all sounds) at start, keep static.
-	fprintf(stderr, "I_InitSound: ");
-
-	for (i = 1; i < NUMSFX; i++)
+	for (uint8_t i = 1; i < NUMSFX; i++)
 	{
 		// Alias? Example is the chaingun sound linked to pistol.
 		if (!S_sfx[i].link)
@@ -600,10 +543,55 @@ void I_InitSound()
 		}
 	}
 
-	fprintf(stderr, " pre-cached all sound data\n");
+	COM_Print(" pre-cached all sound data\n");
+}
+
+
+void I_ShutdownSound(void)
+{
+	SDL_CloseAudio();
+}
+
+
+void I_InitSound()
+{
+	SDL_AudioSpec wanted;
+	int i;
+
+	// Open the audio device
+	wanted.freq = SAMPLERATE;
+	if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+		wanted.format = AUDIO_S16MSB;
+	}
+	else {
+		wanted.format = AUDIO_S16LSB;
+	}
+	wanted.channels = 2;
+	wanted.samples = SAMPLECOUNT;
+	wanted.callback = I_UpdateSound;
+
+	COM_Print(" Audio specs: \n"
+		"\tFrequency: %d\n"
+		"\tFormat: %d\n"
+		"\tChannels: %d\n"
+		"\tSamples: %d\n",
+		wanted.freq,
+		wanted.format,
+		wanted.channels,
+		wanted.samples);
+
+	if (SDL_OpenAudio(&wanted, NULL) < 0) {
+		COM_Print("couldn't open audio with desired format\n");
+		return;
+	}
+	SAMPLECOUNT = wanted.samples;
+	COM_Print(" configured audio device with %d samples/slice\n", SAMPLECOUNT);
+
+	I_SetChannels();
 
 	// Finished initialization.
-	fprintf(stderr, "I_InitSound: sound module ready\n");
+	COM_Print(" sound module ready\n");
+
 	SDL_PauseAudio(0);
 }
 

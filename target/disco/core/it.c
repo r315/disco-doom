@@ -48,7 +48,6 @@ typedef struct {
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 extern LTDC_HandleTypeDef hltdc_discovery;
-extern SAI_HandleTypeDef SaiHandle;
 extern SD_HandleTypeDef uSdHandle;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -158,10 +157,4 @@ void DMA2_Stream5_IRQHandler(void)
 {
     //HAL_DMA_IRQHandler(uSdHandle.hdmatx);
 }
-
-void DMA2_Stream6_IRQHandler(void)
-{ 
-    HAL_DMA_IRQHandler(SaiHandle.hdmatx);  
-}
-
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -34,17 +34,18 @@ static const char
 #include "i_sound.h"
 #include "w_wad.h"
 #include "g_game.h"
+#include "common.h"
+
+#define SOUND_NULL      0
 
 #define NUM_CHANNELS    8
 #define SAMPLERATE      11025 // Hz
 #define SAMPLECOUNT     512
 
-//#define NO_AUDIO
-
-#ifndef NO_AUDIO
+#if SOUND_NULL == 0
 // Needed for calling the actual sound output.
 static audiospec_t specs;
-int lengths[NUMSFX];
+static int lengths[NUMSFX];
 // The channel step amount...
 unsigned int channelstep[NUM_CHANNELS];
 // ... and a 0.16 bit remainder of last step.
@@ -57,33 +58,27 @@ unsigned char *channelsend[NUM_CHANNELS];
 //  has lowest priority.
 // In case number of active sounds exceeds
 //  available channels.
-int	channelstart[NUM_CHANNELS];
+static int	channelstart[NUM_CHANNELS];
 // The sound in channel handles,
 //  determined on registration,
 //  might be used to unregister/stop/modify,
 //  currently unused.
-int channelhandles[NUM_CHANNELS];
+static int channelhandles[NUM_CHANNELS];
 // SFX id of the playing sound effect.
 // Used to catch duplicates (like chainsaw).
-int	channelids[NUM_CHANNELS];
+static int	channelids[NUM_CHANNELS];
 // Pitch to stepping lookup, unused.
-int	steptable[256];
-// Pitch to stepping lookup, unused.
-int	steptable[256];
+static int	steptable[256];
 // Hardware left and right channel volume lookup.
-int *channelleftvol_lookup[NUM_CHANNELS];
-int *channelrightvol_lookup[NUM_CHANNELS];
-#endif
-
+static int *channelleftvol_lookup[NUM_CHANNELS];
+static int *channelrightvol_lookup[NUM_CHANNELS];
 // Volume lookups.
-int	*vol_lookup;
-
-#ifndef NO_AUDIO
+static int *vol_lookup;
 //
 // This function loads the sound data from the WAD lump,
 //  for single sound.
 //
-void *getsfx(char *sfxname, int *len)
+static void *getsfx(char *sfxname, int *len)
 {
     unsigned char *sfx;
     unsigned char *paddedsfx;
@@ -154,7 +149,7 @@ void *getsfx(char *sfxname, int *len)
 //  (eight, usually) of internal channels.
 // Returns a handle.
 //
-int addsfx(int sfxid, int volume, int step, int seperation)
+static int addsfx(int sfxid, int volume, int step, int seperation)
 {   
     static unsigned short	handlenums = 0;
  
@@ -272,17 +267,6 @@ int addsfx(int sfxid, int volume, int step, int seperation)
     // You tell me.
     return handle; 
 }
-#endif
-//
-// Retrieve the raw data lump index
-//  for a given SFX name.
-//
-int I_GetSfxLumpNum(sfxinfo_t *sfx)
-{
-    char namebuf[9];
-    sprintf(namebuf, "ds%s", sfx->name);
-    return W_GetNumForName(namebuf);
-}
 
 //
 // SFX API
@@ -293,9 +277,8 @@ int I_GetSfxLumpNum(sfxinfo_t *sfx)
 // version.
 // See soundserver initdata().
 //
-void I_SetChannels()
+static void I_SetChannels()
 {
-#ifndef NO_AUDIO
     // Init internal lookups (raw data, mixing buffer, channels).
     // This function sets up internal lookups used during
     //  the mixing process. 
@@ -314,7 +297,7 @@ void I_SetChannels()
     // I fail to see that this is currently used.
     for (i=-128 ; i<128 ; i++){
         steptablemid[i] = (int)(pow(2.0, (i/64.0)) * 65536.0);
-        //printf("steptable[%d] = %d\n", i, steptablemid[i]);
+        //COM_Print("steptable[%d] = %d\n", i, steptablemid[i]);
     }  
   
     // Generates volume lookup tables
@@ -326,31 +309,31 @@ void I_SetChannels()
             //fprintf(stderr, "vol_lookup[%d*256+%d] = %d\n", i, j, vol_lookup[i*256+j]);
         }
     }
-#endif
 }
+#endif
 
 void I_SetSfxVolume(int volume)
 {
-    printf("%s: %d\n",__FUNCTION__, volume);
+    COM_Print("%s: %d\n",__FUNCTION__, volume);
 }
 
 // MUSIC API - dummy. Some code from DOS version.
 void I_SetMusicVolume(int volume)
 {
-    printf("%s: %d\n",__FUNCTION__, volume);
+    COM_Print("%s: %d\n",__FUNCTION__, volume);
 }
 
 void I_StopSound(int handle)
 {
-    //printf("%s handle: %d\n",__FUNCTION__, handle);
-#ifndef NO_AUDIO
+    //COM_Print("%s handle: %d\n",__FUNCTION__, handle);
+#if SOUND_NULL == 0
     AUDIO_Stop(&specs);
 #endif
 }
 
 int I_SoundIsPlaying(int handle)
 {
-    //printf("%s, handle %d, gametic %d\n",__FUNCTION__, handle, gametic);
+    //COM_Print("%s, handle %d, gametic %d\n",__FUNCTION__, handle, gametic);
     // Ouch.
     return gametic < handle;
 }
@@ -366,7 +349,7 @@ int I_SoundIsPlaying(int handle)
 //
 // This function currently supports only 16bit.
 //
-#ifndef NO_AUDIO
+#if SOUND_NULL == 0
 void I_UpdateSound(void *stream, uint32_t len)
 {
     // Mix current sound data.
@@ -472,10 +455,36 @@ void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
 
 void I_ShutdownSound(void)
 {
-    printf("%s\n",__FUNCTION__);
+
+    COM_Print("%s\n",__FUNCTION__);
+#if SOUND_NULL == 0
     if(vol_lookup == NULL){
         free(vol_lookup);
     }
+#endif
+}
+
+void I_PreCacheSounds(void)
+{
+#if SOUND_NULL == 0
+    for (uint8_t i = 1; i < NUMSFX; i++)
+    {
+        // Alias? Example is the chaingun sound linked to pistol.
+        if (!S_sfx[i].link)
+        {
+            // Load data from WAD file.
+            S_sfx[i].data = getsfx(S_sfx[i].name, &lengths[i]);
+        }
+        else
+        {
+            // Previously loaded already?
+            S_sfx[i].data = S_sfx[i].link->data;
+            lengths[i] = lengths[(S_sfx[i].link - S_sfx) / sizeof(sfxinfo_t)];
+        }
+    }
+
+    COM_Print("I_InitSound: pre-cached all sound data\n");
+#endif
 }
 
 //
@@ -493,13 +502,9 @@ void I_ShutdownSound(void)
 int I_StartSound(int id, int vol, int sep, int pitch, int priority)
 {
     int handle = 0;
- #ifndef NO_AUDIO  
-//SDL_LockAudio();
+#if SOUND_NULL == 0
     handle = addsfx( id, vol, steptable[pitch], sep );
-//SDL_UnlockAudio();
-
-    //printf("I_Sound: Starting sound %d with handle %d\n", id, handle );
-
+    //COM_Print("I_Sound: Starting sound %d with handle %d\n", id, handle );
     AUDIO_Play(&specs);
 #endif
     return handle;
@@ -511,41 +516,25 @@ int I_StartSound(int id, int vol, int sep, int pitch, int priority)
 // 
 void I_InitSound()
 {
-#ifndef NO_AUDIO
+#if SOUND_NULL == 0
     specs.channels = 1;
     specs.freq = SAMPLERATE;
     specs.size = SAMPLECOUNT;
     specs.callback = I_UpdateSound;
     specs.volume = DEFAULT_VOLUME;
 
-    printf("I_InitSound: ");
-
     AUDIO_Init(&specs);
 
-    printf("configured audio device with %d samples/slice\n", (int)specs.size);
+    COM_Print("\tConfigured audio device with %d samples/slice\n", (int)specs.size);
     
     vol_lookup = (int*)malloc(128 * 256 * sizeof(int));
 
     if (vol_lookup == NULL)
         I_Error("Couldn't allocate memory for volume lookup table");
-    for (uint8_t i = 1; i < NUMSFX; i++)
-    {
-        // Alias? Example is the chaingun sound linked to pistol.
-        if (!S_sfx[i].link)
-        {
-            // Load data from WAD file.
-            S_sfx[i].data = getsfx(S_sfx[i].name, &lengths[i]);
-        }
-        else
-        {
-            // Previously loaded already?
-            S_sfx[i].data = S_sfx[i].link->data;
-            lengths[i] = lengths[(S_sfx[i].link - S_sfx) / sizeof(sfxinfo_t)];
-        }
-    }
 
-    printf("I_InitSound: pre-cached all sound data\n");
-    printf("I_InitSound: sound module ready\n");
+    I_SetChannels();
+
+    COM_Print("I_InitSound: sound module ready\n");
 #endif
 }
 

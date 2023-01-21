@@ -638,6 +638,9 @@ void D_DoomMain (int argc, char **argv)
     COM_Print ("V_Init: allocate screens.\n");
     V_Init ();
 
+    COM_Print("I_InitGraphics: Setting graphics driver\n");
+	I_InitGraphics();
+
     COM_Print ("M_LoadDefaults: Loading system defaults.\n");
     M_LoadDefaults ();
 
@@ -665,8 +668,6 @@ void D_DoomMain (int argc, char **argv)
     COM_Print("I_InitSound: Setting audio driver\n");
 	I_InitSound();
 
-    COM_Print("I_InitGraphics: Setting graphics driver\n");
-	I_InitGraphics();
 
     COM_Print ("HU_Init: Setting up heads up display.\n");
     HU_Init ();

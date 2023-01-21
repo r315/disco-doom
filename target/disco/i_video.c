@@ -71,8 +71,9 @@ static void LCD_ConfigVideoDma(uint32_t src, uint16_t w, uint16_t h)
 }
 
 /**
- * Game API
+ * Public API
  */
+
 //
 //  I_ShutdownGraphics
 //

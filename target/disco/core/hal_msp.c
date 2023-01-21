@@ -26,7 +26,6 @@
   */
 void HAL_MspInit(void)
 {
-  BSP_SDRAM_Init();
 }
 
 /**

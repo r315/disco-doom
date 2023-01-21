@@ -163,8 +163,7 @@ void S_Init
 
   fprintf( stderr, "S_Init: default sfx volume %d\n", sfxVolume);
 
-  // Whatever these did with DMX, these are rather dummies now.
-  I_SetChannels();
+  I_PreCacheSounds();
   
   S_SetSfxVolume(sfxVolume);
   // No music with Linux - another dummy.
@@ -244,7 +243,16 @@ void S_Start(void)
   nextcleanup = 15;
 }	
 
-
+//
+// Retrieve the raw data lump index
+//  for a given SFX name.
+//
+static int S_GetSfxLumpNum(sfxinfo_t *sfx)
+{
+    char namebuf[9];
+    sprintf(namebuf, "ds%s", sfx->name);
+    return W_GetNumForName(namebuf);
+}
 
 
 
@@ -355,23 +363,7 @@ static void S_StartSoundAtVolume (void*	origin_p, int sfx_id, int volume)
   
   // get lumpnum if necessary
   if (sfx->lumpnum < 0)
-    sfx->lumpnum = I_GetSfxLumpNum(sfx);
-
-#ifndef SNDSRV
-  // cache data if necessary
-  if (!sfx->data)
-  {
-    fprintf( stderr,
-	     "S_StartSoundAtVolume: 16bit and not pre-cached - wtf?\n");
-
-    // DOS remains, 8bit handling
-    //sfx->data = (void *) W_CacheLumpNum(sfx->lumpnum, PU_MUSIC);
-    // fprintf( stderr,
-    //	     "S_StartSoundAtVolume: loading %d (lump %d) : 0x%x\n",
-    //       sfx_id, sfx->lumpnum, (int)sfx->data );
-    
-  }
-#endif
+    sfx->lumpnum = S_GetSfxLumpNum(sfx);
   
   // increase the usefulness
   if (sfx->usefulness++ < 0)

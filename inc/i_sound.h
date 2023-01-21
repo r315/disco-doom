@@ -1,4 +1,4 @@
-// Emacs style mode select   -*- C++ -*- 
+// Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
 // $Id:$
@@ -32,27 +32,18 @@ void I_InitSound();
 // ... shut down and relase at program termination.
 void I_ShutdownSound(void);
 
-
 //
 //  SFX I/O
 //
 
-// Initialize channels?
-void I_SetChannels();
-
-// Get raw data lump index for sound descriptor.
-int I_GetSfxLumpNum (sfxinfo_t* sfxinfo );
-
+void I_PreCacheSounds();
 
 // Starts a sound in a particular sound channel.
-int
-I_StartSound
-( int		id,
-  int		vol,
-  int		sep,
-  int		pitch,
-  int		priority );
-
+int I_StartSound(int id,
+                 int vol,
+                 int sep,
+                 int pitch,
+                 int priority);
 
 // Stops a sound channel.
 void I_StopSound(int handle);
@@ -64,13 +55,10 @@ int I_SoundIsPlaying(int handle);
 
 // Updates the volume, separation,
 //  and pitch of a sound channel.
-void
-I_UpdateSoundParams
-( int		handle,
-  int		vol,
-  int		sep,
-  int		pitch );
-
+void I_UpdateSoundParams(int handle,
+                         int vol,
+                         int sep,
+                         int pitch);
 
 //
 //  MUSIC I/O
@@ -88,16 +76,13 @@ int I_RegisterSong(void *data);
 //  plays a song, and when the song is done,
 //  starts playing it again in an endless loop.
 // Horrible thing to do, considering.
-void
-I_PlaySong
-( int		handle,
-  int		looping );
+void I_PlaySong(int handle, int looping);
 // Stops a song over 3 seconds.
 void I_StopSong(int handle);
 // See above (register), then think backwards
 void I_UnRegisterSong(int handle);
 
-
+//void I_UpdateSound(void *stream, int len);
 
 #endif
 //-----------------------------------------------------------------------------

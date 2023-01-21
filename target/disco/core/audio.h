@@ -49,5 +49,4 @@ void AUDIO_Init(audiospec_t *spec);
 void AUDIO_Play(audiospec_t *spec);
 void AUDIO_Stop(audiospec_t *spec);
 void AUDIO_SetVolume(int vol);
-void AUD_HW_Init(audiospec_t *spec);
 #endif
