@@ -7,7 +7,9 @@
 
 #define AUDIO_BUFFER_DOUBLE 2 // 1: single buffer, 2: double buffer
 
-#if !AUDIO_DYNAMIC_BUFFER
+#if AUDIO_DYNAMIC_BUFFER
+static uint16_t         *audio_buffer;
+#else
 #define AUDIO_SAMPLES       512
 #define AUDIO_CHANNELS      2
 #define AUDIO_BUFFER_SIZE   (AUDIO_SAMPLES * AUDIO_CHANNELS * AUDIO_BUFFER_DOUBLE)
@@ -15,26 +17,18 @@
 static uint16_t          audio_buffer[AUDIO_BUFFER_SIZE];
 #endif
 
-static audiospec_t       *audio_specs;
 static AUDIO_DrvTypeDef  *codec;
 static DMA_HandleTypeDef hSaiDma;
 static SAI_HandleTypeDef hSai;
+static int nsamples;
+static void(*audio_callback)(void*, int);
 
-
-void AUDIO_Start(audiospec_t *spec)
-{
-    if(spec->buf != NULL && spec->callback != NULL){
-        audio_specs = spec;
-        HAL_SAI_Transmit_DMA(&hSai, (uint8_t *)spec->buf, spec->size * spec->channels * AUDIO_BUFFER_DOUBLE);
-    }
-}
-
-void AUDIO_Stop(audiospec_t *spec)
+void AUDIO_Shutdown(void)
 {
     HAL_SAI_DMAStop(&hSai);
 #if AUDIO_DYNAMIC_BUFFER
-    if(spec->buf){
-        free(spec->buf);
+    if(audio_buffer){
+        free(audio_buffer);
     }
 #endif
 }
@@ -44,6 +38,10 @@ void AUDIO_SetVolume(int vol)
     //codec->SetVolume(AUDIO_I2C_ADDRESS, vol);
 }
 
+void AUDIO_Stop(void)
+{
+    memset(audio_buffer, 0, nsamples * sizeof(uint16_t) * AUDIO_BUFFER_DOUBLE);
+}
 /**
   * @brief  SAI MSP Init.
   * @param  hsai : pointer to a SAI_HandleTypeDef structure that contains
@@ -194,33 +192,40 @@ static void AUDIO_Init_LL(audiospec_t *spec, SAI_HandleTypeDef *handle, DMA_Hand
  * 
  * @param spec 
  */
-void AUDIO_Init(audiospec_t *spec)
+uint8_t AUDIO_Init(audiospec_t *spec)
 {
+    if(spec->callback == NULL){
+        return 1;
+    }
 
 #if AUDIO_DYNAMIC_BUFFER
-    spec->buf = (uint16_t*)calloc(AUDIO_BUFFER_DOUBLE, spec->size * spec->channels * sizeof(uint16_t));
-    OnError_Handler(spec->buf == NULL);
+    audio_buffer = (uint16_t*)calloc(AUDIO_BUFFER_DOUBLE, spec->size * spec->channels * sizeof(uint16_t));
+    OnError_Handler(audio_buffer == NULL);
 #else
     spec->size = AUDIO_SAMPLES;
     spec->channels = AUDIO_CHANNELS;
-    spec->buf = audio_buffer;
 #endif
 
     AUDIO_Init_LL(spec, &hSai, &hSaiDma);
-    AUDIO_Start(spec);
+    spec->buf = audio_buffer;
+
+    nsamples = spec->size * spec->channels;
+    audio_callback = spec->callback;
 
 #if AUDIO_DEBUG_MODE
     GPIOC->MODER = (5 << 12);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 #endif
+
+    HAL_SAI_Transmit_DMA(&hSai, (uint8_t *)spec->buf, spec->size * spec->channels * AUDIO_BUFFER_DOUBLE);
+    return 0;
 }
 
 void DMA2_Stream6_IRQHandler(void)
 { 
     DMA_HandleTypeDef *hdma = &hSaiDma;
     uint32_t tmpisr = DMA2->HISR;
-    int nsamples = audio_specs->size * audio_specs->channels;
 
     if (tmpisr & ((DMA_FLAG_TEIF0_4 | DMA_FLAG_FEIF0_4 | DMA_FLAG_DMEIF0_4) << hdma->StreamIndex)){
         //regs->LIFCR = (tmpisr & (DMA_FLAG_TEIF0_4 | DMA_FLAG_FEIF0_4 | DMA_FLAG_DMEIF0_4)) << hdma->StreamIndex;
@@ -228,7 +233,7 @@ void DMA2_Stream6_IRQHandler(void)
 
     if (tmpisr & (DMA_FLAG_HTIF0_4 << hdma->StreamIndex)){
         DMA2->HIFCR = DMA_FLAG_HTIF0_4 << hdma->StreamIndex;
-        audio_specs->callback(audio_specs->buf, nsamples);
+        audio_callback(audio_buffer, nsamples);
         #if AUDIO_DEBUG_MODE
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
         #endif
@@ -236,7 +241,7 @@ void DMA2_Stream6_IRQHandler(void)
 
     if (tmpisr & (DMA_FLAG_TCIF0_4 << hdma->StreamIndex)){
         DMA2->HIFCR = DMA_FLAG_TCIF0_4 << hdma->StreamIndex;
-        audio_specs->callback(audio_specs->buf + nsamples, nsamples);
+        audio_callback(audio_buffer + nsamples, nsamples);
         #if AUDIO_DEBUG_MODE
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
         #endif

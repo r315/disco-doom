@@ -43,8 +43,8 @@ typedef struct audiospec{
 }audiospec_t;
 
 
-void AUDIO_Init(audiospec_t *spec);
-void AUDIO_Start(audiospec_t *spec);
-void AUDIO_Stop(audiospec_t *spec);
+uint8_t AUDIO_Init(audiospec_t *spec);
+void AUDIO_Shutdown(void);
+void AUDIO_Stop(void);
 void AUDIO_SetVolume(int vol);
 #endif

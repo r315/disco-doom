@@ -45,7 +45,6 @@ static const char
 
 #if SOUND_ENABLED
 // Needed for calling the actual sound output.
-static audiospec_t  specs;
 static int          lengths[NUM_SFX];
 // The channel step amount...
 unsigned int        channelstep[NUM_SFX_CHANNELS];
@@ -345,9 +344,7 @@ void I_SetMusicVolume(int volume)
 void I_StopSound(int handle)
 {
     //COM_Print("%s handle: %d\n",__FUNCTION__, handle);
-#if SOUND_ENABLED
-    AUDIO_Stop(&specs);
-#endif
+    AUDIO_Stop();
 }
 
 int I_SoundIsPlaying(int handle)
@@ -433,7 +430,7 @@ static void I_MixSound(void *stream, int nsamples)
 void I_UpdateSound(void)
 {
     if (next_buffer != NULL) {
-		I_MixSound(next_buffer, specs.size);
+		I_MixSound(next_buffer, SAMPLECOUNT);
 		next_buffer = NULL;
 	}
 }
@@ -458,9 +455,9 @@ void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
 
 void I_ShutdownSound(void)
 {
-
     COM_Print("%s\n",__FUNCTION__);
 #if SOUND_ENABLED
+    AUDIO_Shutdown();
     if(vol_lookup == NULL){
         free(vol_lookup);
     }
@@ -519,6 +516,7 @@ int I_StartSound(int id, int vol, int sep, int pitch, int priority)
 void I_InitSound()
 {
 #if SOUND_ENABLED
+    audiospec_t  specs;
     specs.channels = NUM_AUDIO_CHANNELS;
     specs.freq = SAMPLERATE;
     specs.size = SAMPLECOUNT;
@@ -535,8 +533,6 @@ void I_InitSound()
         I_Error("\ntCouldn't allocate memory for volume lookup table");
 
     I_SetChannels();
-
-    AUDIO_Start(&specs);
 
     COM_Print("\tsound module ready\n");
 #endif
