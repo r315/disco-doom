@@ -420,6 +420,9 @@ void V_Init(void)
 
     // screens[0], main game window
     // screens[1], background for when game window is smaller than canvas
+    // screens[2]
+    // screens[3]
+    // screens[4], ST background and icons
     for (i = 1; i < VIDEO_NUM_SCREENS; i++)
         screens[i] = base + (i - 1) * SCREENWIDTH * SCREENHEIGHT;
 }

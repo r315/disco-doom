@@ -72,7 +72,6 @@ static uint8_t *heap_end = NULL;
 
 static FIL files[MAX_FILES];
 static FIL *openfiles[MAX_FILES];
-extern UART_HandleTypeDef huart1;
 
 
 /**

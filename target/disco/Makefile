@@ -116,6 +116,7 @@ $(wildcard $(DOOM_SOURCES_PATHS)/*.c) \
 $(TARGET_PATH)/i_sound.c \
 $(TARGET_PATH)/i_net.c \
 $(TARGET_PATH)/i_video.c \
+$(TARGET_PATH)/i_input.c \
 
 # ASM sources
 ASM_SOURCES = $(BSP_PATH)/core/startup_stm32f769xx.s

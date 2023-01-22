@@ -301,9 +301,9 @@ void I_FinishUpdate(void)
 			tics = 20;
 
 		for (i = 0; i < tics * 2; i += 2)
-			screen[(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0x0;
+			screen[(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0;
 		for (; i < 20 * 2; i += 2)
-			screen[(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0x00;
+			screen[(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0;
 		
 		updateFps();
 	}

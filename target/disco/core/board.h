@@ -21,7 +21,7 @@
 
 #define SDRAM_BASE_ADDR   0xC0000000UL
 #define SDRAM_SIZE        0x01000000UL  /* 16 MBytes */
-#define MAX_HEAP_SIZE    (SDRAM_SIZE - LCD_FB_SIZE)    /* 16 - 3 MBytes */
+#define MAX_HEAP_SIZE     (SDRAM_SIZE - LCD_FB_SIZE)    /* 16 - 3 MBytes */
 #define LCD_FB_SIZE		  (800 * 480 * 4 * 2)  // 0x002EE000 3 MB for frame buffer
 #define LCD_FB_BASE_ADDR  ((SDRAM_BASE_ADDR + SDRAM_SIZE) - LCD_FB_SIZE)
 

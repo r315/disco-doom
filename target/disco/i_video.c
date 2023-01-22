@@ -7,6 +7,7 @@
 #include "board.h"
 #include "hu_lib.h"
 #include "hu_stuff.h"
+#include "i_input.h"
 
 #define VIDEO_ENABLED       1
 
@@ -20,6 +21,7 @@
 
 #define VIDEO_LAYER			DMA2D_FOREGROUND_LAYER
 #define VIDEO_LAYER_BASE    LCD_FG_BASE_ADDR
+#define VIDEO_LAYER_SIZE    (LCD_FB_SIZE / 2)
 
 #if DOUBLE_SCREEN
 #define CANVAS_WIDTH        (SCREENWIDTH * 2)
@@ -101,29 +103,7 @@ void I_ShutdownGraphics(void)
 //
 void I_StartTic(void)
 {
-    event_t event;
-    uint8_t evt;
-
-    event.data1 = 0;
-    event.data2 = 0;
-    event.data3 = 0;
-    if(BUTTON_Read() != 0){
-        while((evt = BUTTON_GetEvent(&event.data1)) != 0){        
-            switch(evt){
-                case BTN_PRESSED:
-                    event.type = ev_keydown;
-                    //printf("Key %d, Event: %s\n", event.data1, "key down");
-                    D_PostEvent(&event);
-                    break;
-
-                case BTN_RELEASED:
-                    event.type = ev_keyup;
-                    //printf("Key %d, Event: %s\n", event.data1, "key up");
-                    D_PostEvent(&event);
-                    break;
-            }        
-        }     
-    }  
+    I_GetEvent();
 }
 
 //
@@ -244,8 +224,7 @@ void I_SetPalette(byte *palette)
 //
 void I_InitGraphics(void)
 {
-   
-    screen_buffer = (byte*)malloc(SCREENWIDTH * SCREENHEIGHT);
+    screen_buffer = (byte*)calloc(1, SCREENWIDTH * SCREENHEIGHT);
 
     if (screen_buffer == NULL)
         I_Error("Couldn't allocate screen memory");
@@ -263,14 +242,10 @@ void I_InitGraphics(void)
 
     BSP_LCD_LayerDefaultInit(VIDEO_LAYER, VIDEO_LAYER_BASE);
     BSP_LCD_SetColorKeying(VIDEO_LAYER, LCD_COLOR_MAGENTA);  // For controls transparencies
-
-    memset((uint8_t*)LCD_FB_BASE_ADDR, 0, LCD_FB_SIZE);
-
-    //BSP_LCD_Clear(LCD_BACKGROUND_COLOR);
-
-    //BSP_LCD_SetFont(&Font16);
-    //BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-    //BSP_LCD_SetBackColor(LCD_COLOR_BLACK);
+    // Clear LCD
+    memset((uint8_t*)VIDEO_LAYER_BASE, 0, VIDEO_LAYER_SIZE);
+    // Clear palette
+    memset((void*)DMA2D->FGCLUT, 0, 256 * 4);
 
     BSP_LCD_SelectLayer(VIDEO_LAYER);
 
@@ -280,6 +255,7 @@ void I_InitGraphics(void)
     LCD_ConfigVideoDma((uint32_t)screen_buffer, CANVAS_WIDTH, CANVAS_HEIGHT);
     #endif
 
+    I_FinishUpdate();
     BSP_LED_On(LED2);
 #endif
 }
