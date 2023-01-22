@@ -6,6 +6,7 @@
 #include "i_video.h"
 #include "d_main.h"
 #include "fatfs.h"
+#include "serial.h"
 
 i2cbus_t ext_i2cbus = {
     .write = INPUT_I2C_Write,
@@ -40,7 +41,7 @@ int main(void)
 
     disco_MpuConfig();
 
-    Serial_Init();
+    SERIAL_Init();
     printf("\e[2J\r");
     printf("\nCPU Clock: %dMHz \n", (int)(SystemCoreClock/1000000));
 
