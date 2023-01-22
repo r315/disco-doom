@@ -33,9 +33,10 @@ static const char
 #include "doomdata.h"
 #include "m_bbox.h"
 #include "v_video.h"
+#include "i_video.h"
 
 // Each screen is [SCREENWIDTH*SCREENHEIGHT];
-byte*       screens[VIDEO_MAX_SCREENS + 1]; // Extra screen for ST background
+byte*       screens[VIDEO_NUM_SCREENS + 1]; // Extra screen for ST background
 int         usegamma;
 //static int	dirtybox[4];
 
@@ -147,7 +148,7 @@ void V_CopyRect(int srcx, int srcy, int srcscrn,
 		srcy < 0 || srcy + height > SCREENHEIGHT || 
 		destx < 0 || destx + width > SCREENWIDTH || 
 		desty < 0 || desty + height > SCREENHEIGHT || 
-		(unsigned)srcscrn > VIDEO_MAX_SCREENS || (unsigned)destscrn > VIDEO_MAX_SCREENS)
+		(unsigned)srcscrn > VIDEO_NUM_SCREENS || (unsigned)destscrn > VIDEO_NUM_SCREENS)
     {
         I_Error("Bad V_CopyRect");
     }
@@ -186,7 +187,7 @@ void V_DrawPatch(int x, int y, int scrn, patch_t *patch)
 #ifdef RANGECHECK
     if (x < 0 || x + SHORT(patch->width) > SCREENWIDTH || 
         y < 0 || y + SHORT(patch->height) > SCREENHEIGHT || 
-        (unsigned)scrn > VIDEO_MAX_SCREENS)
+        (unsigned)scrn > VIDEO_NUM_SCREENS)
     {
         fprintf(stderr, "Patch at %d,%d exceeds LFB\n", x, y);
         // No I_Error abort - what is up with TNT.WAD?
@@ -245,7 +246,7 @@ void V_DrawPatchFlipped(int x, int y, int scrn, patch_t *patch)
 #ifdef RANGECHECK
     if (x < 0 || x + SHORT(patch->width) > SCREENWIDTH || 
         y < 0 || y + SHORT(patch->height) > SCREENHEIGHT || 
-        (unsigned)scrn > VIDEO_MAX_SCREENS)
+        (unsigned)scrn > VIDEO_NUM_SCREENS)
     {
         fprintf(stderr, "Patch origin %d,%d exceeds LFB\n", x, y);
         I_Error("Bad V_DrawPatch in V_DrawPatchFlipped");
@@ -355,7 +356,7 @@ void V_DrawBlock(int x, int y, int scrn,
 #ifdef RANGECHECK
     if (x < 0 || x + width > SCREENWIDTH || 
         y < 0 || y + height > SCREENHEIGHT || 
-        (unsigned)scrn > VIDEO_MAX_SCREENS)
+        (unsigned)scrn > VIDEO_NUM_SCREENS)
     {
         I_Error("Bad V_DrawBlock");
     }
@@ -386,7 +387,7 @@ void V_GetBlock(int x, int y, int scrn,
 #ifdef RANGECHECK
     if (x < 0 || x + width > SCREENWIDTH || 
         y < 0 || y + height > SCREENHEIGHT || 
-        (unsigned)scrn > VIDEO_MAX_SCREENS)
+        (unsigned)scrn > VIDEO_NUM_SCREENS)
     {
         I_Error("Bad V_DrawBlock");
     }
@@ -412,8 +413,13 @@ void V_Init(void)
 
     // stick these in low dos memory on PCs
 
-    base = I_AllocLow(SCREENWIDTH * SCREENHEIGHT * VIDEO_MAX_SCREENS);
+    base = I_AllocLow(SCREENWIDTH * SCREENHEIGHT * (VIDEO_NUM_SCREENS - 1));
 
-    for (i = 0; i < VIDEO_MAX_SCREENS; i++)
-        screens[i] = base + i * SCREENWIDTH * SCREENHEIGHT;
+    screens[0] = I_GetScreen();
+    //screens[1] = base + 0 * SCREENWIDTH * SCREENHEIGHT;
+
+    // screens[0], main game window
+    // screens[1], background for when game window is smaller than canvas
+    for (i = 1; i < VIDEO_NUM_SCREENS; i++)
+        screens[i] = base + (i - 1) * SCREENWIDTH * SCREENHEIGHT;
 }

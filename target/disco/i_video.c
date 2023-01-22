@@ -193,6 +193,11 @@ void I_ReadScreen(byte *dst)
     memcpy(dst, screen_buffer, SCREENWIDTH * SCREENHEIGHT);
 }
 
+byte* I_GetScreen(void) 
+{
+    return screen_buffer;
+}
+
 //
 // I_SetPalette
 //
@@ -239,16 +244,11 @@ void I_SetPalette(byte *palette)
 //
 void I_InitGraphics(void)
 {
-    if(screens[0] != NULL){
-        screen_buffer = screens[0];
-    }else{
-        screen_buffer = (byte*)malloc(SCREENWIDTH * SCREENHEIGHT);
+   
+    screen_buffer = (byte*)malloc(SCREENWIDTH * SCREENHEIGHT);
 
-        if (screen_buffer == NULL)
-            I_Error("Couldn't allocate screen memory");        
-        
-        screens[0] = (byte*)screen_buffer;
-    }
+    if (screen_buffer == NULL)
+        I_Error("Couldn't allocate screen memory");
 
     #if DOUBLE_SCREEN
         dfb = malloc(CANVAS_WIDTH * CANVAS_HEIGHT);

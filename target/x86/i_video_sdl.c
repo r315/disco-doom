@@ -39,7 +39,8 @@ static const char
 
 #include "doomdef.h"
 
-SDL_Surface *screen;
+static SDL_Surface *surface;
+static byte *screen;
 
 // Blocky mode,
 // replace each 320x200 pixel with multiply*multiply pixels.
@@ -205,12 +206,12 @@ void I_GetEvent(SDL_Event *Event)
 #if (SDL_MAJOR_VERSION >= 0) && (SDL_MINOR_VERSION >= 9)
 	case SDL_MOUSEMOTION:
 		/* Ignore mouse warp events */
-		if ((Event->motion.x != screen->w / 2) || (Event->motion.y != screen->h / 2))
+		if ((Event->motion.x != surface->w / 2) || (Event->motion.y != surface->h / 2))
 		{
 			/* Warp the mouse back to the center */
 			if (grabMouse)
 			{
-				SDL_WarpMouse(screen->w / 2, screen->h / 2);
+				SDL_WarpMouse(surface->w / 2, surface->h / 2);
 			}
 			event.type = ev_mouse;
 			event.data1 = 0 | (Event->motion.state & SDL_BUTTON(1) ? 1 : 0) | (Event->motion.state & SDL_BUTTON(2) ? 2 : 0) | (Event->motion.state & SDL_BUTTON(3) ? 4 : 0);
@@ -289,7 +290,7 @@ void I_FinishUpdate(void)
 	int tics;
 	int i;
 
-	// draws little dots on the bottom of the screen
+	// draws little dots on the bottom of the surface
 	if (d_devparm)
 	{
 
@@ -300,37 +301,37 @@ void I_FinishUpdate(void)
 			tics = 20;
 
 		for (i = 0; i < tics * 2; i += 2)
-			screens[0][(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0x0;
+			screen[(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0x0;
 		for (; i < 20 * 2; i += 2)
-			screens[0][(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0x00;
+			screen[(SCREENHEIGHT - 10) * SCREENWIDTH + i] = 0x00;
 		
 		updateFps();
 	}
 	
 
-	// scales the screen size before blitting it
-	if (SDL_MUSTLOCK(screen))
+	// scales the surface size before blitting it
+	if (SDL_MUSTLOCK(surface))
 	{
-		if (SDL_LockSurface(screen) < 0)
+		if (SDL_LockSurface(surface) < 0)
 		{
 			return;
 		}
 	}
-	if ((multiply == 1) && SDL_MUSTLOCK(screen))
+	if ((multiply == 1) && SDL_MUSTLOCK(surface))
 	{
 		unsigned char *olineptr;
 		unsigned char *ilineptr;
 		int y;
 
-		ilineptr = (unsigned char *)screens[0];
-		olineptr = (unsigned char *)screen->pixels;
+		ilineptr = (unsigned char *)screen;
+		olineptr = (unsigned char *)surface->pixels;
 
 		y = SCREENHEIGHT;
 		while (y--)
 		{
-			memcpy(olineptr, ilineptr, screen->w);
+			memcpy(olineptr, ilineptr, surface->w);
 			ilineptr += SCREENWIDTH;
-			olineptr += screen->pitch;
+			olineptr += surface->pitch;
 		}
 	}
 	else if (multiply == 2)
@@ -342,11 +343,11 @@ void I_FinishUpdate(void)
 		unsigned int twomoreopixels;
 		unsigned int fouripixels;
 
-		ilineptr = (unsigned int *)(screens[0]);
+		ilineptr = (unsigned int *)(screen);
 		for (i = 0; i < 2; i++)
 		{
 			olineptrs[i] =
-				(unsigned int *)&((uint8_t *)screen->pixels)[i * screen->pitch];
+				(unsigned int *)&((uint8_t *)surface->pixels)[i * surface->pitch];
 		}
 
 		y = SCREENHEIGHT;
@@ -370,8 +371,8 @@ void I_FinishUpdate(void)
 				*olineptrs[1]++ = twoopixels;
 #endif
 			} while (x -= 4);
-			olineptrs[0] += screen->pitch / 4;
-			olineptrs[1] += screen->pitch / 4;
+			olineptrs[0] += surface->pitch / 4;
+			olineptrs[1] += surface->pitch / 4;
 		}
 	}
 	else if (multiply == 3)
@@ -382,11 +383,11 @@ void I_FinishUpdate(void)
 		unsigned int fouropixels[3];
 		unsigned int fouripixels;
 
-		ilineptr = (unsigned int *)(screens[0]);
+		ilineptr = (unsigned int *)(screen);
 		for (i = 0; i < 3; i++)
 		{
 			olineptrs[i] =
-				(unsigned int *)&((uint8_t *)screen->pixels)[i * screen->pitch];
+				(unsigned int *)&((uint8_t *)surface->pixels)[i * surface->pitch];
 		}
 
 		y = SCREENHEIGHT;
@@ -421,16 +422,16 @@ void I_FinishUpdate(void)
 				*olineptrs[2]++ = fouropixels[0];
 #endif
 			} while (x -= 4);
-			olineptrs[0] += 2 * screen->pitch / 4;
-			olineptrs[1] += 2 * screen->pitch / 4;
-			olineptrs[2] += 2 * screen->pitch / 4;
+			olineptrs[0] += 2 * surface->pitch / 4;
+			olineptrs[1] += 2 * surface->pitch / 4;
+			olineptrs[2] += 2 * surface->pitch / 4;
 		}
 	}
-	if (SDL_MUSTLOCK(screen))
+	if (SDL_MUSTLOCK(surface))
 	{
-		SDL_UnlockSurface(screen);
+		SDL_UnlockSurface(surface);
 	}
-	SDL_UpdateRect(screen, 0, 0, 0, 0);
+	SDL_UpdateRect(surface, 0, 0, 0, 0);
 }
 
 //
@@ -438,9 +439,10 @@ void I_FinishUpdate(void)
 //
 void I_ReadScreen(byte *scr)
 {
-	memcpy(scr, screens[0], SCREENWIDTH * SCREENHEIGHT);
+	memcpy(scr, screen, SCREENWIDTH * SCREENHEIGHT);
 }
 
+byte* I_GetScreen(void) {return screen; }
 //
 // I_SetPalette
 //
@@ -456,7 +458,7 @@ void I_SetPalette(byte *palette)
 		colors[i].b = gammatable[usegamma][*palette++];
 		colors[i].unused = 0;
 	}
-	SDL_SetColors(screen, colors, 0, 256);
+	SDL_SetColors(surface, colors, 0, 256);
 }
 
 void I_InitGraphics(void)
@@ -490,7 +492,7 @@ void I_InitGraphics(void)
 	video_bpp = 8;
 
 	/* We need to allocate a software surface because the DOOM! code expects
-       the screen surface to be valid all of the time.  Properly done, the
+       the surface surface to be valid all of the time.  Properly done, the
        rendering code would allocate the video surface in video memory and
        then call SDL_LockSurface()/SDL_UnlockSurface() around frame rendering.
        Eventually SDL will support flipping, which would be really nice in
@@ -516,8 +518,8 @@ void I_InitGraphics(void)
 				video_w, video_h);
 	}
 
-	screen = SDL_SetVideoMode(video_w, video_h, 8, video_flags);
-	if (screen == NULL)
+	surface = SDL_SetVideoMode(video_w, video_h, 8, video_flags);
+	if (surface == NULL)
 	{
 		I_Error("Could not set %dx%d video mode: %s", video_w, video_h,
 				SDL_GetError());
@@ -526,18 +528,18 @@ void I_InitGraphics(void)
 	SDL_ShowCursor(0);
 	SDL_WM_SetCaption("SDL DOOM! v1.10", "doom");
 
-	/* Set up the screen displays */
+	/* Set up the surface displays */
 	w = SCREENWIDTH * multiply;
 	h = SCREENHEIGHT * multiply;
 
-	if (multiply == 1 && !SDL_MUSTLOCK(screen))
+	if (multiply == 1 && !SDL_MUSTLOCK(surface))
 	{
-		screens[0] = (unsigned char *)screen->pixels;
+		screen = (unsigned char *)surface->pixels;
 	}
 	else
 	{
-		screens[0] = (unsigned char *)malloc(SCREENWIDTH * SCREENHEIGHT);
-		if (screens[0] == NULL)
+		screen = (unsigned char *)malloc(SCREENWIDTH * SCREENHEIGHT);
+		if (screen == NULL)
 			I_Error("Couldn't allocate screen memory");
 	}
 
