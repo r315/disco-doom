@@ -122,7 +122,7 @@ char	endstring[160];
 //
 // MENU TYPEDEFS
 //
-typedef struct
+typedef struct menuitem_s
 {
     // 0 = no cursor here, 1 = ok, 2 = arrows ok
     short	status;
@@ -157,10 +157,10 @@ short		whichSkull;		// which skull to draw
 
 // graphic name of skulls
 // warning: initializer-string for array of chars is too long
-char    skullName[2][/*8*/9] = {"M_SKULL1","M_SKULL2"};
-
+static char     skullName[2][/*8*/9] = {"M_SKULL1","M_SKULL2"};
+static char	    msgNames[2][9]		= {"M_MSGOFF","M_MSGON"};
 // current menudef
-menu_t*	currentMenu;                          
+static menu_t*  currentMenu;
 
 //
 // PROTOTYPES
@@ -180,7 +180,6 @@ void M_ChangeMessages(int choice);
 void M_ChangeSensitivity(int choice);
 void M_SfxVol(int choice);
 void M_MusicVol(int choice);
-void M_ChangeDetail(int choice);
 void M_SizeDisplay(int choice);
 void M_StartGame(int choice);
 void M_Sound(int choice);
@@ -232,7 +231,7 @@ enum
     main_end
 } main_e;
 
-menuitem_t MainMenu[]=
+static menuitem_t MainMenu[] =
 {
     {1,"M_NGAME",M_NewGame,'n'},
     {1,"M_OPTION",M_Options,'o'},
@@ -243,7 +242,7 @@ menuitem_t MainMenu[]=
     {1,"M_QUITG",M_QuitDOOM,'q'}
 };
 
-menu_t  MainDef =
+static menu_t  MainDef =
 {
     main_end,
     NULL,
@@ -266,7 +265,7 @@ enum
     ep_end
 } episodes_e;
 
-menuitem_t EpisodeMenu[]=
+static menuitem_t EpisodeMenu[]=
 {
     {1,"M_EPI1", M_Episode,'k'},
     {1,"M_EPI2", M_Episode,'t'},
@@ -274,7 +273,7 @@ menuitem_t EpisodeMenu[]=
     {1,"M_EPI4", M_Episode,'t'}
 };
 
-menu_t  EpiDef =
+static menu_t  EpiDef =
 {
     ep_end,		// # of menu items
     &MainDef,		// previous menu
@@ -297,7 +296,7 @@ enum
     newg_end
 } newgame_e;
 
-menuitem_t NewGameMenu[]=
+static menuitem_t NewGameMenu[]=
 {
     {1,"M_JKILL",	M_ChooseSkill, 'i'},
     {1,"M_ROUGH",	M_ChooseSkill, 'h'},
@@ -306,7 +305,7 @@ menuitem_t NewGameMenu[]=
     {1,"M_NMARE",	M_ChooseSkill, 'n'}
 };
 
-menu_t  NewDef =
+static menu_t  NewDef =
 {
     newg_end,		// # of menu items
     &EpiDef,		// previous menu
@@ -316,8 +315,6 @@ menu_t  NewDef =
     hurtme		// lastOn
 };
 
-
-
 //
 // OPTIONS MENU
 //
@@ -325,7 +322,6 @@ enum
 {
     endgame,
     messages,
-    detail,
     scrnsize,
     option_empty1,
     mousesens,
@@ -334,11 +330,10 @@ enum
     opt_end
 } options_e;
 
-menuitem_t OptionsMenu[]=
+static menuitem_t OptionsMenu[]=
 {
     {1,"M_ENDGAM",	M_EndGame,'e'},
     {1,"M_MESSG",	M_ChangeMessages,'m'},
-    {1,"M_DETAIL",	M_ChangeDetail,'g'},
     {2,"M_SCRNSZ",	M_SizeDisplay,'s'},
     {-1,"",0},
     {2,"M_MSENS",	M_ChangeSensitivity,'m'},
@@ -346,7 +341,7 @@ menuitem_t OptionsMenu[]=
     {1,"M_SVOL",	M_Sound,'s'}
 };
 
-menu_t  OptionsDef =
+static menu_t  OptionsDef =
 {
     opt_end,
     &MainDef,
@@ -365,12 +360,12 @@ enum
     read1_end
 } read_e;
 
-menuitem_t ReadMenu1[] =
+static menuitem_t ReadMenu1[] =
 {
     {1,"",M_ReadThis2,0}
 };
 
-menu_t  ReadDef1 =
+static menu_t  ReadDef1 =
 {
     read1_end,
     &MainDef,
@@ -386,12 +381,12 @@ enum
     read2_end
 } read_e2;
 
-menuitem_t ReadMenu2[]=
+static menuitem_t ReadMenu2[]=
 {
     {1,"",M_FinishReadThis,0}
 };
 
-menu_t  ReadDef2 =
+static menu_t  ReadDef2 =
 {
     read2_end,
     &ReadDef1,
@@ -413,7 +408,7 @@ enum
     sound_end
 } sound_e;
 
-menuitem_t SoundMenu[]=
+static menuitem_t SoundMenu[]=
 {
     {2,"M_SFXVOL",M_SfxVol,'s'},
     {-1,"",0},
@@ -421,7 +416,7 @@ menuitem_t SoundMenu[]=
     {-1,"",0}
 };
 
-menu_t  SoundDef =
+static menu_t  SoundDef =
 {
     sound_end,
     &OptionsDef,
@@ -445,7 +440,7 @@ enum
     load_end
 } load_e;
 
-menuitem_t LoadMenu[]=
+static menuitem_t LoadMenu[]=
 {
     {1,"", M_LoadSelect,'1'},
     {1,"", M_LoadSelect,'2'},
@@ -455,7 +450,7 @@ menuitem_t LoadMenu[]=
     {1,"", M_LoadSelect,'6'}
 };
 
-menu_t  LoadDef =
+static menu_t  LoadDef =
 {
     load_end,
     &MainDef,
@@ -468,7 +463,7 @@ menu_t  LoadDef =
 //
 // SAVE GAME MENU
 //
-menuitem_t SaveMenu[]=
+static menuitem_t SaveMenu[]=
 {
     {1,"", M_SaveSelect,'1'},
     {1,"", M_SaveSelect,'2'},
@@ -478,7 +473,7 @@ menuitem_t SaveMenu[]=
     {1,"", M_SaveSelect,'6'}
 };
 
-menu_t  SaveDef =
+static menu_t  SaveDef =
 {
     load_end,
     &MainDef,
@@ -929,25 +924,22 @@ void M_Episode(int choice)
 //
 // M_Options
 //
-char    detailNames[2][9]	= {"M_GDHIGH","M_GDLOW"};
-char	msgNames[2][9]		= {"M_MSGOFF","M_MSGON"};
-
 
 void M_DrawOptions(void)
 {
-    V_DrawPatchDirect (108,15,0,W_CacheLumpName("M_OPTTTL",PU_CACHE));
-	
-    V_DrawPatchDirect (OptionsDef.x + 175,OptionsDef.y+LINEHEIGHT*detail,0,
-		       W_CacheLumpName(detailNames[detailLevel],PU_CACHE));
+    V_DrawPatchDirect (OptionsDef.x + 48, 15, 
+						0,
+						W_CacheLumpName("M_OPTTTL", PU_CACHE));
 
-    V_DrawPatchDirect (OptionsDef.x + 120,OptionsDef.y+LINEHEIGHT*messages,0,
-		       W_CacheLumpName(msgNames[showMessages],PU_CACHE));
+    V_DrawPatchDirect (OptionsDef.x + 120, OptionsDef.y + LINEHEIGHT * messages,
+						0,
+						W_CacheLumpName(msgNames[showMessages], PU_CACHE));
 
-    M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(mousesens+1),
-		 10,mouseSensitivity);
-	
-    M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(scrnsize+1),
-		 9,screenSize);
+    M_DrawThermo(OptionsDef.x, OptionsDef.y + LINEHEIGHT * (scrnsize+1),
+						9,screenSize);
+
+    M_DrawThermo(OptionsDef.x, OptionsDef.y + LINEHEIGHT * (mousesens + 1),
+						10, mouseSensitivity);
 }
 
 void M_Options(int choice)
@@ -1109,29 +1101,6 @@ void M_ChangeSensitivity(int choice)
 	break;
     }
 }
-
-
-
-
-void M_ChangeDetail(int choice)
-{
-    choice = 0;
-    detailLevel = 1 - detailLevel;
-
-    // FIXME - does not work. Remove anyway?
-    fprintf( stderr, "M_ChangeDetail: low detail mode n.a.\n");
-
-    return;
-    
-    /*R_SetViewSize (screenblocks, detailLevel);
-
-    if (!detailLevel)
-	players[consoleplayer].message = DETAILHI;
-    else
-	players[consoleplayer].message = DETAILLO;*/
-}
-
-
 
 
 void M_SizeDisplay(int choice)
@@ -1548,11 +1517,6 @@ boolean M_Responder (event_t* ev)
 	    S_StartSound(NULL,sfx_swtchn);
 	    return true;
 				
-	  case KEY_F5:            // Detail toggle
-	    M_ChangeDetail(0);
-	    S_StartSound(NULL,sfx_swtchn);
-	    return true;
-				
 	  case KEY_F6:            // Quicksave
 	    S_StartSound(NULL,sfx_swtchn);
 	    M_QuickSave();
@@ -1795,8 +1759,6 @@ void M_Drawer (void)
 void M_ClearMenus (void)
 {
     menuactive = 0;
-    // if (!netgame && usergame && paused)
-    //       sendpause = true;
 }
 
 

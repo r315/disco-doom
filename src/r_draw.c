@@ -302,32 +302,6 @@ void R_DrawFuzzColumn (void)
 		 dc_yl, dc_yh, dc_x);
     }
 #endif
-
-
-    // Keep till detailshift bug in blocky mode fixed,
-    //  or blocky mode removed.
-    /* WATCOM code 
-    if (detailshift)
-    {
-	if (dc_x & 1)
-	{
-	    outpw (GC_INDEX,GC_READMAP+(2<<8) ); 
-	    outp (SC_INDEX+1,12); 
-	}
-	else
-	{
-	    outpw (GC_INDEX,GC_READMAP); 
-	    outp (SC_INDEX+1,3); 
-	}
-	dest = destview + dc_yl*80 + (dc_x>>1); 
-    }
-    else
-    {
-	outpw (GC_INDEX,GC_READMAP+((dc_x&3)<<8) ); 
-	outp (SC_INDEX+1,1<<(dc_x&3)); 
-	dest = destview + dc_yl*80 + (dc_x>>2); 
-    }*/
-
     
     // Does not work with blocky mode.
     dest = ylookup[dc_yl] + columnofs[dc_x];
@@ -392,27 +366,7 @@ void R_DrawTranslatedColumn (void)
 		  dc_yl, dc_yh, dc_x);
     }
     
-#endif 
-
-
-    // WATCOM VGA specific.
-    /* Keep for fixing.
-    if (detailshift)
-    {
-	if (dc_x & 1)
-	    outp (SC_INDEX+1,12); 
-	else
-	    outp (SC_INDEX+1,3);
-	
-	dest = destview + dc_yl*80 + (dc_x>>1); 
-    }
-    else
-    {
-	outp (SC_INDEX+1,1<<(dc_x&3)); 
-
-	dest = destview + dc_yl*80 + (dc_x>>2); 
-    }*/
-
+#endif
     
     // FIXME. As above.
     dest = ylookup[dc_yl] + columnofs[dc_x]; 
@@ -626,55 +580,6 @@ void R_DrawSpan (void)
 } 
 #endif
 
-
-//
-// Again..
-//
-void R_DrawSpanLow (void) 
-{ 
-    fixed_t		xfrac;
-    fixed_t		yfrac; 
-    byte*		dest; 
-    int			count;
-    int			spot; 
-	 
-#ifdef RANGECHECK 
-    if (ds_x2 < ds_x1
-	|| ds_x1<0
-	|| ds_x2>=SCREENWIDTH  
-	|| (unsigned)ds_y>SCREENHEIGHT)
-    {
-	I_Error( "R_DrawSpan: %i to %i at %i",
-		 ds_x1,ds_x2,ds_y);
-    }
-//	dscount++; 
-#endif 
-	 
-    xfrac = ds_xfrac; 
-    yfrac = ds_yfrac; 
-
-    // Blocky mode, need to multiply by 2.
-    ds_x1 <<= 1;
-    ds_x2 <<= 1;
-    
-    dest = ylookup[ds_y] + columnofs[ds_x1];
-  
-    
-    count = ds_x2 - ds_x1; 
-    do 
-    { 
-	spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-	// Lowres/blocky mode does it twice,
-	//  while scale is adjusted appropriately.
-	*dest++ = ds_colormap[ds_source[spot]]; 
-	*dest++ = ds_colormap[ds_source[spot]];
-	
-	xfrac += ds_xstep; 
-	yfrac += ds_ystep; 
-
-    } while (count--); 
-}
-
 //
 // R_InitBuffer 
 // Creats lookup tables that avoid
@@ -708,9 +613,6 @@ R_InitBuffer
     for (i=0 ; i<height ; i++) 
 	ylookup[i] = screens[0] + (i+viewwindowy)*SCREENWIDTH; 
 } 
- 
- 
-
 
 //
 // R_FillBackScreen
@@ -734,8 +636,8 @@ void R_FillBackScreen (void)
 
     char*	name;
 	
-    if (scaledviewwidth == 320)
-	return;
+    if (scaledviewwidth == SCREENWIDTH)
+		return;
 	
     if ( gamemode == commercial)
 	name = name2;

@@ -81,31 +81,19 @@ extern byte*		dc_translation;
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.
-void 	R_DrawSpan (void);
+void R_DrawSpan (void);
 
-// Low resolution mode, 160x200?
-void 	R_DrawSpanLow (void);
-
-
-void
-R_InitBuffer
-( int		width,
-  int		height );
-
+void R_InitBuffer (int width, int height);
 
 // Initialize color translation tables,
 //  for player rendering etc.
-void	R_InitTranslationTables (void);
-
-
+void R_InitTranslationTables (void);
 
 // Rendering function.
 void R_FillBackScreen (void);
 
 // If the view size is not full screen, draws a border around it.
 void R_DrawViewBorder (void);
-
-
 
 #endif
 //-----------------------------------------------------------------------------

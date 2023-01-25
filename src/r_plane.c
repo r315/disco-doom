@@ -36,26 +36,21 @@ rcsid[] = "$Id: r_plane.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 #include "r_local.h"
 #include "r_sky.h"
 
-
-
-planefunction_t		floorfunc;
-planefunction_t		ceilingfunc;
-
 //
 // opening
 //
 
 // Here comes the obnoxious "visplane".
 #define MAXVISPLANES	128
-visplane_t		visplanes[MAXVISPLANES];
-visplane_t*		lastvisplane;
-visplane_t*		floorplane;
-visplane_t*		ceilingplane;
+static visplane_t		visplanes[MAXVISPLANES];
+static visplane_t*		lastvisplane;
+visplane_t*		        floorplane;
+visplane_t*		        ceilingplane;
 
 // ?
-#define MAXOPENINGS	SCREENWIDTH*64
-short			openings[MAXOPENINGS];
-short*			lastopening;
+#define MAXOPENINGS	    SCREENWIDTH*64
+static short            openings[MAXOPENINGS];
+short*			        lastopening;
 
 
 //
@@ -63,31 +58,30 @@ short*			lastopening;
 //  floorclip starts out SCREENHEIGHT
 //  ceilingclip starts out -1
 //
-short			floorclip[SCREENWIDTH];
-short			ceilingclip[SCREENWIDTH];
+short			        floorclip[SCREENWIDTH];
+short			        ceilingclip[SCREENWIDTH];
 
 //
 // spanstart holds the start of a plane span
 // initialized to 0 at start
 //
-int			spanstart[SCREENHEIGHT];
-int			spanstop[SCREENHEIGHT];
+static int              spanstart[SCREENHEIGHT];
 
 //
 // texture mapping
 //
-lighttable_t**		planezlight;
-fixed_t			planeheight;
+static lighttable_t**   planezlight;
+static fixed_t			planeheight;
 
-fixed_t			yslope[SCREENHEIGHT];
-fixed_t			distscale[SCREENWIDTH];
-fixed_t			basexscale;
-fixed_t			baseyscale;
+fixed_t			        yslope[SCREENHEIGHT];
+fixed_t			        distscale[SCREENWIDTH];
+static fixed_t			basexscale;
+static fixed_t			baseyscale;
 
-fixed_t			cachedheight[SCREENHEIGHT];
-fixed_t			cacheddistance[SCREENHEIGHT];
-fixed_t			cachedxstep[SCREENHEIGHT];
-fixed_t			cachedystep[SCREENHEIGHT];
+static fixed_t			cachedheight[SCREENHEIGHT];
+static fixed_t			cacheddistance[SCREENHEIGHT];
+static fixed_t			cachedxstep[SCREENHEIGHT];
+static fixed_t			cachedystep[SCREENHEIGHT];
 
 
 
@@ -114,11 +108,7 @@ void R_InitPlanes (void)
 //
 // BASIC PRIMITIVE
 //
-void
-R_MapPlane
-( int		y,
-  int		x1,
-  int		x2 )
+static void R_MapPlane (int y, int x1, int x2)
 {
     angle_t	angle;
     fixed_t	distance;
@@ -169,9 +159,8 @@ R_MapPlane
     ds_y = y;
     ds_x1 = x1;
     ds_x2 = x2;
-
-    // high or low detail
-    spanfunc ();	
+    // High detail only
+    R_DrawSpan ();
 }
 
 
@@ -324,13 +313,7 @@ R_CheckPlane
 //
 // R_MakeSpans
 //
-void
-R_MakeSpans
-( int		x,
-  int		t1,
-  int		b1,
-  int		t2,
-  int		b2 )
+static void R_MakeSpans (int x, int t1, int b1, int t2, int	b2)
 {
     while (t1 < t2 && t1<=b1)
     {
@@ -392,7 +375,7 @@ void R_DrawPlanes (void)
 	// sky flat
 	if (pl->picnum == skyflatnum)
 	{
-	    dc_iscale = pspriteiscale>>detailshift;
+	    dc_iscale = pspriteiscale;
 	    
 	    // Sky is allways drawn full bright,
 	    //  i.e. colormaps[0] is used.
@@ -437,9 +420,10 @@ void R_DrawPlanes (void)
 		
 	stop = pl->maxx + 1;
 
-	for (x=pl->minx ; x<= stop ; x++)
+	for (x = pl->minx; x <= stop; x++)
 	{
-	    R_MakeSpans(x,pl->top[x-1],
+	    R_MakeSpans(x,
+			pl->top[x-1],
 			pl->bottom[x-1],
 			pl->top[x],
 			pl->bottom[x]);
