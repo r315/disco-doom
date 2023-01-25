@@ -244,6 +244,8 @@ void M_LoadDefaults(void)
 
         fclose(f);
     }
+
+    HU_DisplayMessages(!!showMessages);
 }
 
 int M_DrawText(int x, int y, boolean direct, char *string)

@@ -48,13 +48,6 @@ rcsid[] = "$Id: m_menu.c,v 1.7 1997/02/03 22:45:10 b1 Exp $";
 #include "sounds.h"
 #include "m_menu.h"
 
-
-
-extern patch_t*		hu_font[HU_FONTSIZE];
-extern boolean		message_dontfuckwithme;
-
-extern boolean		chat_on;		// in heads-up code
-
 //
 // defaulted values
 //
@@ -62,7 +55,6 @@ int			mouseSensitivity;       // has default
 
 // Show messages has default, 0 = off, 1 = on
 int			showMessages;
-	
 
 // Blocky mode, has default, 0 = high, 1 = normal
 int			detailLevel;		
@@ -72,26 +64,24 @@ int			screenblocks;		// has default
 int			screenSize;		
 
 // -1 = no quicksave slot picked!
-int			quickSaveSlot;          
+static int      quickSaveSlot;
 
  // 1 = message to be printed
-int			messageToPrint;
+static int      messageToPrint;
 // ...and here is the message string!
-char*			messageString;		
+static char*	messageString;
 
 // message x & y
-int			messx;			
-int			messy;
-int			messageLastMenuActive;
+static int      messageLastMenuActive;
 
 // timed message = no input from user
-boolean			messageNeedsInput;     
+static boolean  messageNeedsInput;
 
 void    (*messageRoutine)(int response);
 
 #define SAVESTRINGSIZE 	24
 
-char gammamsg[5][26] =
+static char gammamsg[5][26] =
 {
     GAMMALVL0,
     GAMMALVL1,
@@ -101,11 +91,11 @@ char gammamsg[5][26] =
 };
 
 // we are going to be entering a savegame string
-int			saveStringEnter;              
-int             	saveSlot;	// which slot to save in
-int			saveCharIndex;	// which char we're editing
+static int      saveStringEnter;
+static int      saveSlot;	    // which slot to save in
+static int      saveCharIndex;	// which char we're editing
 // old save description before edit
-char			saveOldString[SAVESTRINGSIZE];  
+static char	    saveOldString[SAVESTRINGSIZE];
 
 boolean			inhelpscreens;
 boolean			menuactive;
@@ -113,12 +103,11 @@ boolean			menuactive;
 #define SKULLXOFF		-32
 #define LINEHEIGHT		16
 
-extern boolean		sendpause;
 char			savegamestrings[10][SAVESTRINGSIZE];
 
 char	endstring[160];
-
-
+char    tempstring[80];
+int     epi;
 //
 // MENU TYPEDEFS
 //
@@ -137,8 +126,6 @@ typedef struct menuitem_s
     // hotkey in menu
     char	alphaKey;			
 } menuitem_t;
-
-
 
 typedef struct menu_s
 {
@@ -483,6 +470,34 @@ static menu_t  SaveDef =
     0
 };
 
+//
+// Quit Sounds
+//
+
+int     quitsounds[8] =
+{
+    sfx_pldeth,
+    sfx_dmpain,
+    sfx_popain,
+    sfx_slop,
+    sfx_telept,
+    sfx_posit1,
+    sfx_posit3,
+    sfx_sgtatk
+};
+
+int     quitsounds2[8] =
+{
+    sfx_vilact,
+    sfx_getpow,
+    sfx_boscub,
+    sfx_slop,
+    sfx_skeswg,
+    sfx_kntdth,
+    sfx_bspact,
+    sfx_sgtatk
+};
+
 
 //
 // M_ReadSaveStrings
@@ -656,7 +671,6 @@ void M_SaveGame (int choice)
 //
 //      M_QuickSave
 //
-char    tempstring[80];
 
 void M_QuickSaveResponse(int ch)
 {
@@ -868,7 +882,6 @@ void M_NewGame(int choice)
 //
 //      M_Episode
 //
-int     epi;
 
 void M_DrawEpisode(void)
 {
@@ -963,7 +976,7 @@ void M_ChangeMessages(int choice)
     else
 	players[consoleplayer].message = MSGON ;
 
-    message_dontfuckwithme = true;
+    HU_DisplayMessages(showMessages);
 }
 
 
@@ -1028,31 +1041,6 @@ void M_FinishReadThis(int choice)
 //
 // M_QuitDOOM
 //
-int     quitsounds[8] =
-{
-    sfx_pldeth,
-    sfx_dmpain,
-    sfx_popain,
-    sfx_slop,
-    sfx_telept,
-    sfx_posit1,
-    sfx_posit3,
-    sfx_sgtatk
-};
-
-int     quitsounds2[8] =
-{
-    sfx_vilact,
-    sfx_getpow,
-    sfx_boscub,
-    sfx_slop,
-    sfx_skeswg,
-    sfx_kntdth,
-    sfx_bspact,
-    sfx_sgtatk
-};
-
-
 
 void M_QuitResponse(int ch)
 {

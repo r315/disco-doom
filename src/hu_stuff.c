@@ -87,14 +87,11 @@ static boolean		always_off = false;
 static char		    chat_dest[MAXPLAYERS];
 static hu_itext_t   w_inputbuffer[MAXPLAYERS];
 
-static boolean		message_on;
-boolean			message_dontfuckwithme;
+static boolean		message_dontfuckwithme;
 static boolean		message_nottobefuckedwith;
 
 static hu_stext_t	w_message;
-static int		message_counter;
-
-extern int		showMessages;
+static int		    message_counter;
 
 static boolean		headsupactive = false;
 
@@ -400,6 +397,7 @@ void HU_Init(void)
 	hu_font[i] = (patch_t *) W_CacheLumpName(buffer, PU_STATIC);
     }
 
+	message_dontfuckwithme = true;
 }
 
 void HU_Stop(void)
@@ -416,9 +414,7 @@ void HU_Start(void)
     if (headsupactive)
 	HU_Stop();
 
-    plr = &players[consoleplayer];
-    message_on = false;
-    message_dontfuckwithme = false;
+    plr = &players[consoleplayer];    
     message_nottobefuckedwith = false;
     chat_on = false;
 
@@ -426,7 +422,7 @@ void HU_Start(void)
     HUlib_initSText(&w_message,
 		    HU_MSGX, HU_MSGY, HU_MSGHEIGHT,
 		    hu_font,
-		    HU_FONTSTART, &message_on);
+		    HU_FONTSTART, &message_nottobefuckedwith);
 
     // create the map title widget
     HUlib_initTextLine(&w_title,
@@ -499,29 +495,25 @@ void HU_Ticker(void)
     int i, rc;
     char c;
 
-    // tick down message counter if message is up
-    if (message_counter && !--message_counter)
+
+    if (message_dontfuckwithme)
     {
-	message_on = false;
-	message_nottobefuckedwith = false;
+		// tick down message counter if message is up
+		if (message_counter)
+		{
+			if(--message_counter == 0)
+				message_nottobefuckedwith = false;
+		}
+
+        // display message if necessary
+        if (plr->message)
+        {
+            HUlib_addMessageToSText(&w_message, 0, plr->message);
+            plr->message = 0;
+            message_counter = HU_MSGTIMEOUT;
+            message_nottobefuckedwith = true;	    
+        }
     }
-
-    if (showMessages || message_dontfuckwithme)
-    {
-
-	// display message if necessary
-	if ((plr->message && !message_nottobefuckedwith)
-	    || (plr->message && message_dontfuckwithme))
-	{
-	    HUlib_addMessageToSText(&w_message, 0, plr->message);
-	    plr->message = 0;
-	    message_on = true;
-	    message_counter = HU_MSGTIMEOUT;
-	    message_nottobefuckedwith = message_dontfuckwithme;
-	    message_dontfuckwithme = 0;
-	}
-
-    } // else message_on = false;
 
     // check for incoming chat characters
     if (netgame)
@@ -551,7 +543,6 @@ void HU_Ticker(void)
 						    w_inputbuffer[i].l.l);
 			    
 			    message_nottobefuckedwith = true;
-			    message_on = true;
 			    message_counter = HU_MSGTIMEOUT;
 			    if ( gamemode == commercial )
 			      S_StartSound(0, sfx_radio);
@@ -566,6 +557,11 @@ void HU_Ticker(void)
 	}
     }
 
+}
+
+void HU_DisplayMessages(boolean on)
+{
+    message_dontfuckwithme = on;
 }
 
 #define QUEUESIZE		128
@@ -649,7 +645,7 @@ boolean HU_Responder(event_t *ev)
     {
 	if (ev->data1 == HU_MSGREFRESH)
 	{
-	    message_on = true;
+	    message_nottobefuckedwith = true;
 	    message_counter = HU_MSGTIMEOUT;
 	    eatkey = true;
 	}
