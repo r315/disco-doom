@@ -26,16 +26,13 @@ rcsid[] = "$Id: hu_lib.c,v 1.3 1997/01/26 07:44:58 b1 Exp $";
 #include <ctype.h>
 
 #include "m_swap.h"
-
 #include "doomdef.h"
-
 #include "v_video.h"
-
 #include "hu_lib.h"
 #include "r_local.h"
 #include "r_draw.h"
-
 #include "am_map.h"
+#include "common.h"
 
 // boolean : whether the screen is always erased
 #define noterased viewwindowx
@@ -212,11 +209,15 @@ HUlib_addMessageToSText
   char*		msg )
 {
     HUlib_addLineToSText(s);
-    if (prefix)
-	while (*prefix)
-	    HUlib_addCharToTextLine(&s->l[s->cl], *(prefix++));
 
-    while (*msg)
+    if (prefix){
+	    while (*prefix)
+	    HUlib_addCharToTextLine(&s->l[s->cl], *(prefix++));
+    }
+	
+	COM_Print("%s\n", msg);
+    
+	while (*msg)
 	HUlib_addCharToTextLine(&s->l[s->cl], *(msg++));
 }
 
