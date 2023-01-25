@@ -106,15 +106,6 @@ static const char *d_wadnames[] = {
         "doom2.wad",    // Comercial
 };
 
-//
-// D-DoomLoop()
-// Not a globally visible function,
-//  just included for source reference,
-//  called by D_DoomMain, never exits.
-// Manages timing and IO,
-//  calls all ?_Responder, ?_Ticker, and ?_Drawer,
-//  calls I_GetTime, I_StartFrame, and I_StartTic
-//
 int access(char *file, int mode);
 #if 0
 static int access(char *file, int mode)
@@ -172,7 +163,7 @@ static void D_Display (void)
     static  boolean		menuactivestate = false;
     static  boolean		inhelpscreensstate = false;
     static  boolean		fullscreen = false;
-    static  gamestate_t		oldgamestate = -1;
+    static  gamestate_t oldgamestate = -1;
     static  int			borderdrawcount;
     int				nowtime;
     int				tics;
@@ -202,10 +193,7 @@ static void D_Display (void)
     	wipe_StartScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
     }
     else
-	   wipe = false;
-
-    if (gamestate == GS_LEVEL && gametic)
-    	HU_Erase();
+	   wipe = false;    	
     
     // do buffered drawing
     switch (gamestate)
@@ -213,14 +201,21 @@ static void D_Display (void)
       case GS_LEVEL:
             if (!gametic)
 	           break;
+
+            HU_Erase();
+
             if (automapactive)
                 AM_Drawer ();
+            
             if (wipe || (viewheight != 200 && fullscreen) )
         	    redrawsbar = true;
-        	if (inhelpscreensstate && !inhelpscreens)
+        	
+            if (inhelpscreensstate && !inhelpscreens)
         	    redrawsbar = true;              // just put away the help screen
-        	ST_Drawer (viewheight == 200, redrawsbar );
-           	fullscreen = viewheight == 200;
+        	
+            ST_Drawer (viewheight == 200, redrawsbar );
+           	
+            fullscreen = viewheight == 200;
         	break;
 
       case GS_INTERMISSION:
@@ -277,12 +272,11 @@ static void D_Display (void)
     // draw pause pic
     if (paused)
     {
-	   if (automapactive)
-	        y = 4;
-	   else
-	       y = viewwindowy+4;
-	   V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2,
-	   y,0,W_CacheLumpName ("M_PAUSE", PU_CACHE));
+	   y = (automapactive) ? 4 : viewwindowy + 4;	  
+	       
+	   V_DrawPatch(viewwindowx + (scaledviewwidth - 68)/2, y, 
+                    0,
+                    W_CacheLumpName ("M_PAUSE", PU_CACHE));
     }
 
 
@@ -294,8 +288,8 @@ static void D_Display (void)
     // normal update
     if (!wipe)
     {
-	   I_FinishUpdate ();              // page flip or blit buffer
-    	return;
+		I_FinishUpdate ();              // page flip or blit buffer
+		return;
     }
     
     // wipe update
@@ -322,7 +316,15 @@ static void D_Display (void)
 
 
 //-------------------------------------------------------------
-//  D_DoomLoop
+//
+// D-DoomLoop()
+// Not a globally visible function,
+//  just included for source reference,
+//  called by D_DoomMain, never exits.
+// Manages timing and IO,
+//  calls all ?_Responder, ?_Ticker, and ?_Drawer,
+//  calls I_GetTime, I_StartFrame, and I_StartTic
+//
 //-------------------------------------------------------------
 static void D_DoomLoop (void)
 {
@@ -606,7 +608,8 @@ void D_DoomMain (int argc, char **argv)
     respawnparm = COM_CheckParm("-respawn");
     fastparm    = COM_CheckParm("-fast");
     d_devparm   = COM_CheckParm("-devparm");  
-	autostart   = COM_CheckParm("-autostart");	
+	autostart   = COM_CheckParm("-autostart");
+    singletics  = COM_CheckParm("-singletics");
 
     if(gamemode == shareware){
         COM_Print ("DOOM Shareware Startup v%u.%u\n",

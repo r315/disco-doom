@@ -49,7 +49,6 @@ static byte *screen;
 static int multiply = 2;
 
 static hu_textline_t	h_fps;
-extern patch_t *hu_font[HU_FONTSIZE];
 
 //
 //  Translates the key
@@ -317,6 +316,7 @@ void I_FinishUpdate(void)
 			return;
 		}
 	}
+
 	if ((multiply == 1) && SDL_MUSTLOCK(surface))
 	{
 		unsigned char *olineptr;

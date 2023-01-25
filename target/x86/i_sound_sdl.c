@@ -566,7 +566,6 @@ void I_ShutdownSound(void)
 void I_InitSound()
 {
 	SDL_AudioSpec wanted;
-	int i;
 
 	// Open the audio device
 	wanted.freq = SAMPLERATE;

@@ -78,16 +78,14 @@ char*	player_names[] =
     HUSTR_PLRRED
 };
 
-
-char			chat_char; // remove later.
 static player_t*	plr;
-patch_t*		hu_font[HU_FONTSIZE];
+patch_t*		    hu_font[HU_FONTSIZE];
 static hu_textline_t	w_title;
-boolean			chat_on;
+boolean			    chat_on;
 static hu_itext_t	w_chat;
 static boolean		always_off = false;
-static char		chat_dest[MAXPLAYERS];
-static hu_itext_t w_inputbuffer[MAXPLAYERS];
+static char		    chat_dest[MAXPLAYERS];
+static hu_itext_t   w_inputbuffer[MAXPLAYERS];
 
 static boolean		message_on;
 boolean			message_dontfuckwithme;

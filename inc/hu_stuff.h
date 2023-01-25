@@ -54,7 +54,7 @@ void HU_Drawer(void);
 char HU_dequeueChatChar(void);
 void HU_Erase(void);
 boolean HU_Responder(event_t* ev);
-
+void HU_DisplayMessages(boolean on);
 //
 // M_DrawText
 // Returns the final X coordinate
@@ -63,6 +63,7 @@ boolean HU_Responder(event_t* ev);
 extern patch_t*		hu_font[HU_FONTSIZE];
 extern char*        chat_macros[];
 extern char*	    mapnames[];
+extern boolean		chat_on;
 #endif
 //-----------------------------------------------------------------------------
 //
