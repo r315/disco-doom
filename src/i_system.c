@@ -37,6 +37,8 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 #include "target.h"
 #include "i_system.h"
 
+#define MEM_IN_MEGS	4
+
 static int  bytes_in_use;
 static ticcmd_t	emptycmd;
 
@@ -92,7 +94,7 @@ int  I_GetTime (void)
 //
 void I_Init (void)
 {  
-    bytes_in_use = 4 *1024 * 1024;
+    bytes_in_use = MEM_IN_MEGS *1024 * 1024;
 }
 
 //

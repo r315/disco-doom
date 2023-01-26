@@ -236,7 +236,7 @@ static menu_t  MainDef =
     NULL,
     MainMenu,
     M_DrawMainMenu,
-    97,64,
+    (SCREENWIDTH / 2) - 63,64,
     0
 };
 
@@ -263,12 +263,12 @@ static menuitem_t EpisodeMenu[]=
 
 static menu_t  EpiDef =
 {
-    ep_end,		// # of menu items
+    ep_end,		    // # of menu items
     &MainDef,		// previous menu
     EpisodeMenu,	// menuitem_t ->
     M_DrawEpisode,	// drawing routine ->
-    48,63,              // x,y
-    ep1			// lastOn
+    (SCREENWIDTH / 2) - 112, 63,
+    ep1			    // lastOn
 };
 
 //
@@ -299,8 +299,8 @@ static menu_t  NewDef =
     &EpiDef,		// previous menu
     NewGameMenu,	// menuitem_t ->
     M_DrawNewGame,	// drawing routine ->
-    48,63,              // x,y
-    hurtme		// lastOn
+    (SCREENWIDTH / 2) - 112, 63,
+    hurtme		    // lastOn
 };
 
 //
@@ -335,7 +335,7 @@ static menu_t  OptionsDef =
     &MainDef,
     OptionsMenu,
     M_DrawOptions,
-    60,37,
+    (SCREENWIDTH / 2) - 100, 37,
     0
 };
 
@@ -359,7 +359,7 @@ static menu_t  ReadDef1 =
     &MainDef,
     ReadMenu1,
     M_DrawReadThis1,
-    280,185,
+    (SCREENWIDTH / 2) + 120, 185,
     0
 };
 
@@ -380,7 +380,7 @@ static menu_t  ReadDef2 =
     &ReadDef1,
     ReadMenu2,
     M_DrawReadThis2,
-    330,175,
+    (SCREENWIDTH / 2) + 170,175,
     0
 };
 
@@ -410,7 +410,7 @@ static menu_t  SoundDef =
     &OptionsDef,
     SoundMenu,
     M_DrawSound,
-    80,64,
+    (SCREENWIDTH / 2) - 80, 64,
     0
 };
 
@@ -444,7 +444,7 @@ static menu_t  LoadDef =
     &MainDef,
     LoadMenu,
     M_DrawLoad,
-    80,54,
+    (SCREENWIDTH / 2) - 80, 54,
     0
 };
 
@@ -467,7 +467,7 @@ static menu_t  SaveDef =
     &MainDef,
     SaveMenu,
     M_DrawSave,
-    80,54,
+    (SCREENWIDTH / 2) - 80, 54,
     0
 };
 
@@ -539,7 +539,7 @@ void M_DrawLoad(void)
 {
     int             i;
 	
-    V_DrawPatchDirect (72,28,0,W_CacheLumpName("M_LOADG",PU_CACHE));
+    V_DrawPatchDirect ((SCREENWIDTH / 2) - 62, 28, 0, W_CacheLumpName("M_LOADG",PU_CACHE));
     for (i = 0;i < load_end; i++)
     {
 	M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
@@ -607,7 +607,7 @@ void M_DrawSave(void)
 {
     int             i;
 	
-    V_DrawPatchDirect (72,28,0,W_CacheLumpName("M_SAVEG",PU_CACHE));
+    V_DrawPatchDirect ((SCREENWIDTH / 2) - 62, 28, 0, W_CacheLumpName("M_SAVEG",PU_CACHE));
     for (i = 0;i < load_end; i++)
     {
 	M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
@@ -794,7 +794,7 @@ void M_DrawReadThis2(void)
 //
 void M_DrawSound(void)
 {
-    V_DrawPatchDirect (60,38,0,W_CacheLumpName("M_SVOL",PU_CACHE));
+    V_DrawPatchDirect ((SCREENWIDTH / 2) - 84, 38, 0, W_CacheLumpName("M_SVOL",PU_CACHE));
 
     M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(sfx_vol+1),
 		 16,snd_SfxVolume);
@@ -850,10 +850,8 @@ void M_MusicVol(int choice)
 //
 void M_DrawMainMenu(void)
 {
-    V_DrawPatchDirect (94,2,0,W_CacheLumpName("M_DOOM",PU_CACHE));
+    V_DrawPatchDirect ((SCREENWIDTH / 2) - 61, 2, 0,W_CacheLumpName("M_DOOM", PU_CACHE));
 }
-
-
 
 
 //
@@ -861,8 +859,8 @@ void M_DrawMainMenu(void)
 //
 void M_DrawNewGame(void)
 {
-    V_DrawPatchDirect (96,14,0,W_CacheLumpName("M_NEWG",PU_CACHE));
-    V_DrawPatchDirect (54,38,0,W_CacheLumpName("M_SKILL",PU_CACHE));
+    V_DrawPatchDirect ((SCREENWIDTH / 2) - 100, 14, 0, W_CacheLumpName("M_NEWG",PU_CACHE));
+    V_DrawPatchDirect ((SCREENWIDTH / 2) - 118, 38, 0, W_CacheLumpName("M_SKILL",PU_CACHE));
 }
 
 void M_NewGame(int choice)
@@ -886,7 +884,7 @@ void M_NewGame(int choice)
 
 void M_DrawEpisode(void)
 {
-    V_DrawPatchDirect (54,38,0,W_CacheLumpName("M_EPISOD",PU_CACHE));
+    V_DrawPatchDirect ((SCREENWIDTH / 2) - 86, 38, 0, W_CacheLumpName("M_EPISOD",PU_CACHE));
 }
 
 void M_VerifyNightmare(int ch)
@@ -1702,7 +1700,7 @@ void M_Drawer (void)
 		start += i;
 	    }
 				
-	    x = 160 - M_StringWidth(string)/2;
+	    x = (SCREENWIDTH / 2) - M_StringWidth(string)/2;
 	    M_WriteText(x,y,string);
 	    y += SHORT(hu_font[0]->height);
 	}
