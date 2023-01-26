@@ -60,4 +60,5 @@ extern i2cbus_t ext_i2cbus;
 #define input_drv input_drv_pcf8574
 #endif /* ACCELEROMETER */
 
+void __debugbreak(void);
 #endif

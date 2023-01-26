@@ -22,7 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f7xx_it.h"
-
+#include "board.h"
 
 typedef struct {
     uint32_t r0;
@@ -114,20 +114,14 @@ void Fault_Handler(void)
     // See position number on Table 46 from RM0410
     UNUSED(isr_number);
 
-    __asm volatile(
-        "bkpt #01 \n"
-        "b . \n"
-    );
+    __debugbreak();
 }
 
 void Stack_Dump(stackframe_t *stack){
     GPIOJ->MODER = (1 << 26);
     HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_SET);
 
-    __asm volatile(
-        "bkpt #01 \n"
-        "b . \n"
-    );
+    __debugbreak();
 }
 
 /******************************************************************************/

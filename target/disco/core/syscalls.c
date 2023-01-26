@@ -299,3 +299,10 @@ int _getpid(void)
 {
 	return 1;
 }
+
+void __debugbreak(void){
+	__asm volatile(
+        "bkpt #01 \n"
+        "b . \n"
+    );
+}
