@@ -50,20 +50,20 @@ rcsid[] = "$Id: r_draw.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 //
 
 
-byte*		viewimage; 
-int		viewwidth;
+byte*   viewimage; 
+int     viewwidth;
+int     viewheight;
 int		scaledviewwidth;
-int		viewheight;
 int		viewwindowx;
 int		viewwindowy; 
-byte*		ylookup[MAXHEIGHT]; 
+byte*   ylookup[MAXHEIGHT]; 
 int		columnofs[MAXWIDTH]; 
 
 // Color tables for different players,
 //  translate a limited part to another
 //  (color ramps used for  suit colors).
 //
-byte		translations[3][256];	
+byte    translations[3][256];	
  
  
 

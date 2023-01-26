@@ -48,6 +48,8 @@ rcsid[] = "$Id: m_menu.c,v 1.7 1997/02/03 22:45:10 b1 Exp $";
 #include "sounds.h"
 #include "m_menu.h"
 
+#define DEFAULT_SCREENBLOCKS    3
+
 //
 // defaulted values
 //
@@ -56,8 +58,7 @@ int			mouseSensitivity;       // has default
 // Show messages has default, 0 = off, 1 = on
 int			showMessages;
 
-// Blocky mode, has default, 0 = high, 1 = normal
-int			detailLevel;		
+// Blocky mode, has default, 0 = high, 1 = normal		
 int			screenblocks;		// has default
 
 // temp for screenblocks (0-9)
@@ -1093,25 +1094,19 @@ void M_ChangeSensitivity(int choice)
 
 void M_SizeDisplay(int choice)
 {
-    switch(choice)
-    {
-      case 0:
-	if (screenSize > 0)
-	{
-	    screenblocks--;
-	    screenSize--;
-	}
-	break;
-      case 1:
-	if (screenSize < 8)
-	{
-	    screenblocks++;
-	    screenSize++;
-	}
-	break;
-    }
+	screenSize += choice;
 
-    R_SetViewSize (screenblocks, detailLevel);
+	if (screenSize < 0) {
+		screenSize = 0;
+	}
+
+	if (screenSize > 8) {
+		screenSize = 8;
+	}   
+
+	screenblocks = DEFAULT_SCREENBLOCKS + screenSize;
+
+    R_SetViewSize (screenblocks);
 }
 
 
@@ -1463,7 +1458,7 @@ boolean M_Responder (event_t* ev)
 	  case KEY_MINUS:         // Screen size down
 	    if (automapactive || chat_on)
 		return false;
-	    M_SizeDisplay(0);
+	    M_SizeDisplay(-1);
 	    S_StartSound(NULL,sfx_stnmov);
 	    return true;
 				
@@ -1784,8 +1779,8 @@ void M_Init (void)
     menuactive = 0;
     itemOn = currentMenu->lastOn;
     whichSkull = 0;
-    skullAnimCounter = 10;
-    screenSize  = screenblocks - 3;
+    skullAnimCounter = 10;    
+    screenSize  = screenblocks - DEFAULT_SCREENBLOCKS;
     messageToPrint = 0;
     messageString = NULL;
     messageLastMenuActive = menuactive;

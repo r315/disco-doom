@@ -31,17 +31,12 @@ static const char rcsid[] = "$Id: r_main.c,v 1.5 1997/02/03 22:45:12 b1 Exp $";
 #include <stdlib.h>
 #include <math.h>
 
-
 #include "doomdef.h"
 #include "d_net.h"
-
 #include "m_bbox.h"
-
 #include "r_local.h"
 #include "r_sky.h"
-
-
-
+#include "m_menu.h"
 
 
 // Fineangles in the SCREENWIDTH wide window.
@@ -117,7 +112,7 @@ lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
 
 // bumped light from gun blasts
 int			extralight;			
-
+static int      setblocks; // replace by screenblocks?
 
 
 void (*colfunc) (void);
@@ -646,9 +641,9 @@ void R_InitLightTables (void)
 // The change will take effect next refresh.
 //
 boolean		setsizeneeded;
-int		setblocks;
 
-void R_SetViewSize (int	blocks, int detail)
+
+void R_SetViewSize (int	blocks)
 {
     setsizeneeded = true;
     setblocks = blocks;
@@ -676,8 +671,8 @@ void R_ExecuteSetViewSize (void)
     }
     else
     {
-	scaledviewwidth = setblocks*32;
-	viewheight = (setblocks*168/10)&~7;
+	scaledviewwidth = setblocks * 32;
+	viewheight = (setblocks * 168/10 ) & ~7;
     }
     
     viewwidth = scaledviewwidth;
@@ -743,11 +738,6 @@ void R_ExecuteSetViewSize (void)
 //
 // R_Init
 //
-extern int	detailLevel;
-extern int	screenblocks;
-
-
-
 void R_Init (void)
 {
     R_InitData ();
@@ -758,7 +748,7 @@ void R_Init (void)
     // viewwidth / viewheight / detailLevel are set by the defaults
     printf ("\nR_InitTables");
 
-    R_SetViewSize (screenblocks, detailLevel);
+    R_SetViewSize (screenblocks);
 //R_InitPlanes ();
 //printf ("\nR_InitPlanes");
     R_InitLightTables ();

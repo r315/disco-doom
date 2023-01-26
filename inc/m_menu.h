@@ -60,7 +60,6 @@ extern boolean 	    inhelpscreens;
 extern int          showMessages;
 extern boolean 	    menuactive;	// Menu overlayed?
 extern int          mouseSensitivity;
-extern int	        detailLevel;
 extern int	        screenblocks;
 #endif    
 //-----------------------------------------------------------------------------

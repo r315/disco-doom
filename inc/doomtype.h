@@ -25,8 +25,10 @@
 #define __DOOMTYPE__
 
 
-typedef unsigned char byte;
-typedef signed char sbyte;
+typedef unsigned char  byte;
+typedef signed char    sbyte;
+typedef unsigned int   uint;
+
 /* Fixed to use builtin boolean type with C++. */
 #ifdef __cplusplus
 typedef boolean boolean;

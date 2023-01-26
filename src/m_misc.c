@@ -127,7 +127,6 @@ static default_t defaults[] =
         {"joyb_speed", &joybspeed, 2},
 
         {"screenblocks", &screenblocks, 10}, // set screen size
-        {"detaillevel", &detailLevel, 0},
 
         {"snd_channels", &numChannels, 3},
 
