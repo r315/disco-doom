@@ -168,7 +168,7 @@ void M_ChangeMessages(int choice);
 void M_ChangeSensitivity(int choice);
 void M_SfxVol(int choice);
 void M_MusicVol(int choice);
-void M_SizeDisplay(int choice);
+void M_ChangeDisplaySize(int choice);
 void M_StartGame(int choice);
 void M_Sound(int choice);
 
@@ -322,7 +322,7 @@ static menuitem_t OptionsMenu[]=
 {
     {1,"M_ENDGAM",	M_EndGame,'e'},
     {1,"M_MESSG",	M_ChangeMessages,'m'},
-    {2,"M_SCRNSZ",	M_SizeDisplay,'s'},
+    {2,"M_SCRNSZ",	M_ChangeDisplaySize,'s'},
     {-1,"",0},
     {2,"M_MSENS",	M_ChangeSensitivity,'m'},
     {-1,"",0},
@@ -812,7 +812,7 @@ void M_SfxVol(int choice)
 {
     switch(choice)
     {
-      case 0:
+      case -1:
 	if (snd_SfxVolume)
 	    snd_SfxVolume--;
 	break;
@@ -829,7 +829,7 @@ void M_MusicVol(int choice)
 {
     switch(choice)
     {
-      case 0:
+      case -1:
 	if (snd_MusicVolume)
 	    snd_MusicVolume--;
 	break;
@@ -1078,7 +1078,7 @@ void M_ChangeSensitivity(int choice)
 {
     switch(choice)
     {
-      case 0:
+      case -1:
 	if (mouseSensitivity)
 	    mouseSensitivity--;
 	break;
@@ -1090,7 +1090,7 @@ void M_ChangeSensitivity(int choice)
 }
 
 
-void M_SizeDisplay(int choice)
+void M_ChangeDisplaySize(int choice)
 {
 	screenSize += choice;
 
@@ -1456,14 +1456,14 @@ boolean M_Responder (event_t* ev)
 	  case KEY_MINUS:         // Screen size down
 	    if (automapactive || chat_on)
 		return false;
-	    M_SizeDisplay(-1);
+	    M_ChangeDisplaySize(-1);
 	    S_StartSound(NULL,sfx_stnmov);
 	    return true;
 				
 	  case KEY_EQUALS:        // Screen size up
 	    if (automapactive || chat_on)
 		return false;
-	    M_SizeDisplay(1);
+	    M_ChangeDisplaySize(1);
 	    S_StartSound(NULL,sfx_stnmov);
 	    return true;
 				
@@ -1575,7 +1575,7 @@ boolean M_Responder (event_t* ev)
 	    currentMenu->menuitems[itemOn].status == 2)
 	{
 	    S_StartSound(NULL,sfx_stnmov);
-	    currentMenu->menuitems[itemOn].routine(0);
+	    currentMenu->menuitems[itemOn].routine(-1);
 	}
 	return true;
 		
