@@ -1189,5 +1189,5 @@ void ST_Init(void)
 {
 	veryfirsttime = 0;
 	ST_loadData();
-	screens[BG] = (byte *)Z_Malloc(ST_WIDTH * ST_HEIGHT, PU_STATIC, 0);
+	screens[BG] = (byte *)Z_Malloc(ST_WIDTH * ST_HEIGHT, PU_STATIC, NULL);
 }

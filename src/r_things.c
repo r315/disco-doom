@@ -668,7 +668,7 @@ void R_DrawPSprite (pspdef_t* psp)
     flip = (boolean)sprframe->flip[0];
     
     // calculate edges of the shape
-    tx = psp->sx-160*FRACUNIT;
+    tx = psp->sx - 160 * FRACUNIT;
 	
     tx -= spriteoffset[lump];	
     x1 = (centerxfrac + FixedMul (tx,pspritescale) ) >>FRACBITS;
@@ -977,7 +977,7 @@ void R_DrawMasked (void)
     // draw the psprites on top of everything
     //  but does not draw on side views
     if (!viewangleoffset)		
-	R_DrawPlayerSprites ();
+		R_DrawPlayerSprites ();
 }
 
 
