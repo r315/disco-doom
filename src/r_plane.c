@@ -36,19 +36,20 @@ rcsid[] = "$Id: r_plane.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 #include "r_local.h"
 #include "r_sky.h"
 
-//
-// opening
-//
+#define MAXVISPLANES	128
+#define MAXOPENINGS	    SCREENWIDTH*64
+
 
 // Here comes the obnoxious "visplane".
-#define MAXVISPLANES	128
-static visplane_t		visplanes[MAXVISPLANES];
+static visplane_t		*visplanes;
 static visplane_t*		lastvisplane;
 visplane_t*		        floorplane;
 visplane_t*		        ceilingplane;
 
+//
+// opening
+//
 // ?
-#define MAXOPENINGS	    SCREENWIDTH*64
 static short            openings[MAXOPENINGS];
 short*			        lastopening;
 
@@ -91,7 +92,11 @@ static fixed_t			cachedystep[SCREENHEIGHT];
 //
 void R_InitPlanes (void)
 {
-  // Doh!
+    // Doh!
+    visplanes = (visplane_t*)calloc(MAXVISPLANES, sizeof(visplane_t));
+    if(!visplanes){
+        I_Error("%s: Fail to allocate visplanes\n", __func__);
+    }
 }
 
 
@@ -116,10 +121,10 @@ static void R_MapPlane (int y, int x1, int x2)
     unsigned	index;
 	
 #ifdef RANGECHECK
-    if (x2 < x1
-	|| x1<0
-	|| x2>=viewwidth
-	|| (unsigned)y>viewheight)
+    if (x1 > x2
+	|| x1 < 0
+	|| x2 >= viewwidth
+	|| (unsigned int) y > viewheight)
     {
 	I_Error ("R_MapPlane: %i, %i at %i",x1,x2,y);
     }
@@ -195,16 +200,10 @@ void R_ClearPlanes (void)
 }
 
 
-
-
 //
 // R_FindPlane
 //
-visplane_t*
-R_FindPlane
-( fixed_t	height,
-  int		picnum,
-  int		lightlevel )
+visplane_t* R_FindPlane(fixed_t height, int picnum, int lightlevel)
 {
     visplane_t*	check;
 	
@@ -248,11 +247,7 @@ R_FindPlane
 //
 // R_CheckPlane
 //
-visplane_t*
-R_CheckPlane
-( visplane_t*	pl,
-  int		start,
-  int		stop )
+visplane_t* R_CheckPlane(visplane_t* pl, int start, int stop)
 {
     int		intrl;
     int		intrh;
@@ -337,7 +332,6 @@ static void R_MakeSpans (int x, int t1, int b1, int t2, int	b2)
 	b2--;
     }
 }
-
 
 
 //

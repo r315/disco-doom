@@ -749,8 +749,8 @@ void R_Init (void)
     printf ("\nR_InitTables");
 
     R_SetViewSize (screenblocks);
-//R_InitPlanes ();
-//printf ("\nR_InitPlanes");
+    R_InitPlanes ();
+
     R_InitLightTables ();
     printf ("\nR_InitLightTables");
     R_InitSkyMap ();
