@@ -561,7 +561,7 @@ int i;
 //****************************************************	
 // I_InitNetwork sets doomcom and netgame
 // I_InitNetwork ();    
-    doomcom = malloc (sizeof (*doomcom) );
+    doomcom = I_AllocLow (sizeof (*doomcom) );
     memset (doomcom, 0, sizeof(*doomcom) );
 	doomcom->ticdup = 1;	
 	doomcom->extratics = 0;

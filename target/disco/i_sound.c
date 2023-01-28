@@ -527,7 +527,7 @@ void I_InitSound()
 
     COM_Print("\tConfigured audio device with %d samples/slice\n", (int)specs.size);
     
-    vol_lookup = (int*)malloc(128 * 256 * sizeof(int));
+    vol_lookup = (int*)I_AllocLow (128 * 256 * sizeof(int));
 
     if (vol_lookup == NULL)
         I_Error("\ntCouldn't allocate memory for volume lookup table");

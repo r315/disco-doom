@@ -29,14 +29,8 @@
 // Called by DoomMain.
 void I_Init (void);
 
-// Called by startup code
-// to get the ammount of memory to malloc
-// for the zone management.
-byte* I_ZoneBase (int *size);
-
 // returns current time in tics.
 int I_GetTime (void);
-
 
 //
 // called before processing any tics in a frame

@@ -230,7 +230,7 @@ void I_InitGraphics(void)
         I_Error("Couldn't allocate screen memory");
 
     #if DOUBLE_SCREEN
-        dfb = malloc(CANVAS_WIDTH * CANVAS_HEIGHT);
+        dfb = I_AllocLow (CANVAS_WIDTH * CANVAS_HEIGHT);
         if (dfb == NULL)
             I_Error("Couldn't allocate double screen buffer");
     #endif

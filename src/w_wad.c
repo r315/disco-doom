@@ -29,7 +29,6 @@ rcsid[] = "$Id: w_wad.c,v 1.5 1997/02/03 16:47:57 b1 Exp $";
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <malloc.h>
 
 #include "common.h"
 #include "m_swap.h"
@@ -147,7 +146,7 @@ void W_AddFile (char *filename)
 
 	numlumps = wadinfo.numlumps;
 	length   = wadinfo.numlumps * sizeof(filelump_t);	
-	fileinfo = malloc (length);
+	fileinfo = I_AllocLow (length);
     if(!fileinfo){
         I_Error ("W_AddFile: Couldn't allocate fileinfo");
     }
@@ -156,7 +155,7 @@ void W_AddFile (char *filename)
 	fread (fileinfo, 1, length, handle);	        
  
     // allocate lumpinfo
-    lumpinfo = malloc(wadinfo.numlumps * sizeof(lumpinfo_t));    
+    lumpinfo = I_AllocLow (wadinfo.numlumps * sizeof(lumpinfo_t));    
     if (!lumpinfo){
 	   I_Error ("W_AddFile: Couldn't allocate lumpinfo");
     }
@@ -181,7 +180,7 @@ void W_AddFile (char *filename)
     // set up caching
     length = wadinfo.numlumps * sizeof(*lumpcache);
         
-    lumpcache = malloc (length);
+    lumpcache = I_AllocLow (length);
     
     if (!lumpcache){
         I_Error ("W_AddFile: Couldn't allocate lumpcache");
@@ -218,7 +217,7 @@ void W_Reload (void)
     lumpcount = LONG(header.numlumps);
     header.infotableofs = LONG(header.infotableofs);
     length = lumpcount*sizeof(filelump_t);
-	fileinfo = (filelump_t*)malloc(length);    
+	fileinfo = (filelump_t*)I_AllocLow (length);    
     if(!fileinfo)
         I_Error ("W_Reload: mem allocation fail\n");
 
@@ -375,7 +374,7 @@ void* W_CacheLumpNum(int lump, int tag)
 	// read the lump in
 	
 	//printf ("cache miss on lump %i\n",lump);
-    Z_Malloc (W_LumpLength (lump), tag, &lumpcache[lump]);
+	Z_Malloc (W_LumpLength (lump), tag, &lumpcache[lump]);
 	W_ReadLump (lump, lumpcache[lump]);
     }
     else

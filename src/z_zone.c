@@ -64,7 +64,7 @@ memzone_t*	mainzone;
 //
 // Z_ClearZone
 //
-void Z_ClearZone (memzone_t* zone)
+static void Z_ClearZone (memzone_t* zone)
 {
     memblock_t*		block;
 	
@@ -85,34 +85,17 @@ void Z_ClearZone (memzone_t* zone)
     block->size = zone->size - sizeof(memzone_t);
 }
 
-
-
 //
 // Z_Init
 //
 void Z_Init (void)
 {
-    memblock_t*	block;
-    int		size;
+    int		size = ZONE_SIZE_IN_BYTES;
 
-    mainzone = (memzone_t *)I_ZoneBase (&size);
+    mainzone = (memzone_t *)I_AllocLow (size);
     mainzone->size = size;
 
-    // set the entire zone to one free block
-    mainzone->blocklist.next =
-	mainzone->blocklist.prev =
-	block = (memblock_t *)( (byte *)mainzone + sizeof(memzone_t) );
-
-    mainzone->blocklist.user = (void *)mainzone;
-    mainzone->blocklist.tag = PU_STATIC;
-    mainzone->rover = block;
-	
-    block->prev = block->next = &mainzone->blocklist;
-
-    // NULL indicates a free block.
-    block->user = NULL;
-    
-    block->size = mainzone->size - sizeof(memzone_t);
+    Z_ClearZone(mainzone);
 }
 
 

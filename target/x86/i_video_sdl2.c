@@ -509,7 +509,7 @@ void I_InitGraphics(void)
 	}
 	else
 	{
-		screens[0] = (unsigned char *)malloc(SCREENWIDTH * SCREENHEIGHT);
+		screens[0] = (unsigned char *)I_AllocLow (SCREENWIDTH * SCREENHEIGHT);
 		if (screens[0] == NULL)
 			I_Error("Couldn't allocate screen memory");
 	}*/

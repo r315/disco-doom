@@ -27,7 +27,7 @@
 static const char
 rcsid[] = "$Id: r_data.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 
-#include <malloc.h>
+
 #include <stdlib.h>
 
 #include "doomdef.h"
@@ -312,7 +312,7 @@ void R_GenerateLookup (int texnum)
     //  that are covered by more than one patch.
     // Fill in the lump / offset, so columns
     //  with only a single patch are all done.
-    patchcount = (byte *)malloc (texture->width);
+    patchcount = (byte *)I_AllocLow (texture->width);
     if(!patchcount){
         I_Error ("R_GenerateLookup: mem allocation fail\n");
     }
@@ -446,7 +446,7 @@ void R_InitTextures (void)
     nummappatches = LONG ( *((int *)names) );
     name_p = names+4;
 
-    patchlookup = (int*)malloc (nummappatches*sizeof(*patchlookup));
+    patchlookup = (int*)I_AllocLow (nummappatches*sizeof(*patchlookup));
     if(!patchlookup){
         I_Error ("R_InitTextures: mem allocation fail \n");
     }
@@ -771,7 +771,7 @@ void R_PrecacheLevel (void)
 	return;
     
     // Precache flats.
-    flatpresent = (char*)malloc(numflats);
+    flatpresent = (char*)I_AllocLow(numflats);
     if(!flatpresent){
         I_Error("R_PrecacheLevel: mem alloc fail\n");
     }
@@ -799,7 +799,7 @@ void R_PrecacheLevel (void)
     }
     
     // Precache textures.
-    texturepresent = (char*)malloc (numtextures);
+    texturepresent = (char*)I_AllocLow (numtextures);
     if(!texturepresent){
         I_Error("R_PrecacheLevel: mem alloc fail\n");
     }
@@ -840,7 +840,7 @@ void R_PrecacheLevel (void)
     free(texturepresent);
     
     // Precache sprites.
-    spritepresent = (char*)malloc(numsprites);
+    spritepresent = (char*)I_AllocLow(numsprites);
     if(!spritepresent){
         I_Error("R_PrecacheLevel: mem alloc fail\n");
     }
