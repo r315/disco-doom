@@ -1672,7 +1672,7 @@ void M_Drawer (void)
     static short	y;
     short		i;
     short		max;
-    char		string[40];
+    char		string[MAX_QUITMESSAGES_SIZE];
     int			start;
 
     inhelpscreens = false;
@@ -1681,37 +1681,37 @@ void M_Drawer (void)
     // Horiz. & Vertically center string and print it.
     if (messageToPrint)
     {
-	start = 0;
-	y = 100 - M_StringHeight(messageString)/2;
-	while(*(messageString+start))
-	{
-	    for (i = 0;i < strlen(messageString+start);i++)
-		if (*(messageString+start+i) == '\n')
+		start = 0;
+		y = 100 - M_StringHeight(messageString)/2;
+		while(*(messageString+start))
 		{
-		    memset(string,0,40);
-		    strncpy(string,messageString+start,i);
-		    start += i+1;
-		    break;
+			for (i = 0; i < strlen(messageString + start); i++)
+				if (*(messageString+start+i) == '\n')
+				{
+					memset(string, 0, MAX_QUITMESSAGES_SIZE);
+					strncpy(string, messageString+start, i);
+					start += i + 1;
+					break;
+				}
+				
+			if (i == strlen(messageString+start))
+			{
+				strcpy(string,messageString+start);
+				start += i;
+			}
+				
+			x = (SCREENWIDTH / 2) - M_StringWidth(string)/2;
+			M_WriteText(x,y,string);
+			y += SHORT(hu_font[0]->height);
 		}
-				
-	    if (i == strlen(messageString+start))
-	    {
-		strcpy(string,messageString+start);
-		start += i;
-	    }
-				
-	    x = (SCREENWIDTH / 2) - M_StringWidth(string)/2;
-	    M_WriteText(x,y,string);
-	    y += SHORT(hu_font[0]->height);
-	}
-	return;
+		return;
     }
 
     if (!menuactive)
-	return;
+		return;
 
     if (currentMenu->routine)
-	currentMenu->routine();         // call Draw routine
+		currentMenu->routine();         // call Draw routine
     
     // DRAW MENU
     x = currentMenu->x;
@@ -1720,10 +1720,10 @@ void M_Drawer (void)
 
     for (i=0;i<max;i++)
     {
-	if (currentMenu->menuitems[i].name[0])
-	    V_DrawPatchDirect (x,y,0,
+		if (currentMenu->menuitems[i].name[0])
+			V_DrawPatchDirect (x,y,0,
 			       W_CacheLumpName(currentMenu->menuitems[i].name ,PU_CACHE));
-	y += LINEHEIGHT;
+		y += LINEHEIGHT;
     }
 
     
