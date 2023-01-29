@@ -44,15 +44,13 @@ rcsid[] = "$Id: p_pspr.c,v 1.5 1997/02/03 22:45:12 b1 Exp $";
 // plasma cells for a bfg attack
 #define BFGCELLS		40		
 
-
+static fixed_t          bulletslope;
+static fixed_t          swingx;
+static fixed_t          swingy;
 //
 // P_SetPsprite
 //
-void
-P_SetPsprite
-( player_t*	player,
-  int		position,
-  statenum_t	stnum ) 
+void P_SetPsprite (player_t* player, int position, statenum_t stnum ) 
 {
     pspdef_t*	psp;
     state_t*	state;
@@ -99,9 +97,6 @@ P_SetPsprite
 //
 // P_CalcSwing
 //	
-fixed_t		swingx;
-fixed_t		swingy;
-
 void P_CalcSwing (player_t*	player)
 {
     fixed_t	swing;
@@ -271,10 +266,7 @@ void P_DropWeapon (player_t* player)
 // Follows after getting weapon up,
 // or after previous attack/fire sequence.
 //
-void
-A_WeaponReady
-( player_t*	player,
-  pspdef_t*	psp )
+void A_WeaponReady (player_t* player, pspdef_t* psp)
 {	
     statenum_t	newstate;
     int		angle;
@@ -333,11 +325,9 @@ A_WeaponReady
 // The player can re-fire the weapon
 // without lowering it entirely.
 //
-void A_ReFire
-( player_t*	player,
-  pspdef_t*	psp )
+void A_ReFire(player_t *player, pspdef_t *psp)
 {
-    
+
     // check for fire
     //  (if a weaponchange is pending, let it go through instead)
     if ( (player->cmd.buttons & BT_ATTACK) 
@@ -354,11 +344,7 @@ void A_ReFire
     }
 }
 
-
-void
-A_CheckReload
-( player_t*	player,
-  pspdef_t*	psp )
+void A_CheckReload(player_t *player, pspdef_t *psp)
 {
     P_CheckAmmo (player);
 #if 0
@@ -367,17 +353,12 @@ A_CheckReload
 #endif
 }
 
-
-
 //
 // A_Lower
 // Lowers current weapon,
 //  and changes weapon at bottom.
 //
-void
-A_Lower
-( player_t*	player,
-  pspdef_t*	psp )
+void A_Lower (player_t* player, pspdef_t* psp)
 {	
     psp->sy += LOWERSPEED;
 
@@ -412,17 +393,14 @@ A_Lower
 //
 // A_Raise
 //
-void
-A_Raise
-( player_t*	player,
-  pspdef_t*	psp )
+void A_Raise (player_t*	player, pspdef_t* psp)
 {
     statenum_t	newstate;
 	
     psp->sy -= RAISESPEED;
 
     if (psp->sy > WEAPONTOP )
-	return;
+	    return;
     
     psp->sy = WEAPONTOP;
     
@@ -438,10 +416,7 @@ A_Raise
 //
 // A_GunFlash
 //
-void
-A_GunFlash
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_GunFlash (player_t* player, pspdef_t* psp)
 {
     P_SetMobjState (player->mo, S_PLAY_ATK2);
     P_SetPsprite (player,ps_flash,weaponinfo[player->readyweapon].flashstate);
@@ -457,10 +432,7 @@ A_GunFlash
 //
 // A_Punch
 //
-void
-A_Punch
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_Punch(player_t *player, pspdef_t *psp)
 {
     angle_t	angle;
     int		damage;
@@ -487,14 +459,10 @@ A_Punch
     }
 }
 
-
 //
 // A_Saw
 //
-void
-A_Saw
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_Saw(player_t *player, pspdef_t *psp)
 {
     angle_t	angle;
     int		damage;
@@ -535,42 +503,28 @@ A_Saw
     player->mo->flags |= MF_JUSTATTACKED;
 }
 
-
-
 //
 // A_FireMissile
 //
-void
-A_FireMissile
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_FireMissile(player_t *player, pspdef_t *psp)
 {
     player->ammo[weaponinfo[player->readyweapon].ammo]--;
     P_SpawnPlayerMissile (player->mo, MT_ROCKET);
 }
 
-
 //
 // A_FireBFG
 //
-void
-A_FireBFG
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_FireBFG(player_t *player, pspdef_t *psp)
 {
     player->ammo[weaponinfo[player->readyweapon].ammo] -= BFGCELLS;
     P_SpawnPlayerMissile (player->mo, MT_BFG);
 }
 
-
-
 //
 // A_FirePlasma
 //
-void
-A_FirePlasma
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_FirePlasma(player_t *player, pspdef_t *psp)
 {
     player->ammo[weaponinfo[player->readyweapon].ammo]--;
 
@@ -581,16 +535,11 @@ A_FirePlasma
     P_SpawnPlayerMissile (player->mo, MT_PLASMA);
 }
 
-
-
 //
 // P_BulletSlope
 // Sets a slope so a near miss is at aproximately
 // the height of the intended target
 //
-fixed_t		bulletslope;
-
-
 void P_BulletSlope (mobj_t*	mo)
 {
     angle_t	an;
@@ -615,10 +564,7 @@ void P_BulletSlope (mobj_t*	mo)
 //
 // P_GunShot
 //
-void
-P_GunShot
-( mobj_t*	mo,
-  boolean	accurate )
+void P_GunShot(mobj_t *mo, boolean accurate)
 {
     angle_t	angle;
     int		damage;
@@ -632,14 +578,10 @@ P_GunShot
     P_LineAttack (mo, angle, MISSILERANGE, bulletslope, damage);
 }
 
-
 //
 // A_FirePistol
 //
-void
-A_FirePistol
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_FirePistol(player_t *player, pspdef_t *psp)
 {
     S_StartSound (player->mo, sfx_pistol);
 
@@ -654,14 +596,10 @@ A_FirePistol
     P_GunShot (player->mo, !player->refire);
 }
 
-
 //
 // A_FireShotgun
 //
-void
-A_FireShotgun
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_FireShotgun(player_t *player, pspdef_t *psp)
 {
     int		i;
 	
@@ -680,15 +618,10 @@ A_FireShotgun
 	P_GunShot (player->mo, false);
 }
 
-
-
 //
 // A_FireShotgun2
 //
-void
-A_FireShotgun2
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_FireShotgun2(player_t *player, pspdef_t *psp)
 {
     int		i;
     angle_t	angle;
@@ -718,14 +651,10 @@ A_FireShotgun2
     }
 }
 
-
 //
 // A_FireCGun
 //
-void
-A_FireCGun
-( player_t*	player,
-  pspdef_t*	psp ) 
+void A_FireCGun(player_t *player, pspdef_t *psp)
 {
     S_StartSound (player->mo, sfx_pistol);
 
@@ -745,8 +674,6 @@ A_FireCGun
 	
     P_GunShot (player->mo, !player->refire);
 }
-
-
 
 //
 // ?
@@ -807,10 +734,7 @@ void A_BFGSpray (mobj_t* mo)
 //
 // A_BFGsound
 //
-void
-A_BFGsound
-( player_t*	player,
-  pspdef_t*	psp )
+void A_BFGsound (player_t* player, pspdef_t* psp)
 {
     S_StartSound (player->mo, sfx_bfg);
 }
@@ -848,7 +772,7 @@ void P_MovePsprites (player_t* player)
     state_t*	state;
 	
     psp = &player->psprites[0];
-    for (i=0 ; i<NUMPSPRITES ; i++, psp++)
+    for (i = 0 ;i < NUMPSPRITES; i++, psp++)
     {
 	// a null state means not active
 	if ( (state = psp->state) )	
