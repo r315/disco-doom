@@ -454,4 +454,23 @@ void W_Profile (void)
 }
 */
 
+void W_DumpCache(void)
+{
+    int i;
 
+    char name[9];
+    name[8] = '\0';
+
+    for(i = 0; i < numlumps; i++){
+        memcpy(name, lumpinfo[i].name, 8);
+
+        printf("lump[%d] name: %s\t"
+        "  position: %d "
+        "  size: %d "
+        "  handle: %d\n", i,
+        name,
+        lumpinfo[i].position,
+        lumpinfo[i].size,
+        lumpinfo[i].handle);
+    }
+}

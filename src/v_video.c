@@ -199,12 +199,12 @@ void V_DrawPatch(int x, int y, int scrn, patch_t *patch)
     //if (!scrn)
 	//    V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height));
 
-    col = 0;
+ 
     desttop = screens[scrn] + y * SCREENWIDTH + x;
 
     w = SHORT(patch->width);
 
-    for (; col < w; x++, col++, desttop++)
+    for (col = 0; col < w; col++, desttop++)
     {
         column = (column_t *)((byte *)patch + LONG(patch->columnofs[col]));
 
@@ -413,7 +413,7 @@ void V_Init(void)
 
     // stick these in low dos memory on PCs
 
-    base = I_AllocLow(SCREENWIDTH * SCREENHEIGHT * (VIDEO_NUM_SCREENS - 1));
+    base = I_AllocLow(SCREENWIDTH * SCREENHEIGHT * VIDEO_NUM_SCREENS);
 
     screens[0] = I_GetScreen();
     //screens[1] = base + 0 * SCREENWIDTH * SCREENHEIGHT;
@@ -423,6 +423,6 @@ void V_Init(void)
     // screens[2]
     // screens[3]
     // screens[4], ST background and icons
-    for (i = 1; i < VIDEO_NUM_SCREENS; i++)
-        screens[i] = base + (i - 1) * SCREENWIDTH * SCREENHEIGHT;
+    for (i = 0; i < VIDEO_NUM_SCREENS; i++)
+        screens[i+1] = base + i * SCREENWIDTH * SCREENHEIGHT;
 }

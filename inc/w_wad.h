@@ -73,6 +73,7 @@ void*	W_CacheLumpNum (int lump, int tag);
 void*	W_CacheLumpName (char* name, int tag);
 
 void    W_AddFile (char *filename);
+void    W_DumpCache (void);
 #endif
 //-----------------------------------------------------------------------------
 //
