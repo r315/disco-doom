@@ -168,9 +168,8 @@ R_InstallSpriteLump
 //  letter/number appended.
 // The rotation character can be 0 to signify no rotations.
 //
-void R_InitSpriteDefs (char** namelist) 
+void R_InitSpriteDefs (char** namelist, int size) 
 { 
-    char**	check;
     int		i;
     int		l;
     int		intname;
@@ -180,17 +179,13 @@ void R_InitSpriteDefs (char** namelist)
     int		end;
     int		patched;
 		
-    // count the number of sprite names
-    check = namelist;
-    while (*check != NULL)
-		check++;
-
-    numsprites = check - namelist - sizeof(char**); // check - namelist;
 	
-    if (!numsprites)
-	return;
+    if (!size)
+	    return;
+
+    numsprites = size;
 		
-    sprites = Z_Malloc(numsprites *sizeof(*sprites), PU_STATIC, NULL);
+    sprites = Z_Malloc(numsprites * sizeof(*sprites), PU_STATIC, NULL);
 	
     start = firstspritelump-1;
     end = lastspritelump+1;
@@ -291,16 +286,16 @@ int		newvissprite;
 // R_InitSprites
 // Called at program start.
 //
-void R_InitSprites (char** namelist)
+void R_InitSprites (char** namelist, int size)
 {
     int		i;
 	
     for (i=0 ; i<SCREENWIDTH ; i++)
     {
-	negonearray[i] = -1;
+        negonearray[i] = -1;
     }
 	
-    R_InitSpriteDefs (namelist);
+    R_InitSpriteDefs (namelist, size);
 }
 
 

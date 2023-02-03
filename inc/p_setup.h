@@ -26,15 +26,11 @@
 #include "doomdata.h"
 
 // NOT called by W_Ticker. Fixme.
-void
-P_SetupLevel
-( int		episode,
-  int		map,
-  int		playermask,
-  skill_t	skill);
+void P_SetupLevel (int episode, int map, int playermask, skill_t skill);
 
 // Called by startup code.
 void P_Init (void);
+void P_SpawnMapThing (mapthing_t*	mthing);
 
 // Player spawn spots for deathmatch.
 extern  mapthing_t*	    deathmatch_p;

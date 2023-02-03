@@ -30,13 +30,14 @@
 
 void D_DoomMain (int argc, char **argv);
 // Called by IO functions when input is detected.
-void D_PostEvent (event_t* ev);
 void D_PageTicker (void);
 void D_PageDrawer (void);
 void D_StartTitle (void);
 void D_AdvanceDemo (void);
 void D_DoAdvanceDemo (void);
+void D_PostEvent (event_t* ev);
 void D_ProcessEvents (void);
+void D_CheckEventsAbort(void);
 int access(char *file, int mode);
 
 // ------------------------
@@ -50,12 +51,6 @@ extern  boolean	    d_devparm;	    // DEBUG: launched with -devparm
 //?
 // debug flag to cancel adaptiveness
 extern  boolean     singletics;	
-
-// Defaults for menu, methinks.
-extern  skill_t     startskill;
-extern  int         startepisode;
-extern	int		    startmap;
-extern  boolean		autostart;
 
 // File handling stuff.
 extern  FILE*		debugfile;

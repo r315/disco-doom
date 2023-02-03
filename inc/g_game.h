@@ -29,6 +29,22 @@
 #include "m_fixed.h"
 #include "d_player.h"
 
+
+typedef enum gameaction_e
+{
+    ga_nothing,
+    ga_loadlevel,
+    ga_newgame,
+    ga_loadgame,
+    ga_savegame,
+    ga_playdemo,
+    ga_completed,
+    ga_victory,
+    ga_worlddone,
+    ga_screenshot
+} gameaction_t;
+
+
 //
 // GAME
 //
@@ -73,7 +89,10 @@ void G_ScreenShot (void);
 
 void G_BuildTiccmd (ticcmd_t* cmd);
 
-extern gameaction_t     gameaction;
+void G_SetGameAction(gameaction_t action);
+
+void G_PlayerReborn (int player);
+
 extern fixed_t          forwardmove[2];
 extern fixed_t          sidemove[2];
 extern skill_t          gameskill;

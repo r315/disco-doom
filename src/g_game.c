@@ -55,17 +55,21 @@ static const char
 #include "g_game.h"
 #include "doomstat.h"
 
-#define SAVEGAMESIZE 0x2c000
-#define SAVESTRINGSIZE 24
+#define SAVEGAMESIZE    0x2c000
+#define SAVESTRINGSIZE  24
+#define VERSIONSIZE     16
+#define DEMOMARKER      0x80
+#define BODYQUESIZE     32
+#define SLOWTURNTICS    6
+#define NUMKEYS         256
+#define MAXPLMOVE       (forwardmove[1])
+#define TURBOTHRESHOLD  0x32
 
 boolean G_CheckDemoStatus(void);
 void G_ReadDemoTiccmd(ticcmd_t *cmd);
 void G_WriteDemoTiccmd(ticcmd_t *cmd);
 void G_PlayerReborn(int player);
-void G_InitNew(skill_t skill, int episode, int map);
-
 void G_DoReborn(int playernum);
-
 void G_DoLoadLevel(void);
 void G_DoNewGame(void);
 void G_DoLoadGame(void);
@@ -75,7 +79,7 @@ void G_DoVictory(void);
 void G_DoWorldDone(void);
 void G_DoSaveGame(void);
 
-gameaction_t gameaction;
+static gameaction_t gameaction;
 gamestate_t gamestate;
 skill_t gameskill;
 boolean respawnmonsters;
@@ -148,17 +152,9 @@ int joybstrafe;
 int joybuse;
 int joybspeed;
 
-#define MAXPLMOVE (forwardmove[1])
-
-#define TURBOTHRESHOLD 0x32
-
 fixed_t forwardmove[2] = {0x19, 0x32};
 fixed_t sidemove[2] = {0x18, 0x28};
 fixed_t angleturn[3] = {640, 1280, 320}; // + slow turn
-
-#define SLOWTURNTICS 6
-
-#define NUMKEYS 256
 
 boolean gamekeydown[NUMKEYS];
 int turnheld; // for accelerative turning
@@ -186,13 +182,39 @@ static boolean *joybuttons = &joyarray[1]; // allow [-1]
 int savegameslot;
 char savedescription[32];
 
-#define BODYQUESIZE 32
-
 mobj_t *bodyque[BODYQUESIZE];
 int bodyqueslot;
 
 void *statcopy; // for statistics driver
 
+static skill_t d_skill;
+static int d_episode;
+static int d_map;
+static char savename[256];
+
+// DOOM Par Times
+static const int pars[4][10] =
+    {
+        {0},
+        {0, 30, 75, 120, 90, 165, 180, 180, 30, 165},
+        {0, 90, 90, 90, 120, 90, 360, 240, 30, 170},
+        {0, 90, 45, 90, 150, 90, 90, 165, 30, 135}};
+
+// DOOM II Par Times
+static const int cpars[32] =
+    {
+        30, 90, 120, 120, 90, 150, 120, 120, 270, 90,     //  1-10
+        210, 150, 150, 150, 210, 150, 420, 150, 210, 150, // 11-20
+        240, 150, 180, 150, 150, 300, 330, 420, 300, 180, // 21-30
+        120, 30                                           // 31-32
+};
+
+static boolean secretexit;
+static char *defdemoname;
+
+//
+// G_CmdChecksum
+//
 int G_CmdChecksum(ticcmd_t *cmd)
 {
     int i;
@@ -409,8 +431,6 @@ void G_BuildTiccmd(ticcmd_t *cmd)
 //
 // G_DoLoadLevel
 //
-extern gamestate_t wipegamestate;
-
 void G_DoLoadLevel(void)
 {
     int i;
@@ -792,8 +812,6 @@ void G_PlayerReborn(int player)
 // at the given mapthing_t spot
 // because something is occupying it
 //
-void P_SpawnPlayer(mapthing_t *mthing);
-
 boolean
 G_CheckSpot(int playernum,
             mapthing_t *mthing)
@@ -920,27 +938,9 @@ void G_ScreenShot(void)
     gameaction = ga_screenshot;
 }
 
-// DOOM Par Times
-int pars[4][10] =
-    {
-        {0},
-        {0, 30, 75, 120, 90, 165, 180, 180, 30, 165},
-        {0, 90, 90, 90, 120, 90, 360, 240, 30, 170},
-        {0, 90, 45, 90, 150, 90, 90, 165, 30, 135}};
-
-// DOOM II Par Times
-int cpars[32] =
-    {
-        30, 90, 120, 120, 90, 150, 120, 120, 270, 90,     //  1-10
-        210, 150, 150, 150, 210, 150, 420, 150, 210, 150, // 11-20
-        240, 150, 180, 150, 150, 300, 330, 420, 300, 180, // 21-30
-        120, 30                                           // 31-32
-};
-
 //
 // G_DoCompleted
 //
-boolean secretexit;
 
 void G_ExitLevel(void)
 {
@@ -1126,7 +1126,6 @@ void G_DoWorldDone(void)
 // G_InitFromSavegame
 // Can be called by the startup code or the menu task.
 //
-char savename[256];
 
 void G_LoadGame(char *name)
 {
@@ -1134,7 +1133,7 @@ void G_LoadGame(char *name)
     gameaction = ga_loadgame;
 }
 
-#define VERSIONSIZE 16
+
 
 void G_DoLoadGame(void)
 {
@@ -1260,10 +1259,6 @@ void G_DoSaveGame(void)
 // Can be called by the startup code or the menu task,
 // consoleplayer, displayplayer, playeringame[] should be set.
 //
-skill_t d_skill;
-int d_episode;
-int d_map;
-
 void G_DeferedInitNew(skill_t skill,
                       int episode,
                       int map)
@@ -1288,9 +1283,6 @@ void G_DoNewGame(void)
     G_InitNew(d_skill, d_episode, d_map);
     gameaction = ga_nothing;
 }
-
-// The sky texture to be used instead of the F_SKY1 dummy.
-extern int skytexture;
 
 void G_InitNew(skill_t skill,
                int episode,
@@ -1372,8 +1364,6 @@ void G_InitNew(skill_t skill,
     gamemap = map;
     gameskill = skill;
 
-    viewactive = true;
-
     // set the sky map for the episode
     if (gamemode == commercial)
     {
@@ -1406,7 +1396,6 @@ void G_InitNew(skill_t skill,
 //
 // DEMO RECORDING
 //
-#define DEMOMARKER 0x80
 
 void G_ReadDemoTiccmd(ticcmd_t *cmd)
 {
@@ -1486,8 +1475,6 @@ void G_BeginRecording(void)
 //
 // G_PlayDemo
 //
-
-char *defdemoname;
 
 void G_DeferedPlayDemo(char *name)
 {
@@ -1603,4 +1590,9 @@ boolean G_CheckDemoStatus(void)
     }
 
     return false;
+}
+
+void G_SetGameAction(gameaction_t action)
+{
+    gameaction = action;
 }

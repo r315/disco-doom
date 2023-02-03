@@ -308,7 +308,7 @@ int M_ReadFile(char const *name, byte **buffer)
 
     handle = fopen(name, "rb");
     if (handle == NULL)
-        I_Error("Couldn't read file %s", name);
+        I_Error("Couldn't open file '%s'", name);
     fseek(handle, 0, SEEK_END);
     length = ftell(handle);
     rewind(handle);
@@ -317,7 +317,7 @@ int M_ReadFile(char const *name, byte **buffer)
     fclose(handle);
 
     if (count < length)
-        I_Error("Couldn't read file %s", name);
+        I_Error("Fail to read file '%s'", name);
 
     *buffer = buf;
     return length;

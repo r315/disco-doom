@@ -108,7 +108,9 @@ char			savegamestrings[10][SAVESTRINGSIZE];
 
 char	endstring[160];
 char    tempstring[90];
-int     epi;
+
+static int  m_epi;    // Episode selection on menu
+
 //
 // MENU TYPEDEFS
 //
@@ -169,7 +171,6 @@ void M_ChangeSensitivity(int choice);
 void M_SfxVol(int choice);
 void M_MusicVol(int choice);
 void M_ChangeDisplaySize(int choice);
-void M_StartGame(int choice);
 void M_Sound(int choice);
 
 void M_FinishReadThis(int choice);
@@ -892,7 +893,7 @@ void M_VerifyNightmare(int ch)
     if (ch != 'y')
 	return;
 		
-    G_DeferedInitNew(nightmare,epi+1,1);
+    G_DeferedInitNew(nightmare, m_epi, 1);
     M_ClearMenus ();
 }
 
@@ -904,7 +905,7 @@ void M_ChooseSkill(int choice)
 	return;
     }
 	
-    G_DeferedInitNew(choice,epi+1,1);
+    G_DeferedInitNew(choice, m_epi, 1);
     M_ClearMenus ();
 }
 
@@ -927,7 +928,7 @@ void M_Episode(int choice)
       choice = 0;
     }
 	 
-    epi = choice;
+    m_epi = choice + 1;
     M_SetupNextMenu(&NewDef);
 }
 

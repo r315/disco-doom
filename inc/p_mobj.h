@@ -106,7 +106,7 @@
 //
 // Misc. mobj flags
 //
-typedef enum
+typedef enum mobjflag_s
 {
     // Call P_SpecialThing when touched.
     MF_SPECIAL		= 1,
@@ -276,7 +276,7 @@ typedef struct mobj_s
     struct mobj_s*	tracer; 
 } mobj_t;
 
-
+void P_SpawnPlayer (mapthing_t* mthing);
 
 #endif
 //-----------------------------------------------------------------------------

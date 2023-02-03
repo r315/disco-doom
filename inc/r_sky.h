@@ -38,8 +38,6 @@ void R_InitSkyMap (void);
 extern int		skyflatnum;
 extern int		skytexture;
 extern int		skytexturemid;
-
-
 #endif
 //-----------------------------------------------------------------------------
 //

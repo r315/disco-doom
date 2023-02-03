@@ -13,8 +13,7 @@
 int T_GetTick(void);
 void T_Delay(int ms);
 
-#if defined (__WIN32__)
-#include <stdint.h>
-typedef uint8_t Uint8;
+#if __ARM_EABI__
+#include "board.h"
 #endif
 #endif

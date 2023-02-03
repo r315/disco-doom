@@ -202,20 +202,20 @@ void I_GetEvent(SDL_Event *Event)
 		D_PostEvent(&event);
 		break;
 
-#if (SDL_MAJOR_VERSION >= 0) && (SDL_MINOR_VERSION >= 9)
+#if 1  //(SDL_MAJOR_VERSION >= 0) && (SDL_MINOR_VERSION >= 9)
 	case SDL_MOUSEMOTION:
 		/* Ignore mouse warp events */
 		if ((Event->motion.x != surface->w / 2) || (Event->motion.y != surface->h / 2))
 		{
 			/* Warp the mouse back to the center */
-			if (grabMouse)
+			//if (grabMouse)
 			{
 				SDL_WarpMouse(surface->w / 2, surface->h / 2);
 			}
 			event.type = ev_mouse;
 			event.data1 = 0 | (Event->motion.state & SDL_BUTTON(1) ? 1 : 0) | (Event->motion.state & SDL_BUTTON(2) ? 2 : 0) | (Event->motion.state & SDL_BUTTON(3) ? 4 : 0);
 			event.data2 = Event->motion.xrel << 2;
-			event.data3 = -Event->motion.yrel << 2;
+			//event.data3 = -Event->motion.yrel << 2;
 			D_PostEvent(&event);
 		}
 		break;
@@ -526,7 +526,10 @@ void I_InitGraphics(void)
 	}
 
 	SDL_ShowCursor(0);
-	SDL_WM_SetCaption("SDL DOOM! v1.10", "doom");
+	char title[20];
+	sprintf(title,"DOOM v%i.%02i\n", VERSION_NUM / 100, VERSION_NUM % 100);
+	SDL_WM_SetCaption(title, NULL);
+
 
 	/* Set up the surface displays */
 	w = SCREENWIDTH * multiply;

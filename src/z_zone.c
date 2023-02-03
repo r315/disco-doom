@@ -242,10 +242,6 @@ void* Z_Malloc (int size, int tag, void *user)
 
 		base->next = newblock;
 		base->size = size;
-
-		if (base->size == 1512) {
-			printf("break\n");
-		}
     }
 	
     if (user)

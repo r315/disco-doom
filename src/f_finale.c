@@ -89,7 +89,7 @@ void	F_CastDrawer (void);
 //
 void F_StartFinale (void)
 {
-    gameaction = ga_nothing;
+    G_SetGameAction(ga_nothing);
     gamestate = GS_FINALE;
     viewactive = false;
     automapactive = false;
@@ -216,7 +216,7 @@ void F_Ticker (void)
 	if (gamemap == 30)
 	  F_StartCast ();
 	else
-	  gameaction = ga_worlddone;
+	  G_SetGameAction(ga_worlddone);
       }
     }
     

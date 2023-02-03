@@ -685,7 +685,7 @@ void P_Init (void)
 {
     P_InitSwitchList ();
     P_InitPicAnims ();
-    R_InitSprites ((char**)sprnames);
+    R_InitSprites (sprnames, sizeof(sprnames) / 4); // 4 bytes per name
 }
 
 

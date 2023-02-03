@@ -32,7 +32,7 @@
 //
 
 // Input event types.
-typedef enum
+typedef enum evtype_e
 {
     ev_keydown,
     ev_keyup,
@@ -41,7 +41,7 @@ typedef enum
 } evtype_t;
 
 // Event structure.
-typedef struct
+typedef struct event_e
 {
     evtype_t	type;
     int		data1;		// keys / mouse/joystick buttons
@@ -49,27 +49,10 @@ typedef struct
     int		data3;		// mouse/joystick y move
 } event_t;
 
- 
-typedef enum
-{
-    ga_nothing,
-    ga_loadlevel,
-    ga_newgame,
-    ga_loadgame,
-    ga_savegame,
-    ga_playdemo,
-    ga_completed,
-    ga_victory,
-    ga_worlddone,
-    ga_screenshot
-} gameaction_t;
-
-
-
 //
 // Button/action code definitions.
 //
-typedef enum
+typedef enum buttoncode_e
 {
     // Press "Fire".
     BT_ATTACK		= 1,
@@ -99,17 +82,10 @@ typedef enum
   
 } buttoncode_t;
 
-
-
-
 //
 // GLOBAL VARIABLES
 //
 #define MAXEVENTS		64
-
-extern  event_t     events[MAXEVENTS];
-extern  int         eventhead;
-extern	int		    eventtail;
 
 #endif
 //-----------------------------------------------------------------------------

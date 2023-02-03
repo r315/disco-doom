@@ -39,10 +39,6 @@ rcsid[] = "$Id: p_mobj.c,v 1.5 1997/02/03 22:45:12 b1 Exp $";
 #include "p_tick.h"
 #include "p_setup.h"
 
-void G_PlayerReborn (int player);
-void P_SpawnMapThing (mapthing_t*	mthing);
-
-
 //
 // P_SetMobjState
 // Returns true if the mobj is still present.
