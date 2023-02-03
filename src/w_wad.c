@@ -146,7 +146,7 @@ void W_AddFile (char *filename)
 
 	numlumps = wadinfo.numlumps;
 	length   = wadinfo.numlumps * sizeof(filelump_t);	
-	fileinfo = I_AllocLow (length);
+	fileinfo = (filelump_t*)I_AllocLow (length);
     if(!fileinfo){
         I_Error ("W_AddFile: Couldn't allocate fileinfo");
     }
@@ -155,7 +155,7 @@ void W_AddFile (char *filename)
 	fread (fileinfo, 1, length, handle);	        
  
     // allocate lumpinfo
-    lumpinfo = I_AllocLow (wadinfo.numlumps * sizeof(lumpinfo_t));    
+    lumpinfo = (lumpinfo_t*)I_AllocLow (wadinfo.numlumps * sizeof(lumpinfo_t));    
     if (!lumpinfo){
 	   I_Error ("W_AddFile: Couldn't allocate lumpinfo");
     }
@@ -163,6 +163,8 @@ void W_AddFile (char *filename)
     tmplumpinfo = lumpinfo;
 	
     storehandle = reloadname ? -1 : (int)handle;    
+    
+    COM_Print ("\tLoading %d lumps\n", wadinfo.numlumps);
 
     for (i=0; i < wadinfo.numlumps; i++,tmplumpinfo++, fileinfo++){
         tmplumpinfo->handle   = storehandle;
@@ -180,7 +182,7 @@ void W_AddFile (char *filename)
     // set up caching
     length = wadinfo.numlumps * sizeof(*lumpcache);
         
-    lumpcache = I_AllocLow (length);
+    lumpcache = (void**)I_AllocLow (length);
     
     if (!lumpcache){
         I_Error ("W_AddFile: Couldn't allocate lumpcache");

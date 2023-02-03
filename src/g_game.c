@@ -163,8 +163,8 @@ fixed_t angleturn[3] = {640, 1280, 320}; // + slow turn
 boolean gamekeydown[NUMKEYS];
 int turnheld; // for accelerative turning
 
-boolean mousearray[4];
-boolean *mousebuttons = &mousearray[1]; // allow [-1]
+static boolean mousearray[4];
+static boolean *mousebuttons = &mousearray[1]; // allow [-1]
 
 // mouse values are used once
 int mousex;
@@ -178,10 +178,10 @@ int dclickstate2;
 int dclicks2;
 
 // joystick values are repeated
-int joyxmove;
-int joyymove;
-boolean joyarray[5];
-boolean *joybuttons = &joyarray[1]; // allow [-1]
+static int joyxmove;
+static int joyymove;
+static boolean joyarray[5];
+static boolean *joybuttons = &joyarray[1]; // allow [-1]
 
 int savegameslot;
 char savedescription[32];
@@ -458,8 +458,9 @@ void G_DoLoadLevel(void)
     joyxmove = joyymove = 0;
     mousex = mousey = 0;
     sendpause = sendsave = paused = false;
-    memset(mousebuttons, 0, sizeof(mousebuttons));
-    memset(joybuttons, 0, sizeof(joybuttons));
+
+    memset(mousearray, 0, sizeof(mousearray));
+    memset(joyarray, 0, sizeof(joyarray));
 }
 
 //

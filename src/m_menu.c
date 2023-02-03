@@ -107,7 +107,7 @@ boolean			menuactive;
 char			savegamestrings[10][SAVESTRINGSIZE];
 
 char	endstring[160];
-char    tempstring[80];
+char    tempstring[90];
 int     epi;
 //
 // MENU TYPEDEFS

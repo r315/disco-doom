@@ -681,7 +681,11 @@ void F_BunnyScroll (void)
 	laststage = stage;
     }
 	
-    sprintf (name,"END%i",stage);
+	name[0] = 'E';
+	name[1] = 'N';
+	name[2] = 'D';
+	name[3] = '0' + stage;
+	name[4] = '\0';
     V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, W_CacheLumpName (name,PU_CACHE));
 }
 
