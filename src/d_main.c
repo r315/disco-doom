@@ -62,6 +62,12 @@ static const char rcsid[] = "$Id: d_main.c,v 1.8 1997/02/03 22:45:09 b1 Exp $";
 
 #define MAX_PATH_SIZE   64
 
+typedef struct wadnames_s
+{
+    const char *filename;
+    GameMode_t mode;
+}wadnames_t;
+
 boolean     d_devparm;		// started game with -devparm
 boolean     nomonsters;     // checkparm of -nomonsters
 boolean     respawnparm;	// checkparm of -respawn
@@ -99,11 +105,11 @@ char        *basedir;       // game dir
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t wipegamestate = GS_DEMOSCREEN;
 
-static const char *d_wadnames[] = {
-        "doom.wad",     // Registered
-        "doom1.wad",    // Shareware
-        "doomu.wad",    // Retail
-        "doom2.wad",    // Comercial
+static const wadnames_t d_wadnames[] = {
+        {"doom.wad", registered},
+        {"doom1.wad", shareware},
+        {"doomu.wad", retail},
+        {"doom2.wad", commercial}
 };
 
 int access(char *file, int mode);
@@ -405,6 +411,9 @@ void D_AdvanceDemo (void)
 // FIXME - version dependend demo numbers?
 void D_DoAdvanceDemo (void)
 {
+    if(!advancedemo)
+        return;
+
     players[consoleplayer].playerstate = PST_LIVE;  // not reborn
     advancedemo = false;
     usergame = false;               // no save / end game here
@@ -479,7 +488,7 @@ void D_StartTitle (void)
     d_demosequence = -1;
     D_AdvanceDemo ();
 }
-
+/*
 static char *D_GetFilename(char *path)
 {
 	char *ptr = path + strlen(path); // start from end
@@ -496,37 +505,16 @@ static char *D_GetFilename(char *path)
 	}
 	return ptr;
 }
-/**
-
 */
-static GameMode_t D_CheckWadFile(char *wadname) {
+
+static int D_CheckWadFile(char *wadname) {
     
     if(wadname == NULL || *wadname == '\0'){
-        return indetermined;
+        return 0;
     }
     
 	// Test access to file    
-	if (!access(wadname, R_OK)) {		
-		char *name = D_GetFilename(wadname);
-        
-        if(!strcmp(name, "doom1.wad")){
-            return shareware; 
-        }
-
-        if(!strcmp(name, "doom.wad")){
-            return registered; 
-        }
-
-        if(!strcmp(name, "doomu.wad")){
-            return retail; 
-        }
-
-        if(!strcmp(name, "doom2.wad")){
-            return commercial; 
-        }
-	}
-
-	return indetermined;
+	return !access(wadname, R_OK);
 }
 
 //
@@ -537,23 +525,13 @@ static GameMode_t D_CheckWadFile(char *wadname) {
 //
 static GameMode_t D_IDVersion (void)
 {
-
+    char *wadfile_param;
+    
     wadfilename = (char*)calloc(1, MAX_PATH_SIZE);
-    GameMode_t gm;
 
     if(!wadfilename){
         // Fail t allocate
         return indetermined;
-    }
-    
-    // check for given wad file
-    char *wadfile_param = COM_GetParm("-wadfile");
-    if(wadfile_param){   
-        sprintf(wadfilename, "%s/%s", basedir, wadfile_param);
-        gm = D_CheckWadFile(wadfilename);
-        if (gm != indetermined) {
-            return gm;   
-        }
     }
 
     // Check if forced shareware
@@ -564,17 +542,22 @@ static GameMode_t D_IDVersion (void)
 	    //D_AddFile (DEVMAPS"data_se/texture1.lmp");
 	    //D_AddFile (DEVMAPS"data_se/pnames.lmp");
 	    //strcpy (basedefault,DEVDATA"default.cfg");
-        sprintf(wadfilename, "%s/doom1.wad", basedir);
-	    return D_CheckWadFile(wadfilename);
+        wadfile_param = "doom1.wad";
+    }else{
+        // check for given wad file
+        wadfile_param = COM_GetParm("-wadfile");
     }
 
-    // Check default wadfiles
-    for(int i = 0; i < sizeof(d_wadnames) / sizeof(char*); i++){
-        sprintf(wadfilename, "%s/%s", basedir, d_wadnames[i]);
-        gm = D_CheckWadFile(wadfilename);
-        if (gm != indetermined) {
-		    return gm;   
+    for(int i = 0; i < sizeof(d_wadnames) / sizeof(wadnames_t); i++){
+        if(wadfile_param){ 
+            if(strcmp(d_wadnames[i].filename, wadfile_param)){
+                continue;
+            }
         }
+        sprintf(wadfilename, "%s/%s", basedir, d_wadnames[i].filename);
+        if (D_CheckWadFile(wadfilename)) {
+            return d_wadnames[i].mode;
+        }    
     }
 
     return indetermined;

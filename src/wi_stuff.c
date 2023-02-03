@@ -1526,10 +1526,10 @@ void WI_Ticker(void)
 
 void WI_loadData(void)
 {
-    int		i;
-    int		j;
-    char	name[9];
-    anim_t*	a;
+    byte		i;
+    byte		j;
+    char		name[10];
+    anim_t		*a;
 
     if (gamemode == commercial)
 	strcpy(name, "INTERPIC");
