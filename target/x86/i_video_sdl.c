@@ -46,7 +46,7 @@ static byte *screen;
 // replace each 320x200 pixel with multiply*multiply pixels.
 // According to Dave Taylor, it still is a bonehead thing
 // to use ....
-static int multiply = 2;
+static int multiply = 3;
 
 static hu_textline_t	h_fps;
 
@@ -481,37 +481,10 @@ void I_InitGraphics(void)
 	if (!!COM_CheckParm("-fullscreen"))
 		video_flags |= SDL_FULLSCREEN;
 
-	if (COM_CheckParm("-2"))
-		multiply = 2;
-
-	if (COM_CheckParm("-3"))
-		multiply = 3;
-
 	video_w = w = SCREENWIDTH * multiply;
 	video_h = h = SCREENHEIGHT * multiply;
 	video_bpp = 8;
 
-	/* We need to allocate a software surface because the DOOM! code expects
-       the surface surface to be valid all of the time.  Properly done, the
-       rendering code would allocate the video surface in video memory and
-       then call SDL_LockSurface()/SDL_UnlockSurface() around frame rendering.
-       Eventually SDL will support flipping, which would be really nice in
-       a complete-frame rendering application like this.
-    */
-	switch (video_w / w)
-	{
-	case 3:
-		multiply *= 3;
-		break;
-	case 2:
-		multiply *= 2;
-		break;
-	case 1:
-		multiply *= 1;
-		break;
-	default:;
-	}
-	
 	if (multiply > 3)
 	{
 		I_Error("Smallest available mode (%dx%d) is too large!",
