@@ -33,6 +33,7 @@ rcsid[] = "$Id: r_bsp.c,v 1.4 1997/02/03 22:45:12 b1 Exp $";
 #include "r_things.h"
 #include "r_state.h"
 #include "r_sky.h"
+#include "r_segs.h"
 
 #define MAXSEGS		32
 

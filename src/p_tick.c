@@ -132,8 +132,8 @@ void P_Ticker (void)
     int		i;
     
     // run the tic
-    if (paused)
-	return;
+    if (G_Paused())
+	    return;
 		
     // pause if in menu and at least one tic has been run
     if ( !netgame

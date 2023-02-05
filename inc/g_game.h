@@ -93,6 +93,8 @@ void G_SetGameAction(gameaction_t action);
 
 void G_PlayerReborn (int player);
 
+boolean G_Paused(void);
+
 extern fixed_t          forwardmove[2];
 extern fixed_t          sidemove[2];
 extern skill_t          gameskill;
@@ -105,7 +107,6 @@ extern  boolean	        netgame;
 // Flag: true only if started as net deathmatch.
 // An enum might handle altdeath/cooperative better.
 extern  boolean	        deathmatch;	
-extern  boolean	        paused;		// Game Pause?
 extern  boolean		    viewactive;
 extern  boolean		    nodrawers;
 

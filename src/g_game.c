@@ -86,7 +86,7 @@ boolean respawnmonsters;
 int gameepisode;
 int gamemap;
 
-boolean paused;
+static boolean paused;
 boolean sendpause; // send a pause event next tic
 boolean sendsave;  // send a save event next tic
 boolean usergame;  // ok to save / end game
@@ -1595,4 +1595,9 @@ boolean G_CheckDemoStatus(void)
 void G_SetGameAction(gameaction_t action)
 {
     gameaction = action;
+}
+
+boolean G_Paused(void)
+{
+    return paused;
 }
