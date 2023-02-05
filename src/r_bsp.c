@@ -34,6 +34,39 @@ rcsid[] = "$Id: r_bsp.c,v 1.4 1997/02/03 22:45:12 b1 Exp $";
 #include "r_state.h"
 #include "r_sky.h"
 
+#define MAXSEGS		32
+
+//
+// ClipWallSegment
+// Clips the given range of columns
+// and includes it in the new clip list.
+//
+typedef	struct cliprange_s
+{
+    int	first;
+    int last;
+} cliprange_t;
+
+
+// newend is one past the last valid seg
+static cliprange_t*	newend;
+static cliprange_t	solidsegs[MAXSEGS];
+
+static const int checkcoord[12][4] =
+{
+    {3,0,2,1},
+    {3,0,2,0},
+    {3,1,2,0},
+    {0},
+    {2,0,2,1},
+    {0,0,0,0},
+    {3,1,3,0},
+    {0},
+    {2,0,3,1},
+    {2,1,3,1},
+    {2,1,3,0}
+};
+
 seg_t*		curline;
 side_t*		sidedef;
 line_t*		linedef;
@@ -43,15 +76,6 @@ sector_t*	backsector;
 drawseg_t	drawsegs[MAXDRAWSEGS];
 drawseg_t*	ds_p;
 
-
-void
-R_StoreWallRange
-( int	start,
-  int	stop );
-
-
-
-
 //
 // R_ClearDrawSegs
 //
@@ -60,40 +84,13 @@ void R_ClearDrawSegs (void)
     ds_p = drawsegs;
 }
 
-
-
-//
-// ClipWallSegment
-// Clips the given range of columns
-// and includes it in the new clip list.
-//
-typedef	struct
-{
-    int	first;
-    int last;
-    
-} cliprange_t;
-
-
-#define MAXSEGS		32
-
-// newend is one past the last valid seg
-cliprange_t*	newend;
-cliprange_t	solidsegs[MAXSEGS];
-
-
-
-
 //
 // R_ClipSolidWallSegment
 // Does handle solid walls,
 //  e.g. single sided LineDefs (middle texture)
 //  that entirely block the view.
 // 
-void
-R_ClipSolidWallSegment
-( int			first,
-  int			last )
+void R_ClipSolidWallSegment (int first, int last)
 {
     cliprange_t*	next;
     cliprange_t*	start;
@@ -174,8 +171,6 @@ R_ClipSolidWallSegment
     newend = start+1;
 }
 
-
-
 //
 // R_ClipPassWallSegment
 // Clips the given range of columns,
@@ -183,10 +178,7 @@ R_ClipSolidWallSegment
 // Does handle windows,
 //  e.g. LineDefs with upper and lower texture.
 //
-void
-R_ClipPassWallSegment
-( int	first,
-  int	last )
+void R_ClipPassWallSegment (int first, int last)
 {
     cliprange_t*	start;
 
@@ -226,8 +218,6 @@ R_ClipPassWallSegment
     // There is a fragment after *next.
     R_StoreWallRange (start->last + 1, last);
 }
-
-
 
 //
 // R_ClearClipSegs
@@ -352,21 +342,6 @@ void R_AddLine (seg_t*	line)
 // Returns true
 //  if some part of the bbox might be visible.
 //
-int	checkcoord[12][4] =
-{
-    {3,0,2,1},
-    {3,0,2,0},
-    {3,1,2,0},
-    {0},
-    {2,0,2,1},
-    {0,0,0,0},
-    {3,1,3,0},
-    {0},
-    {2,0,3,1},
-    {2,1,3,1},
-    {2,1,3,0}
-};
-
 
 static boolean R_CheckBBox (fixed_t*	bspcoord)
 {
@@ -476,8 +451,6 @@ static boolean R_CheckBBox (fixed_t*	bspcoord)
     return true;
 }
 
-
-
 //
 // R_Subsector
 // Determine floor/ceiling planes.
@@ -531,14 +504,12 @@ void R_Subsector (int num)
     }
 }
 
-
-
-
 //
 // RenderBSPNode
 // Renders all subsectors below a given node,
 //  traversing subtree recursively.
 // Just call with BSP root.
+//
 void R_RenderBSPNode (int bspnum)
 {
     node_t*	bsp;

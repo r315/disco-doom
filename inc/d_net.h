@@ -42,7 +42,7 @@
 // Networking and tick handling related.
 #define BACKUPTICS		12
 
-typedef enum
+typedef enum command_e
 {
     CMD_SEND	= 1,
     CMD_GET	= 2
@@ -52,7 +52,7 @@ typedef enum
 //
 // Network packet data.
 //
-typedef struct
+typedef struct doomdata_s
 {
     // High bit is retransmit request.
     unsigned		checksum;
@@ -67,9 +67,7 @@ typedef struct
 } doomdata_t;
 
 
-
-
-typedef struct
+typedef struct doomcom_s
 {
     // Supposed to be DOOMCOM_ID?
     long		id;

@@ -34,7 +34,7 @@ typedef signed int     s32;
 
 /* Fixed to use builtin boolean type with C++. */
 #ifdef __cplusplus
-typedef boolean boolean;
+typedef bool boolean;
 #else
 #define false 0
 #define true  1

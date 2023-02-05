@@ -74,10 +74,10 @@ boolean     respawnparm;	// checkparm of -respawn
 boolean     fastparm;		// checkparm of -fast
 boolean     singletics;     // debug flag to cancel adaptiveness
 
-static boolean     autostart;
-
-boolean     advancedemo;
 FILE*	    debugfile;
+
+static boolean        autostart;
+static boolean        advancedemo;
 
 //
 // EVENT HANDLING
@@ -129,7 +129,7 @@ static int access(char *file, int mode)
 void D_PostEvent (event_t* ev)
 {
     events[eventhead++] = *ev;
-    eventhead = eventhead&(MAXEVENTS-1);
+    eventhead = eventhead & (MAXEVENTS-1);
 }
 
 //
@@ -141,12 +141,12 @@ void D_ProcessEvents (void)
     event_t*	ev;
 	
     // IF STORE DEMO, DO NOT ACCEPT INPUT
-    if ( ( gamemode == commercial ) && (W_CheckNumForName("map01")<0) )
+    if ( ( gamemode == commercial ) && (W_CheckNumForName("map01") < 0) )
       return;
 	
-    for ( ; eventtail != eventhead; eventtail = (++eventtail) & (MAXEVENTS-1))
+    for ( ; eventtail != eventhead; eventtail = eventtail & (MAXEVENTS-1))
     {
-        ev = &events[eventtail];
+        ev = &events[eventtail++];
 
         if (M_Responder (ev))
             continue;               // menu ate the event
@@ -658,7 +658,7 @@ void D_DoomMain (int argc, char **argv)
     COM_Print ("M_Init: Init miscellaneous info.\n");
     M_Init ();
 
-    COM_Print ("R_Init: Init DOOM refresh daemon - ");
+    COM_Print ("R_Init: Init DOOM refresh daemon");
     R_Init ();
 
     COM_Print ("\nP_Init: Init Playloop state.\n");
