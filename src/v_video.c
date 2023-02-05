@@ -35,8 +35,7 @@ static const char
 #include "v_video.h"
 #include "i_video.h"
 
-// Each screen is [SCREENWIDTH*SCREENHEIGHT];
-byte*       screens[VIDEO_NUM_SCREENS + 1]; // Extra screen for ST background
+byte        **screens;
 int         usegamma;
 //static int	dirtybox[4];
 
@@ -148,7 +147,7 @@ void V_CopyRect(int srcx, int srcy, int srcscrn,
 		srcy < 0 || srcy + height > SCREENHEIGHT || 
 		destx < 0 || destx + width > SCREENWIDTH || 
 		desty < 0 || desty + height > SCREENHEIGHT || 
-		(unsigned)srcscrn > VIDEO_NUM_SCREENS || (unsigned)destscrn > VIDEO_NUM_SCREENS)
+		(unsigned)srcscrn >= VIDEO_NUM_SCREENS || (unsigned)destscrn >= VIDEO_NUM_SCREENS)
     {
         I_Error("Bad V_CopyRect");
     }
@@ -187,7 +186,7 @@ void V_DrawPatch(int x, int y, int scrn, patch_t *patch)
 #ifdef RANGECHECK
     if (x < 0 || x + SHORT(patch->width) > SCREENWIDTH || 
         y < 0 || y + SHORT(patch->height) > SCREENHEIGHT || 
-        (unsigned)scrn > VIDEO_NUM_SCREENS)
+        (unsigned)scrn >= VIDEO_NUM_SCREENS)
     {
         fprintf(stderr, "Patch at %d,%d exceeds LFB\n", x, y);
         // No I_Error abort - what is up with TNT.WAD?
@@ -246,7 +245,7 @@ void V_DrawPatchFlipped(int x, int y, int scrn, patch_t *patch)
 #ifdef RANGECHECK
     if (x < 0 || x + SHORT(patch->width) > SCREENWIDTH || 
         y < 0 || y + SHORT(patch->height) > SCREENHEIGHT || 
-        (unsigned)scrn > VIDEO_NUM_SCREENS)
+        (unsigned)scrn >= VIDEO_NUM_SCREENS)
     {
         fprintf(stderr, "Patch origin %d,%d exceeds LFB\n", x, y);
         I_Error("Bad V_DrawPatch in V_DrawPatchFlipped");
@@ -356,7 +355,7 @@ void V_DrawBlock(int x, int y, int scrn,
 #ifdef RANGECHECK
     if (x < 0 || x + width > SCREENWIDTH || 
         y < 0 || y + height > SCREENHEIGHT || 
-        (unsigned)scrn > VIDEO_NUM_SCREENS)
+        (unsigned)scrn >= VIDEO_NUM_SCREENS)
     {
         I_Error("Bad V_DrawBlock");
     }
@@ -387,7 +386,7 @@ void V_GetBlock(int x, int y, int scrn,
 #ifdef RANGECHECK
     if (x < 0 || x + width > SCREENWIDTH || 
         y < 0 || y + height > SCREENHEIGHT || 
-        (unsigned)scrn > VIDEO_NUM_SCREENS)
+        (unsigned)scrn >= VIDEO_NUM_SCREENS)
     {
         I_Error("Bad V_DrawBlock");
     }
@@ -408,21 +407,18 @@ void V_GetBlock(int x, int y, int scrn,
 //
 void V_Init(void)
 {
-    int i;
     byte *base;
 
-    // stick these in low dos memory on PCs
+    screens = (byte**)I_AllocLow(VIDEO_NUM_SCREENS * sizeof(byte*));
+    base = (byte*)I_AllocLow(SCREENWIDTH * SCREENHEIGHT * (VIDEO_NUM_SCREENS - 2));
 
-    base = I_AllocLow(SCREENWIDTH * SCREENHEIGHT * VIDEO_NUM_SCREENS);
-
+    // screens[0], main game window, allocated by video driver
     screens[0] = I_GetScreen();
-    //screens[1] = base + 0 * SCREENWIDTH * SCREENHEIGHT;
-
-    // screens[0], main game window
     // screens[1], background for when game window is smaller than canvas and screenshots
+	screens[1] = base;
     // screens[2], wipe effect
-    // screens[3], wipe effect 
-    // screens[4], ST background and icons
-    for (i = 0; i < VIDEO_NUM_SCREENS; i++)
-        screens[i+1] = base + i * SCREENWIDTH * SCREENHEIGHT;
+	screens[2] = base + SCREENWIDTH * SCREENHEIGHT;
+    // screens[3], wipe effect
+	screens[3] = base + 2 * SCREENWIDTH * SCREENHEIGHT;
+    // screens[4], status bar background and icons, allocated on sl_stuff
 }

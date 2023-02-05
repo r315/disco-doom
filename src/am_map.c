@@ -283,8 +283,6 @@ static cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
 
 static boolean stopped = true;
 
-//extern byte screens[][SCREENWIDTH*SCREENHEIGHT];
-
 // Calculates the slope and slope according to the x-axis of a line
 // segment in map coordinates (with the upright y-axis n' all) so
 // that it can be used with the brain-dead drawing stuff.

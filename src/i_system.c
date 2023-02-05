@@ -128,12 +128,12 @@ void I_Error (char *error, ...)
 
     fflush( stderr );
 
+	__debugbreak();
+
     // Shutdown. Here might be other errors.
     if (demorecording)
-	G_CheckDemoStatus();
-
+		G_CheckDemoStatus();
     D_QuitNetGame ();
     I_ShutdownGraphics();
-	__debugbreak();
     exit(-1);
 }

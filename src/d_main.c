@@ -109,19 +109,6 @@ static const wadnames_t d_wadnames[] = {
         {"doom2.wad", commercial}
 };
 
-int access(char *file, int mode);
-#if 0
-static int access(char *file, int mode)
-{
-	FILE *test_fp;
-	test_fp = fopen(file, "r");
-	if ( test_fp != NULL ) {
-		fclose(test_fp);
-		return(0);
-	}
-	return(-1);
-}
-#endif
 //==============================================================================
 // D_PostEvent
 // Called by the I/O functions when input is detected
@@ -251,26 +238,24 @@ static void D_Display (void)
         	D_PageDrawer ();
         	break;
     }
-    
-    // draw buffered stuff to screen
-    //I_UpdateNoBlit ();
+
     
     // draw the view directly
-    if (gamestate == GS_LEVEL && !automapactive && gametic)
+    if (gamestate == GS_LEVEL && gametic && !automapactive)
 	   R_RenderPlayerView (&players[displayplayer]);
 
     if (gamestate == GS_LEVEL && gametic)
     	HU_Drawer ();
     
     // clean up border stuff
-    if (gamestate != oldgamestate && gamestate != GS_LEVEL)
+    if (gamestate != GS_LEVEL && gamestate != oldgamestate)
 	   I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
 
     // see if the border needs to be initially drawn
     if (gamestate == GS_LEVEL && oldgamestate != GS_LEVEL)
     {
-    	viewactivestate = false;        // view was not active
-        R_FillBackScreen ();    // draw the pattern into the back screen
+    	viewactivestate = false; // view was not active
+        R_FillBackScreen ();     // draw the pattern into the back screen
     }
 
     // see if the border needs to be updated to the screen
@@ -278,6 +263,7 @@ static void D_Display (void)
     {
     	if (menuactive || menuactivestate || !viewactivestate)
 	       borderdrawcount = 3;
+
     	if (borderdrawcount)
 	    {
 	       R_DrawViewBorder ();    // erase old menu stuff
@@ -291,7 +277,7 @@ static void D_Display (void)
     oldgamestate = wipegamestate = gamestate;
     
     // draw pause pic
-    if (paused)
+    if (G_Paused())
     {
 	   y = (automapactive) ? 4 : viewwindowy + 4;	  
 	       
@@ -300,11 +286,9 @@ static void D_Display (void)
                     W_CacheLumpName ("M_PAUSE", PU_CACHE));
     }
 
-
     // menus go directly to the screen
     M_Drawer ();          // menu is drawn even on top of everything
     NetUpdate ();         // send out any new accumulation
-
 
     // normal update
     if (!wipe)
@@ -432,7 +416,7 @@ void D_DoAdvanceDemo (void)
     players[consoleplayer].playerstate = PST_LIVE;  // not reborn
     advancedemo = false;
     usergame = false;               // no save / end game here
-    paused = false;
+    //paused = false;
     G_SetGameAction(ga_nothing);
 
     if ( gamemode == retail )

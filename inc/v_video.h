@@ -32,12 +32,12 @@
 // VIDEO
 //
 #define CENTERY             (SCREENHEIGHT / 2)
-#define VIDEO_NUM_SCREENS   4
+#define VIDEO_NUM_SCREENS   5
 
 // Screen 0 is the screen updated by I_Update screen.
 // Screen 1 is an extra buffer.
 
-extern byte         *screens[]; 
+extern byte         **screens; 
 extern const byte   gammatable[5][256];
 extern int          usegamma;
 
