@@ -43,7 +43,7 @@ rcsid[] = "$Id: p_spec.c,v 1.6 1997/02/03 22:45:12 b1 Exp $";
 #include "r_state.h"
 #include "sounds.h"
 #include "p_tick.h"
-
+#include "dstrings.h"
 
 //
 // Animating textures and planes
@@ -1041,6 +1041,7 @@ void P_PlayerInSpecialSector (player_t* player)
 	// SECRET SECTOR
 	player->secretcount++;
 	sector->special = 0;
+	player->message = FOUNDSECRET;
 	break;
 			
       case 11:

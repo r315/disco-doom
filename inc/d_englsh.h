@@ -120,6 +120,11 @@
 #define GOTSHOTGUN2	"You got the super shotgun!"
 
 //
+// P_Spec.C
+//
+#define FOUNDSECRET "You found a secret!"
+
+//
 // P_Doors.C
 //
 #define PD_BLUEO	"You need a blue key to activate this object"
