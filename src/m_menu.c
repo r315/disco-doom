@@ -345,7 +345,7 @@ static menu_t  OptionsDef =
 //
 enum
 {
-    rdthsempty1,
+    //rdthsempty1,
     read1_end
 } read_e;
 
@@ -360,13 +360,13 @@ static menu_t  ReadDef1 =
     &MainDef,
     ReadMenu1,
     M_DrawReadThis1,
-    (SCREENWIDTH / 2) + 120, 185,
+    0, 0,   // no scull
     0
 };
 
 enum
 {
-    rdthsempty2,
+    //rdthsempty2,
     read2_end
 } read_e2;
 
@@ -381,7 +381,7 @@ static menu_t  ReadDef2 =
     &ReadDef1,
     ReadMenu2,
     M_DrawReadThis2,
-    (SCREENWIDTH / 2) + 170,175,
+    0, 0,   // no scull
     0
 };
 
@@ -776,11 +776,11 @@ void M_DrawReadThis2(void)
     {
       case retail:
       case commercial:
+      case registered:
 	// This hack keeps us from having to change menus.
 	V_DrawPatchDirect (0,0,0,W_CacheLumpName("CREDIT",PU_CACHE));
 	break;
       case shareware:
-      case registered:
 	V_DrawPatchDirect (0,0,0,W_CacheLumpName("HELP2",PU_CACHE));
 	break;
       default:
@@ -1672,7 +1672,6 @@ void M_Drawer (void)
     static short	x;
     static short	y;
     short		i;
-    short		max;
     char		string[MAX_QUITMESSAGES_SIZE];
     int			start;
 
@@ -1717,9 +1716,8 @@ void M_Drawer (void)
     // DRAW MENU
     x = currentMenu->x;
     y = currentMenu->y;
-    max = currentMenu->numitems;
 
-    for (i=0;i<max;i++)
+    for (i = 0; i < currentMenu->numitems; i++)
     {
 		if (currentMenu->menuitems[i].name[0])
 			V_DrawPatchDirect (x,y,0,
@@ -1727,10 +1725,15 @@ void M_Drawer (void)
 		y += LINEHEIGHT;
     }
 
-    
-    // DRAW SKULL
-    V_DrawPatchDirect(x + SKULLXOFF,currentMenu->y - 5 + itemOn*LINEHEIGHT, 0,
-		      W_CacheLumpName(skullName[whichSkull],PU_CACHE));
+    if(currentMenu->numitems)
+	{
+		// DRAW SKULL
+		V_DrawPatchDirect(
+				x + SKULLXOFF, 
+				currentMenu->y - 5 + itemOn*LINEHEIGHT,
+				0,
+				W_CacheLumpName(skullName[whichSkull],PU_CACHE));
+	}
 
 }
 
