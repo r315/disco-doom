@@ -48,7 +48,7 @@ static const char rcsid[] = "$Id: d_main.c,v 1.8 1997/02/03 22:45:09 b1 Exp $";
 #include "g_game.h"
 #include "hu_stuff.h"
 #include "wi_stuff.h"
-#include "st_stuff.h"
+#include "st_classic.h"
 #include "am_map.h"
 #include "p_setup.h"
 #include "r_local.h"
@@ -98,6 +98,13 @@ static char *d_pagename;
 
 static char *wadfilename;
 char        *basedir;       // game dir
+
+static  boolean	    d_fullscreen;
+static  boolean		d_viewactivestate;
+static  boolean		d_menuactivestate;
+static  boolean		d_inhelpscreensstate;
+static  gamestate_t d_oldgamestate;
+static  int			d_borderdrawcount;
 
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t wipegamestate = GS_DEMOSCREEN;
@@ -167,31 +174,24 @@ static void D_ClearEvents(void)
 
 static void D_Display (void)
 {
-    static  boolean		viewactivestate = false;
-    static  boolean		menuactivestate = false;
-    static  boolean		inhelpscreensstate = false;
-    static  boolean		fullscreen = false;
-    static  gamestate_t oldgamestate = -1;
-    static  int			borderdrawcount;
     int				nowtime;
     int				tics;
     int				wipestart;
     int				y;
     boolean			done;
     boolean			wipe;
-    boolean			redrawsbar;
-
-    if (nodrawers)
-	   return;                  // for comparative timing / profiling
-		
-    redrawsbar = false;
     
     // change the view size if needed
     if (setsizeneeded)
     {
     	R_ExecuteSetViewSize ();
-        oldgamestate = -1;                      // force background redraw
-    	borderdrawcount = 3;
+        d_oldgamestate = -1;                      // force background redraw
+    	d_borderdrawcount = 3;
+        d_fullscreen = viewheight == SCREENHEIGHT;
+		if (d_fullscreen)
+			ST_Visible(false);
+		else
+			ST_Visible(true);
     }
 
     // save the current screen if about to wipe
@@ -210,20 +210,13 @@ static void D_Display (void)
             if (!gametic)
 	           break;
 
-            HU_Erase();
+            HU_Erase();        	    
+			// just put away the help screen
+            if (d_inhelpscreensstate && !inhelpscreens)
+				ST_Visible(true);
 
-            if (automapactive)
-                AM_Drawer ();
-            
-            if (wipe || (viewheight != SCREENHEIGHT && fullscreen) )
-        	    redrawsbar = true;
-        	
-            if (inhelpscreensstate && !inhelpscreens)
-        	    redrawsbar = true;              // just put away the help screen
-        	
-            ST_Drawer (viewheight == SCREENHEIGHT, redrawsbar );
-           	
-            fullscreen = viewheight == SCREENHEIGHT;
+            //ST_Drawer (fullscreen, redrawsbar);
+            ST_Drawer();
         	break;
 
       case GS_INTERMISSION:
@@ -238,43 +231,44 @@ static void D_Display (void)
         	D_PageDrawer ();
         	break;
     }
-
-    
+  
     // draw the view directly
-    if (gamestate == GS_LEVEL && gametic && !automapactive)
-	   R_RenderPlayerView (&players[displayplayer]);
-
-    if (gamestate == GS_LEVEL && gametic)
+    if (gamestate == GS_LEVEL && gametic){
+        if (automapactive)
+            AM_Drawer ();
+        else
+	        R_RenderPlayerView (&players[displayplayer]);
     	HU_Drawer ();
+    }
     
     // clean up border stuff
-    if (gamestate != GS_LEVEL && gamestate != oldgamestate)
+    if (gamestate != GS_LEVEL && gamestate != d_oldgamestate)
 	   I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
 
     // see if the border needs to be initially drawn
-    if (gamestate == GS_LEVEL && oldgamestate != GS_LEVEL)
+    if (gamestate == GS_LEVEL && d_oldgamestate != GS_LEVEL)
     {
-    	viewactivestate = false; // view was not active
+    	d_viewactivestate = false; // view was not active
         R_FillBackScreen ();     // draw the pattern into the back screen
     }
 
     // see if the border needs to be updated to the screen
     if (gamestate == GS_LEVEL && !automapactive && scaledviewwidth != SCREENWIDTH)
     {
-    	if (menuactive || menuactivestate || !viewactivestate)
-	       borderdrawcount = 3;
+    	if (menuactive || d_menuactivestate || !d_viewactivestate)
+	       d_borderdrawcount = 3;
 
-    	if (borderdrawcount)
+    	if (d_borderdrawcount)
 	    {
 	       R_DrawViewBorder ();    // erase old menu stuff
-	       borderdrawcount--;
+	       d_borderdrawcount--;
 	    }
     }
 
-    menuactivestate = menuactive;
-    viewactivestate = viewactive;
-    inhelpscreensstate = inhelpscreens;
-    oldgamestate = wipegamestate = gamestate;
+    d_menuactivestate = menuactive;
+    d_viewactivestate = viewactive;
+    d_inhelpscreensstate = inhelpscreens;
+    d_oldgamestate = wipegamestate = gamestate;
     
     // draw pause pic
     if (G_Paused())

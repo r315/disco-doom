@@ -28,7 +28,7 @@ static const char rcsid[] = "$Id: am_map.c,v 1.4 1997/02/03 21:24:33 b1 Exp $";
 #include "m_fixed.h"
 #include "z_zone.h"
 #include "doomdef.h"
-#include "st_stuff.h"
+#include "st_classic.h"
 #include "p_local.h"
 #include "w_wad.h"
 #include "d_player.h"

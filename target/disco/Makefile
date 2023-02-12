@@ -9,9 +9,9 @@ DEBUG = 1
 
 ifeq ($(DEBUG), 1)
 DEBUG_FLAGS =-g -gdwarf-2
-OPT =-Og
+OPT =-O0
 else
-OPT =-O2
+OPT =-O3
 endif
 
 #######################################
@@ -149,11 +149,11 @@ BIN = $(CP) -O binary -S
 # FLAGS
 #######################################
 # cpu
-CPU = -mcpu=cortex-m7
+CPU =-mcpu=cortex-m7
 # fpu
-FPU = -mfpu=fpv5-d16
+FPU =-mfpu=fpv5-d16
 # float-abi
-FLOAT-ABI = -mfloat-abi=hard
+FLOAT-ABI =-mfloat-abi=hard
 # mcu
 MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 # AS defines

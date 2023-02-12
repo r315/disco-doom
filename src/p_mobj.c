@@ -30,7 +30,7 @@ rcsid[] = "$Id: p_mobj.c,v 1.5 1997/02/03 22:45:12 b1 Exp $";
 #include "doomdef.h"
 #include "p_local.h"
 #include "sounds.h"
-#include "st_stuff.h"
+#include "st_classic.h"
 #include "hu_stuff.h"
 #include "s_sound.h"
 #include "d_main.h"
@@ -688,7 +688,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
     if (mthing->type-1 == consoleplayer)
     {
 	// wake up the status bar
-	ST_Start ();
+	ST_Start (p);
 	// wake up the heads up text
 	HU_Start ();		
     }

@@ -40,7 +40,7 @@ static const char
 #include "d_main.h"
 #include "wi_stuff.h"
 #include "hu_stuff.h"
-#include "st_stuff.h"
+#include "st_classic.h"
 #include "am_map.h"
 #include "v_video.h"
 #include "w_wad.h"
