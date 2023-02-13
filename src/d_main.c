@@ -340,7 +340,8 @@ static void D_DoomLoop (void)
     eventhead = eventtail = 0;
 
     while (1)
-    {    	
+    {   
+		//I_StartFrame();
     	// process one or more tics
         if (singletics)
         {

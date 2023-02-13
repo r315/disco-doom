@@ -10,7 +10,7 @@
 // Size of statusbar.
 #define ST_HEIGHT	(32)
 #define ST_WIDTH	(BASE_WIDTH)
-
+#define ST_BG_COUNT 3
 
 //
 // STATUS BAR DATA
@@ -25,11 +25,9 @@
 // Radiation suit, green shift.
 #define RADIATIONPAL    13
 
-#define ST_ARMS_COUNT	6
-
 // Location of status bar
-#define ST_X        ((SCREENWIDTH / 2) - (BASE_WIDTH / 2))
-#define ST_Y		(SCREENHEIGHT - ST_HEIGHT)
+#define ST_X			((SCREENWIDTH / 2) - (BASE_WIDTH / 2))
+#define ST_Y			(SCREENHEIGHT - ST_HEIGHT)
 
 // AMMO number position 
 #define ST_AMMOWIDTH    3			// Number of digits
@@ -42,6 +40,7 @@
 #define ST_HEALTHY      (ST_Y + 3)
 
 // Weapon pos.
+#define ST_ARMS_COUNT	6
 #define ST_ARMSX        (ST_X + 111)
 #define ST_ARMSY        (ST_Y + 4)
 #define ST_ARMSBGX      (ST_X + 104)
@@ -82,7 +81,9 @@
 #define ST_MAXAMMO0X        (ST_X + 293)
 #define ST_MAXAMMO0Y        (ST_Y + 5)
 
+//
 // Number of status faces.
+//
 #define ST_NUMPAINFACES     5
 #define ST_NUMSTRAIGHTFACES 3
 #define ST_NUMTURNFACES     2

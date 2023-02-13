@@ -9,6 +9,7 @@
 #include "i_video.h"
 #include "m_random.h"
 #include "r_main.h"
+#include "g_game.h"
 
 #define FG 0
 #define BG 4
@@ -84,14 +85,18 @@ static int st_priority;
 //
 //
 //
-void ST_drawBackground(st_widget_t *sbar, byte refresh)
+static void ST_drawBackground(st_widget_t *sbar, byte refresh)
 {
 	st_wi_multi_t *patches = (st_wi_multi_t*)sbar;
 	// status bar backgound
 	V_DrawPatch(sbar->x, sbar->y, BG, sbar->bg);
 	for (int i = 0; i < patches->count; i++) {
 		// copy patch to ST buffer
-		V_DrawPatch(patches->sub[i].x, patches->sub[i].y, BG, patches->sub[i].bg);
+		short y = patches->sub[i].y;
+		if (y > ST_HEIGHT) {
+			y -= ST_Y;
+		}
+		V_DrawPatch(patches->sub[i].x, y, BG, patches->sub[i].bg);
 	}
 	// copy ST background to foreground video buffer
 	V_CopyRect(ST_X, 0, BG, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y, FG);
@@ -456,52 +461,25 @@ static void ST_loadGraphics(void)
 	st_wi_num_t *aux_num;
 	st_widget_t *aux_wi;
 
-#if 0
-	/* just leave this here in case some day I'll fix networking */
-	w_sbar.pnum = 0;
-	if (netgame)
-	{
-		w_sbar.p = (st_patch_t*)Z_Malloc(2 * sizeof(st_patch_t), PU_STATIC, NULL);
-		// face backgrounds for different color players
-		sprintf(namebuf, "STFB%d", consoleplayer);
-		w_sbar.p[1].p = (patch_t *)W_CacheLumpName(namebuf, PU_STATIC);
-		w_sbar.p[1].x = ST_FX; // location within BG buffer
-		w_sbar.p[1].y = 0;
-	}
-	else
-	{
-		w_sbar.p = (st_patch_t*)Z_Malloc(sizeof(st_patch_t), PU_STATIC, NULL);
-	}
-
-	w_sbar.p[0].p = (patch_t *)W_CacheLumpName("STBAR", PU_STATIC);
-	w_sbar.p[0].x = 0; // location within BG buffer
-	w_sbar.p[0].y = 0;
-	w_sbar.pnum++;
-#else
 	// status bar background bits
-	w_backgound.base.x = 0; // location within screens[BG]
+	w_backgound.base.x = 0;
 	w_backgound.base.y = 0;
 	w_backgound.base.bg = (patch_t *)W_CacheLumpName("STBAR", PU_STATIC);
 	w_backgound.base.draw = ST_drawBackground;
-	w_backgound.count = 4;
+	w_backgound.count = ST_BG_COUNT;
 	w_backgound.sub = (st_widget_t*)Z_Malloc(w_backgound.count * sizeof(st_widget_t), PU_STATIC, NULL);
 	// load health '%' sign, as it never change, load it with backgound
 	w_backgound.sub[0].bg = (patch_t *)W_CacheLumpName("STTPRCNT", PU_STATIC);
 	w_backgound.sub[0].x = ST_HEALTHX + (ST_HEALTHWIDTH * w_backgound.sub[0].bg->width);
-	w_backgound.sub[0].y = ST_HEALTHY - ST_Y;
+	w_backgound.sub[0].y = ST_HEALTHY;
 	// same for armor
 	w_backgound.sub[1].bg = w_backgound.sub[0].bg;
 	w_backgound.sub[1].x = ST_ARMORX + (ST_ARMORWIDTH * w_backgound.sub[0].bg->width);
-	w_backgound.sub[1].y = ST_ARMORY - ST_Y;
+	w_backgound.sub[1].y = ST_ARMORY;
 	// arms bg
 	w_backgound.sub[2].bg = (patch_t *)W_CacheLumpName("STARMS", PU_STATIC);
 	w_backgound.sub[2].x = ST_ARMSBGX;
-	w_backgound.sub[2].y = ST_ARMSBGY - ST_Y;
-// player bg color
-	w_backgound.sub[3].bg = (patch_t *)W_CacheLumpName("STFB0", PU_STATIC);	
-	w_backgound.sub[3].x = ST_FX;
-	w_backgound.sub[3].y = 0;
-#endif
+	w_backgound.sub[2].y = ST_ARMSBGY;
 
 	// Load the numbers, tall and short
 	for (i = 0; i < 10; i++)
@@ -674,6 +652,26 @@ static void ST_doPaletteStuff(void)
 }
 
 //
+//
+//
+static void ST_ReallocBG(byte new_size)
+{
+	st_widget_t *tmp_wi;
+
+	tmp_wi = (st_widget_t*)Z_Malloc(new_size * sizeof(st_widget_t), PU_STATIC, NULL);
+	if (new_size > w_backgound.count) {
+		memcpy(tmp_wi, w_backgound.sub, w_backgound.count * sizeof(st_widget_t));
+	}
+	else {
+		memcpy(tmp_wi, w_backgound.sub, new_size * sizeof(st_widget_t));
+	}
+
+	w_backgound.count = new_size;
+	Z_Free(w_backgound.sub);
+	w_backgound.sub = tmp_wi;
+}
+
+//
 // ST_Responder
 //
 boolean ST_Responder(event_t *ev)
@@ -757,6 +755,7 @@ void ST_Drawer(void)
 void ST_Start(player_t *pl)
 {
 	int i;
+	char namebuf[9];
 
 	if (plyr != NULL) {
 		// ST_Stop
@@ -774,6 +773,23 @@ void ST_Start(player_t *pl)
 
 	for (i = 0; i < NUMWEAPONS; i++)
 		st_oldweaponsowned[i] = plyr->weaponowned[i];	
+
+	if (netgame)
+	{
+		if (w_backgound.count == ST_BG_COUNT) {
+			ST_ReallocBG(ST_BG_COUNT + 1);
+		}
+		// player bg color
+		sprintf(namebuf, "STFB%d", consoleplayer);
+		w_backgound.sub[ST_BG_COUNT].bg = (patch_t *)W_CacheLumpName(namebuf, PU_STATIC);
+		w_backgound.sub[ST_BG_COUNT].x = ST_FX;
+		w_backgound.sub[ST_BG_COUNT].y = ST_FY;
+	}
+	else {
+		if (w_backgound.count != ST_BG_COUNT) {
+			ST_ReallocBG(ST_BG_COUNT);
+		}
+	}
 
 	w_face.frame = 0;
 }
