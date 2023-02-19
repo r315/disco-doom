@@ -212,7 +212,8 @@ static void D_Display (void)
 
             HU_Erase();        	    
 			// just put away the help screen
-            if (d_inhelpscreensstate && !inhelpscreens)
+            if ((d_inhelpscreensstate && !inhelpscreens) || 
+                 d_oldgamestate == GS_INTERMISSION)
 				ST_Visible(true);
 
             //ST_Drawer (fullscreen, redrawsbar);

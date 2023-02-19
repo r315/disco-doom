@@ -682,16 +682,12 @@ boolean ST_Responder(event_t *ev)
 		switch (ev->data1)
 		{
 		case AM_MSGENTERED:			
-			if (st_state == ST_HIDDEN) {
-				st_last_state = st_state;
-				st_state = ST_REDRAW;
-			}
+			st_last_state = st_state;			
+			st_state = ST_REDRAW;			
 			break;
 
-		case AM_MSGEXITED:
-			if (st_last_state != st_state) {
-				st_state = st_last_state;
-			}
+		case AM_MSGEXITED:			
+			st_state = st_last_state;			
 			break;
 		}
 	}
