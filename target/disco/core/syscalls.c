@@ -300,6 +300,16 @@ int _getpid(void)
 	return 1;
 }
 
+int __getsize(int fd){
+	FIL *f = openfiles[(fd >> 4) - 1];
+
+    if(f == NULL){
+        return 0;
+    }
+
+    return f_size (f);
+}
+
 void __debugbreak(void){
 	__asm volatile(
         "bkpt #01 \n"

@@ -130,7 +130,7 @@ uint32_t INPUT_Read(uint32_t *dst, uint32_t size)
  *
  */
 
-uint8_t btnState(btnstate_t *btn, uint8_t pressed){
+static uint8_t btnState(btnstate_t *btn, uint8_t pressed){
 
     btn->laststate = btn->state;
 

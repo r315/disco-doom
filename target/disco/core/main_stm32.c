@@ -2,7 +2,6 @@
 #include "board.h"
 #include "doomdef.h"
 #include "common.h"
-#include "d_main.h"
 #include "i_video.h"
 #include "d_main.h"
 #include "fatfs.h"
@@ -19,17 +18,8 @@ uint32_t memavail(void);
 FRESULT fatFsInit(void);
 void Serial_Init(void);
 
-int main(void)
+static void init_board(void)
 {
-    char *arguments[] = {
-        "disco_doom",
-        "doom1.wad",
-        "-shdev",
-        "-devparm"
-        //"-autostart",
-        //"-nomonsters"
-    };
-
     SCB_EnableICache();
     SCB_EnableDCache();
 
@@ -50,14 +40,114 @@ int main(void)
 
     BSP_LED_Init(LED1);
     BSP_LED_Init(LED2);
+}
+
+static int count_args(const char *args){
+    int n = 0;
+    int len = 0;
+
+    if(args == NULL){
+        return 0;
+    }
+
+    while(*args){
+        len++;
+        if(*args == ' ' || *args == '\t'){
+            n++;
+            do{
+                args++;
+            }while(*args == ' ' || *args == '\t');            
+        }else{
+            args++;
+        }
+    }
+
+    if(len){
+        n++;
+    }
+
+    return n;
+}
+
+int main(void)
+{
+    FILE *fp;
+    int argc = 0;
+    char **argv = NULL;
+    char *s;
+#if 0
+    char *argv[] = {
+        "disco_doom",
+        "-basedir",
+        "doom",
+        "doom1.wad",
+        "-shdev",
+        "-devparm"
+        //"-autostart",
+        //"-nomonsters"
+    };
+
+    argc = sizeof(argv) / sizeof(char*);
+#endif
+
+    init_board();
 
     if(fatFsInit()){
         OnError_Handler(true);
     }
-
-    INPUT_Init();
     
-    D_DoomMain(sizeof(arguments) / sizeof(char*), arguments);
+    fp = fopen("doom.arg", "rb");
+
+    if(fp){
+        
+        int size = __getsize(fp->_file);
+        char *param = (char*)calloc(size, 1);
+
+        if(param){
+           fread(param, size, 1, fp);
+        }
+        
+        fclose(fp);
+
+        size = (count_args((const char*)param) + 1);
+        argv = (char**)calloc(size, sizeof(char*));
+        
+        if(argv){
+            argv[argc++] = (char*)"disco_doom";
+
+            s = param;
+            
+            if(*s){
+                argv[argc++] = s;
+            }
+
+            while(*s){
+                if(*s == ' '){
+                    *s++ = '\0';
+
+                    while(*s == ' ' || *s == '\t'){
+                        s++;
+                    }
+
+                    if(*s != '\0'){
+                        argv[argc++] = s;
+                    }
+                }else{
+                    s++;
+                }
+            }
+        }
+        
+    }
+    
+    if(argv == NULL){
+        argv = (char*[]){
+            "disco_doom"           
+        };
+        argc = 1;
+    }
+
+    D_DoomMain(argc, argv);
 
     FATFS_UnLinkDriver(SDPath);
 

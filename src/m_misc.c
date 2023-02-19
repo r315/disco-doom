@@ -115,7 +115,7 @@ static default_t defaults[] =
         {"key_strafe", &key_strafe, KEY_RALT},
         {"key_speed", &key_speed, KEY_RSHIFT},
 
-        {"use_mouse", &usemouse, 0},
+        {"use_mouse", &usemouse, 1},
         {"mouseb_fire", &mousebfire, 0},
         {"mouseb_strafe", &mousebstrafe, 1},
         {"mouseb_forward", &mousebforward, 2},

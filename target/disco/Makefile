@@ -68,7 +68,6 @@ $(BSP_PATH)/core/system_stm32f7xx.c \
 $(BSP_PATH)/core/sd_diskio.c \
 $(BSP_PATH)/core/fatfs.c \
 $(BSP_PATH)/core/syscalls.c \
-$(BSP_PATH)/core/input.c \
 $(BSP_PATH)/core/lis302.c \
 $(BSP_PATH)/core/pcf8574.c \
 $(BSP_PATH)/core/i2c.c \
@@ -105,7 +104,9 @@ $(REPO_F769)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery.c \
 $(REPO_F769)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_lcd.c \
 $(REPO_F769)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_sdram.c \
 $(REPO_F769)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_sd.c \
+$(REPO_F769)/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_ts.c \
 $(REPO_F769)/Drivers/BSP/Components/otm8009a/otm8009a.c \
+$(REPO_F769)/Drivers/BSP/Components/ft6x06/ft6x06.c \
 $(REPO_F769)/Drivers/BSP/Components/wm8994/wm8994.c \
 $(REPO_F769)/Middlewares/Third_Party/FatFs/src/diskio.c \
 $(REPO_F769)/Middlewares/Third_Party/FatFs/src/ff.c \

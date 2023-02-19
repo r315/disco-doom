@@ -93,3 +93,24 @@ void COM_Print (const char* fmt, ...)
     printf("%s", textout);
     va_end (argptr); 
 }
+
+
+int COM_FormPath(char *path, char *dir, char *filename, int max_len){
+    char *path_end = path + (max_len - 1);
+
+    while(path < path_end && *dir){
+        *path++ = *dir++;
+    }
+
+    if(path < path_end){
+        *path++ = '/';
+    }
+
+    while(path < path_end && *filename){
+        *path++ = *filename++;
+    }
+
+	*path = '\0';
+
+    return max_len - (path_end - path) - 1;
+}

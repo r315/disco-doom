@@ -1,11 +1,14 @@
 #ifndef _board_h_
 #define _board_h_
 
-
 #include "main.h"
 #include "input.h"
 #include "lis302.h"
 #include "pcf8574.h"
+#include "serial.h"
+#include "stm32f769i_discovery_ts.h"
+
+
 
 /**
  * Heap grows up
@@ -43,6 +46,13 @@ typedef struct _i2cbus_t{
     uint32_t   (*write)(uint8_t Addr, uint8_t *Buffer, uint16_t Length);
 }i2cbus_t;
 
+typedef struct bitmap_s {
+    uint16_t w;
+    uint16_t h;
+    uint32_t bpp;
+    uint8_t data[]; // Must be 32-bit aligned for DMA
+}bitmap_t;
+
 
 void OnError_Handler(uint32_t condition);
 
@@ -60,5 +70,9 @@ extern i2cbus_t ext_i2cbus;
 #define input_drv input_drv_pcf8574
 #endif /* ACCELEROMETER */
 
+void LCD_BlendWindow(bitmap_t *fg, uint32_t fg_offset, bitmap_t *bg, uint32_t bg_offset, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+void INPUT_Init(void);
+
 void __debugbreak(void);
+int __getsize(int fd);
 #endif
