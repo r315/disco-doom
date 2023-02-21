@@ -54,7 +54,9 @@ rcsid[] = "$Id: hu_stuff.c,v 1.4 1997/02/03 16:47:52 b1 Exp $";
 #define HU_INPUTWIDTH	64
 #define HU_INPUTHEIGHT	1
 
-
+#define HU_SECRETSX 0
+#define HU_SECRETSY (HU_TITLEY - hu_font[0]->height)
+#define HU_SECRETSHEIGHT	1
 
 char*	chat_macros[] =
 {
@@ -78,19 +80,21 @@ char*	player_names[] =
     HUSTR_PLRRED
 };
 
-static player_t*	plr;
 patch_t*		    hu_font[HU_FONTSIZE];
-static hu_textline_t	w_title;
 boolean			    chat_on;
-static hu_itext_t	w_chat;
-static boolean		always_off = false;
-static char		    chat_dest[MAXPLAYERS];
-static hu_itext_t   w_inputbuffer[MAXPLAYERS];
+
+static player_t*	 plr;
+static hu_textline_t w_title;
+static hu_textline_t w_secrets;
+static hu_itext_t	 w_chat;
+static hu_stext_t	 w_message;
+static hu_itext_t    w_inputbuffer[MAXPLAYERS];
+static boolean		 always_off = false;
+static char		     chat_dest[MAXPLAYERS];
 
 static boolean		message_dontfuckwithme;
 static boolean		message_nottobefuckedwith;
 
-static hu_stext_t	w_message;
 static int		    message_counter;
 
 static boolean		headsupactive = false;
@@ -429,6 +433,12 @@ void HU_Start(void)
 		       HU_TITLEX, HU_TITLEY,
 		       hu_font,
 		       HU_FONTSTART);
+
+    // create the map secrets count widget
+    HUlib_initTextLine(&w_secrets,
+		       HU_SECRETSX, HU_SECRETSY,
+		       hu_font,
+		       HU_FONTSTART);
     
     switch ( gamemode )
     {
@@ -472,11 +482,15 @@ void HU_Start(void)
 
 void HU_Drawer(void)
 {
-
     HUlib_drawSText(&w_message);
     HUlib_drawIText(&w_chat);
-    if (automapactive)
-	HUlib_drawTextLine(&w_title, false);
+    if (automapactive){
+	    HUlib_drawTextLine(&w_title, false);
+        HUlib_clearTextLine(&w_secrets);
+        w_secrets.len = sprintf(&w_secrets.l, "secrets %d/%d", plr->secretcount, totalsecret);
+        w_secrets.needsupdate = 4;
+        HUlib_drawTextLine(&w_secrets, false);
+    }
 
 }
 

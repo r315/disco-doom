@@ -1150,9 +1150,10 @@ typedef struct state_s
   long			frame;
   long			tics;
   // void		(*action) ();
-  actionf_t			action;
-  statenum_t			nextstate;
-  long			misc1, misc2;
+  actionf_t		action;
+  statenum_t	nextstate;
+  long			misc1;
+  long          misc2;
 } state_t;
 
 typedef enum mobjinfo_e
