@@ -24,15 +24,16 @@
 static const char
 rcsid[] = "$Id: i_main.c,v 1.4 1997/02/03 22:45:10 b1 Exp $";
 
-
+#include <signal.h>
 #include "doomdef.h"
 #include "common.h"
 #include "d_main.h"
 #include "target.h"
 
-#ifdef __WIN32__
-//FILE * __cdecl __iob_func(void) { FILE _iob[] = { *stdin, *stdout, *stderr };  return _iob; }
-#endif
+/* SDL 1.2.15 build flags
+CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 ./configure
+CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 make
+*/
 
 int T_GetTick(void){
     return SDL_GetTicks();
@@ -47,3 +48,8 @@ int main( int argc, char** argv)
     D_DoomMain (argc, argv); 
     return 0;
 } 
+
+void __debugbreak(void)
+{
+    raise(SIGABRT);
+}
