@@ -59,7 +59,7 @@ rcsid[] = "$Id: r_data.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 // into the rectangular texture space using origin
 // and possibly other attributes.
 //
-typedef struct
+typedef struct mappatch_s
 {
     short	originx;
     short	originy;
@@ -74,7 +74,7 @@ typedef struct
 // A DOOM wall texture is a list of patches
 // which are to be combined in a predefined order.
 //
-typedef struct
+typedef struct maptexture_s
 {
     char		name[8];
     int		    masked;	
@@ -89,7 +89,7 @@ typedef struct
 // A single patch from a texture definition,
 //  basically a rectangular area within
 //  the texture rectangle.
-typedef struct
+typedef struct texpatch_s
 {
     // Block origin (allways UL),
     // which has allready accounted
@@ -103,7 +103,7 @@ typedef struct
 // A maptexturedef_t describes a rectangular texture,
 //  which is composed of one or more mappatch_t structures
 //  that arrange graphic patches.
-typedef struct
+typedef struct texture_s
 {
     // Keep name for switch changing, etc.
     char	name[8];		
@@ -154,6 +154,9 @@ fixed_t*	spritetopoffset;
 
 lighttable_t	*colormaps;
 
+int		flatmemory;
+int		texturememory;
+int		spritememory;
 
 //
 // MAPTEXTURE_T CACHING
@@ -424,8 +427,6 @@ void R_InitTextures (void)
     char*		name_p;
     
     int*		patchlookup;
-    
-    int			totalwidth;
     int			nummappatches;
     int			offset;
     int			maxoff;
@@ -434,11 +435,6 @@ void R_InitTextures (void)
     int			numtextures2;
 
     int*		directory;
-    
-    int			temp1;
-    int			temp2;
-    int			temp3;
-
     
     // Load the patch names from pnames.lmp.
     name[8] = 0;	
@@ -486,26 +482,15 @@ void R_InitTextures (void)
     texturecomposite = Z_Malloc (numtextures*4, PU_STATIC, NULL);
     texturecompositesize = Z_Malloc (numtextures*4, PU_STATIC, NULL);
     texturewidthmask = Z_Malloc (numtextures*4, PU_STATIC, NULL);
-    textureheight = Z_Malloc (numtextures*4, PU_STATIC, NULL);
-
-    totalwidth = 0;
-    
-    //	Really complex printing shit...
-    temp1 = W_GetNumForName ("S_START");  // P_???????
-    temp2 = W_GetNumForName ("S_END") - 1;
-    temp3 = ((temp2-temp1+63)/64) + ((numtextures+63)/64);
-    printf("[");
-    for (i = 0; i < temp3; i++){
-	    printf("#");
-    }
-	printf("]");
-    
+    textureheight = Z_Malloc (numtextures*4, PU_STATIC, NULL);   
 	
-    for (i=0 ; i<numtextures ; i++, directory++)
+    for (i=0 ; i < numtextures ; i++, directory++)
     {
-	if (!(i&63))
-	    printf (".");
-
+    if (!(i&63))
+    {
+        printf (".");
+    }
+    
 	if (i == numtextures1)
 	{
 	    // Start looking in second texture file.
@@ -565,7 +550,6 @@ void R_InitTextures (void)
 	texturewidthmask[i] = j-1;
 	textureheight[i] = texture->height<<FRACBITS;
 		
-	totalwidth += texture->width;
     }
 
     Z_Free (maptex1);
@@ -627,8 +611,9 @@ void R_InitSpriteLumps (void)
 	
     for (i=0 ; i< numspritelumps ; i++)
     {
-	if (!(i&63))
+	if (!(i&63)){
 	    printf (".");
+    }
 
 	patch = W_CacheLumpNum (firstspritelump+i, PU_CACHE);
 	spritewidth[i] = SHORT(patch->width)<<FRACBITS;
@@ -665,14 +650,14 @@ void R_InitColormaps (void)
 //
 void R_InitData (void)
 {
+    printf ("\n  InitTextures ");
     R_InitTextures ();
-    printf ("\nInitTextures");
+    printf ("\n  InitFlats\n");
     R_InitFlats ();
-    printf ("\nInitFlats");
+    printf ("  InitSprites ");
     R_InitSpriteLumps ();
-    printf ("\nInitSprites");
+    printf ("\n  InitColormaps ");
     R_InitColormaps ();
-    printf ("\nInitColormaps");
 }
 
 
@@ -748,9 +733,6 @@ int	R_TextureNumForName (char* name)
 // R_PrecacheLevel
 // Preloads all relevant graphics for the level.
 //
-int		flatmemory;
-int		texturememory;
-int		spritememory;
 
 void R_PrecacheLevel (void)
 {

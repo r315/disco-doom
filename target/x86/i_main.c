@@ -49,7 +49,9 @@ int main( int argc, char** argv)
     return 0;
 } 
 
+#ifdef __linux__
 void __debugbreak(void)
 {
     raise(SIGABRT);
 }
+#endif

@@ -139,7 +139,7 @@ void W_AddFile (char *filename)
     	return;
     }
 
-    COM_Print ("\tAdding %s..\n",filename);
+    COM_Print ("\tAdding %s\n",filename);
    
 	// WAD file header
 	fread(&wadinfo, 1, sizeof(wadinfo_t), handle);     
