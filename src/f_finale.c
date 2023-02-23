@@ -708,12 +708,12 @@ void F_Drawer (void)
 	switch (gameepisode)
 	{
 	  case 1:
-	    if ( gamemode == retail )
-	      V_DrawPatch (0,0,0,
-			 W_CacheLumpName("CREDIT",PU_CACHE));
-	    else
+	    if ( gamemode == shareware)
 	      V_DrawPatch (0,0,0,
 			 W_CacheLumpName("HELP2",PU_CACHE));
+	    else
+	      V_DrawPatch (0,0,0,
+			 W_CacheLumpName("CREDIT",PU_CACHE));
 	    break;
 	  case 2:
 	    V_DrawPatch(0,0,0,
