@@ -43,9 +43,6 @@ static const char rcsid[] = "$Id: r_main.c,v 1.5 1997/02/03 22:45:12 b1 Exp $";
 #define FIELDOFVIEW		2048	
 
 
-
-int			viewangleoffset;
-
 // increment every time a check is made
 int			validcount = 1;		
 
@@ -61,7 +58,7 @@ fixed_t			centeryfrac;
 fixed_t			projection;
 
 // just for profiling purposes
-int			framecount;	
+// static int			framecount;
 
 int			sscount;
 int			linecount;
@@ -758,7 +755,7 @@ void R_Init (void)
     R_InitTranslationTables ();
     printf ("\nR_InitTranslationsTables");
 	
-    framecount = 0;
+    //framecount = 0;
 }
 
 
@@ -802,7 +799,7 @@ void R_SetupFrame (player_t* player)
     viewplayer = player;
     viewx = player->mo->x;
     viewy = player->mo->y;
-    viewangle = player->mo->angle + viewangleoffset;
+    viewangle = player->mo->angle;
     extralight = player->extralight;
 
     viewz = player->viewz;
@@ -826,7 +823,7 @@ void R_SetupFrame (player_t* player)
     else
 	fixedcolormap = 0;
 		
-    framecount++;
+    //framecount++;
     validcount++;
 }
 

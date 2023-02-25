@@ -45,8 +45,6 @@ extern int		viewwindowy;
 extern int		scaledviewwidth;
 // This one is related to the 3-screen display mode.
 // ANG90 = left side, ANG270 = right
-extern int      viewangleoffset;
-
 extern int		centerx;
 extern int		centery;
 

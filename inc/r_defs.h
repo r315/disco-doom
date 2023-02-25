@@ -55,7 +55,11 @@
 #define MAXDRAWSEGS		256
 
 
-
+#if SCREEN_MUL > 1
+#define PLANE_MAX 0xFFFF
+#else
+#define PLANE_MAX 0xFF
+#endif
 
 
 //
@@ -453,9 +457,16 @@ typedef struct
   int			lightlevel;
   int			minx;
   int			maxx;
-  
+#if SCREEN_MUL > 1
+  // for resolutions > 320x200
+  unsigned short		pad1;
+  unsigned short		top[SCREENWIDTH];
+  unsigned short		pad2;
+  unsigned short		pad3;
+  unsigned short		bottom[SCREENWIDTH];
+  unsigned short		pad4;
+#else
   // leave pads for [minx-1]/[maxx+1]
-  
   byte		pad1;
   // Here lies the rub for all
   //  dynamic resize/change of resolution.
@@ -465,7 +476,7 @@ typedef struct
   // See above.
   byte		bottom[SCREENWIDTH];
   byte		pad4;
-
+#endif
 } visplane_t;
 
 
