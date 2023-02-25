@@ -132,12 +132,12 @@ int _read(int file, char *ptr, int len)
 	FRESULT fr;
 	UINT br;	
 
-	if (file == STDOUT_FILENO){
+	// Skip system files
+	if (file < 16){
 		errno = EBADF;
 		return -1;
 	}
 
-	// Skip system files
 	file >>= 4;
 
 	if(file > MAX_FILES){
@@ -157,12 +157,6 @@ int _read(int file, char *ptr, int len)
 
 int _write(int file, char *data, int len)
 {
-	if ((file != STDOUT_FILENO) && (file != STDERR_FILENO))
-	{
-		errno = EBADF;
-		return -1;
-	}
-
 	// 1:stdout 
 	// 2:stderr
 	if (file == STDOUT_FILENO || file == STDERR_FILENO)

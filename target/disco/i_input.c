@@ -278,7 +278,7 @@ static void update_stick(widget_t *wi, uint8_t ispressed){
         COM_Print("r_dpad: (%f,%f) %f\n", stick->dx, stick->dy, stick->angle);
         #endif
         stick->dx *= 20;    // thumb stick travel distance in pixels
-        stick->dy *= 20;
+        stick->dy = 0;
         event.type = ev_mouse;
         event.data2 = (int)stick->dx << 2;
         event.data3 = 0;
@@ -342,7 +342,6 @@ static void update_button(widget_t *wi, uint8_t ispressed){
             btn->event = TOUCH_EVENT_NO_EVT;       
             COM_Print("button released '%c'\n", (char)btn->keys[0]);
         }
-    }
     #endif
     }
 }

@@ -8,6 +8,7 @@
 #include "hu_lib.h"
 #include "hu_stuff.h"
 #include "i_input.h"
+#include "common.h"
 
 #define VIDEO_ENABLED       1
 
@@ -57,6 +58,7 @@ static uint8_t *dfb;
 
 static hu_textline_t	h_fps;
 static byte	*screen_buffer;
+static uint32_t bg_color;
 #if 0
 #define CAL_MARKER_SIZE 32
 typedef struct point_s {
@@ -108,7 +110,7 @@ static uint32_t LCD_CalibrateTouch(void)
 }
 #endif
 #if VIDEO_ENABLED
-static void LCD_ConfigVideoDma(uint32_t src, uint16_t w, uint16_t h)
+static void LCD_ConfigVideoDma(uint32_t src, uint16_t w, uint16_t h, uint32_t bgc)
 {
     DMA2D->CR = DMA2D_CR_M2M_PFC;
     DMA2D->FGMAR = src;
@@ -124,7 +126,7 @@ static void LCD_ConfigVideoDma(uint32_t src, uint16_t w, uint16_t h)
     DMA2D->OOR = BSP_LCD_GetXSize() - w;                    // Add offset to start of next line
     DMA2D->NLR = DMA2D_NLR_PLNL(w, h);
 
-    LTDC->BCCR = LCD_BACKGROUND_COLOR;
+    LTDC->BCCR = bgc;
 }
 #endif
 /**
@@ -173,7 +175,7 @@ void LCD_BlendWindow(bitmap_t *fg, uint32_t fg_offset, bitmap_t *bg, uint32_t bg
     }while(DMA2D->CR & DMA2D_CR_START);
 
     // Restore dma settings to game canvas
-    LCD_ConfigVideoDma ((uint32_t)screen_buffer, CANVAS_WIDTH, CANVAS_HEIGHT);
+    LCD_ConfigVideoDma ((uint32_t)screen_buffer, CANVAS_WIDTH, CANVAS_HEIGHT, bg_color);
 }
 
 //
@@ -337,12 +339,20 @@ void I_InitGraphics(void)
     memset((void*)DMA2D->FGCLUT, 0, 256 * 4);
 
     BSP_LCD_SelectLayer(VIDEO_LAYER);
+
+    char *parm = COM_GetParm("-bgcolor");
+
+    if(parm){
+        sscanf(parm, "%x", (unsigned int*)&bg_color);
+    }else{
+        bg_color = LCD_BACKGROUND_COLOR;
+    }
    
 
     #if DOUBLE_SCREEN
-    LCD_ConfigVideoDma((uint32_t)dfb, CANVAS_WIDTH, CANVAS_HEIGHT);
+    LCD_ConfigVideoDma((uint32_t)dfb, CANVAS_WIDTH, CANVAS_HEIGHT, bg_color);
     #else
-    LCD_ConfigVideoDma((uint32_t)screen_buffer, CANVAS_WIDTH, CANVAS_HEIGHT);
+    LCD_ConfigVideoDma((uint32_t)screen_buffer, CANVAS_WIDTH, CANVAS_HEIGHT, bg_color);
     #endif
 
     I_FinishUpdate();
