@@ -1336,6 +1336,9 @@ void G_InitNew(skill_t skill,
 
     if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare))
     {
+        // TODO: Something wrong here, on load ticks are divided by 2 for this skill
+        // And after second load all tics S_ARG_XXX are 0 and game locks looping 
+        // states on P_SetMobjState
         for (i = S_SARG_RUN1; i <= S_SARG_PAIN2; i++)
             states[i].tics >>= 1;
         mobjinfo[MT_BRUISERSHOT].speed = 20 * FRACUNIT;
@@ -1494,7 +1497,6 @@ void G_DoPlayDemo(void)
     if (*demo_p != VERSION_NUM)
     {
         fprintf(stderr, "Demo is from a different game version! expected: %d got: %d\n", VERSION_NUM, *demo_p); 
-        gameaction = ga_nothing;
         return;
     }
 #endif
@@ -1558,7 +1560,8 @@ boolean G_CheckDemoStatus(void)
     if (timingdemo)
     {
         endtime = I_GetTime();
-        I_Error("timed %i gametics in %i realtics", gametic, endtime - starttime);
+        COM_Print("timed %i gametics in %i realtics, %i fps\n", gametic, endtime - starttime, (gametic/(endtime - starttime)) * TICRATE);
+		I_Quit();
     }
 
     if (demoplayback)

@@ -532,7 +532,6 @@ static GameMode_t D_IDVersion (void)
     // Check if forced shareware
     if (COM_CheckParm ("-shdev"))
     {
-	    d_devparm = true;
 	    //D_AddFile (DEVDATA"doom1.wad");
 	    //D_AddFile (DEVMAPS"data_se/texture1.lmp");
 	    //D_AddFile (DEVMAPS"data_se/pnames.lmp");
@@ -563,6 +562,8 @@ static GameMode_t D_IDVersion (void)
 //
 void D_DoomMain (int argc, char **argv)
 {
+    char *timedemo;
+
     COM_Init(argc, argv);
 
     basedir = COM_GetParm("-basedir");
@@ -589,6 +590,7 @@ void D_DoomMain (int argc, char **argv)
     d_devparm   = COM_CheckParm("-devparm");  
 	autostart   = COM_CheckParm("-autostart");
     singletics  = COM_CheckParm("-singletics");
+    timedemo    = COM_GetParm("-timedemo");
 
     if(gamemode == shareware){
         COM_Print ("DOOM Shareware Startup v%u.%u\n",
@@ -657,6 +659,12 @@ void D_DoomMain (int argc, char **argv)
     ST_Init ();
 
     D_ClearEvents();
+
+	if (timedemo) 
+	{
+		G_TimeDemo(timedemo);
+		D_DoomLoop();
+	}
         
     if (autostart)
     {  
