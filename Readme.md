@@ -3,10 +3,10 @@
 Doom for discovery is another port of the game doom to the STM32F769 discovery development kit.
 Main goal of this project was to explore doom engine and implement a simple touch controller using the devkit touch screen.
 
-This project based on version 1.08 and is sporadically updated, so expect weird bugs.
+This project based on version 1.08 and is sporadically updated, so expect weird bugs. For a more in-depth I recommend reading Fabien Sanglard's book https://fabiensanglard.net/gebbdoom/
 
 
-![In game](/doc/photo4.JPG)
+![In game](/doc/photo4.jpg)
 
 ## Build
 
